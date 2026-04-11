@@ -6,8 +6,10 @@ import pytest
 
 from src.core.config import ProductConfig
 from src.core.fair_value import (
+    _DEFAULT_EWMA_ALPHA,
     AnchorEstimator,
     DepthMidEstimator,
+    EwmaMidEstimator,
     FairValueEngine,
     MicropriceEstimator,
     MidEstimator,
@@ -33,6 +35,16 @@ def _mid_config() -> ProductConfig:
         strategy_name="market_making",
         fair_value_method="mid",
         fair_value_fallbacks=(),
+    )
+
+
+def _ewma_config(alpha: float | None = None) -> ProductConfig:
+    return ProductConfig(
+        position_limit=20,
+        strategy_name="market_making",
+        fair_value_method="ewma_mid",
+        fair_value_fallbacks=("mid",),
+        ewma_alpha=alpha,
     )
 
 
@@ -121,6 +133,111 @@ def test_depth_mid_uses_all_visible_levels() -> None:
 
 
 @pytest.mark.unit
+def test_ewma_formula_matches_expected_recurrence() -> None:
+    """Hand-computed EWMA: alpha=0.5, history=[100, 102], mid=104.
+
+    Seed with the first sample (100), then:
+      step 1: 0.5*102 + 0.5*100 = 101
+      step 2 (current mid 104): 0.5*104 + 0.5*101 = 102.5
+    """
+    memory = ProductMemory(recent_mids=[100.0, 102.0])
+    snap = _snapshot(bid=103, bid_vol=1, ask=105, ask_vol=1)  # mid 104
+    config = _ewma_config(alpha=0.5)
+    result = EwmaMidEstimator().estimate(snap, memory, config)
+    assert result is not None
+    assert result.price == pytest.approx(102.5)
+    assert result.method == "ewma_mid"
+    assert result.components["alpha"] == pytest.approx(0.5)
+    assert "bootstrap" not in result.components
+
+
+@pytest.mark.unit
+def test_ewma_alpha_one_equals_current_mid() -> None:
+    """alpha=1 should discard history entirely and return the current mid."""
+    memory = ProductMemory(recent_mids=[50.0, 60.0, 70.0])
+    snap = _snapshot(bid=199, bid_vol=1, ask=201, ask_vol=1)  # mid 200
+    result = EwmaMidEstimator().estimate(snap, memory, _ewma_config(alpha=1.0))
+    assert result is not None
+    assert result.price == pytest.approx(200.0)
+
+
+@pytest.mark.unit
+def test_ewma_empty_history_uses_current_mid_as_bootstrap() -> None:
+    memory = ProductMemory()
+    snap = _snapshot(bid=99, bid_vol=1, ask=101, ask_vol=1)  # mid 100
+    result = EwmaMidEstimator().estimate(snap, memory, _ewma_config(alpha=0.3))
+    assert result is not None
+    assert result.price == pytest.approx(100.0)
+    assert result.components["bootstrap"] == pytest.approx(1.0)
+
+
+@pytest.mark.unit
+def test_ewma_one_sample_history_blends_with_current_mid() -> None:
+    memory = ProductMemory(recent_mids=[100.0])
+    snap = _snapshot(bid=109, bid_vol=1, ask=111, ask_vol=1)  # mid 110
+    result = EwmaMidEstimator().estimate(snap, memory, _ewma_config(alpha=0.4))
+    assert result is not None
+    # Seed 100 then blend current 110 at alpha 0.4 -> 0.4*110 + 0.6*100 = 104
+    assert result.price == pytest.approx(104.0)
+
+
+@pytest.mark.unit
+def test_ewma_returns_none_when_no_mid_and_no_history() -> None:
+    memory = ProductMemory()
+    snap = NormalizedSnapshot(product="P", timestamp=0, bids=(), asks=())
+    result = EwmaMidEstimator().estimate(snap, memory, _ewma_config(alpha=0.3))
+    assert result is None
+
+
+@pytest.mark.unit
+def test_ewma_uses_config_alpha_when_present() -> None:
+    memory = ProductMemory(recent_mids=[100.0, 100.0, 100.0])
+    snap = _snapshot(bid=119, bid_vol=1, ask=121, ask_vol=1)  # mid 120
+    low = EwmaMidEstimator().estimate(snap, memory, _ewma_config(alpha=0.1))
+    high = EwmaMidEstimator().estimate(snap, memory, _ewma_config(alpha=0.9))
+    assert low is not None
+    assert high is not None
+    # Larger alpha -> closer to current mid (120). Smaller alpha -> closer to 100.
+    assert low.price < high.price
+    assert abs(low.price - 100.0) < abs(low.price - 120.0)
+    assert abs(high.price - 120.0) < abs(high.price - 100.0)
+
+
+@pytest.mark.unit
+def test_ewma_defaults_to_module_alpha_when_config_is_none() -> None:
+    memory = ProductMemory(recent_mids=[100.0, 100.0, 100.0])
+    snap = _snapshot(bid=119, bid_vol=1, ask=121, ask_vol=1)  # mid 120
+    default = EwmaMidEstimator().estimate(snap, memory, _ewma_config(alpha=None))
+    explicit = EwmaMidEstimator().estimate(
+        snap, memory, _ewma_config(alpha=_DEFAULT_EWMA_ALPHA)
+    )
+    assert default is not None
+    assert explicit is not None
+    assert default.price == pytest.approx(explicit.price)
+
+
+@pytest.mark.unit
+def test_engine_falls_back_from_ewma_mid_when_none() -> None:
+    """With empty memory and a one-sided book, ewma_mid returns None and the
+    engine falls through to the configured fallback chain.
+    """
+    config = ProductConfig(
+        position_limit=20,
+        strategy_name="market_making",
+        fair_value_method="ewma_mid",
+        fair_value_fallbacks=("mid", "microprice"),
+        anchor_price=10_000.0,
+        ewma_alpha=0.3,
+    )
+    snap = NormalizedSnapshot(product="P", timestamp=0, bids=(), asks=())
+    result = FairValueEngine().estimate("P", snap, ProductMemory(), config)
+    # Both mid and microprice also decline on an empty book, so the engine
+    # should land on the anchor_fallback terminal clause.
+    assert result.method == "anchor_fallback"
+    assert result.price == 10_000.0
+
+
+@pytest.mark.unit
 def test_engine_primary_falls_through_to_next_when_returning_none() -> None:
     """If weighted_mid has no mid and no history, fall through to anchor."""
     config = ProductConfig(
@@ -165,6 +282,7 @@ def test_estimate_all_returns_every_non_none_estimator() -> None:
     # rolling_mid and weighted_mid work too because snap has a mid
     assert "rolling_mid" in results
     assert "weighted_mid" in results
+    assert "ewma_mid" in results
     assert "depth_mid" in results
     assert results["anchor"].price == 10_000.0
     assert results["mid"].price == 100.0

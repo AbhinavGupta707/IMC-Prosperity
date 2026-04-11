@@ -73,6 +73,44 @@ def test_product_config_rejects_invalid_args(kwargs: dict[str, object]) -> None:
 
 
 @pytest.mark.unit
+@pytest.mark.parametrize("alpha", [0.0, -0.1, 1.01, 2.0, -1.0])
+def test_product_config_rejects_invalid_ewma_alpha(alpha: float) -> None:
+    with pytest.raises(ValueError, match="ewma_alpha"):
+        ProductConfig(
+            position_limit=20,
+            strategy_name="market_making",
+            fair_value_method="ewma_mid",
+            anchor_price=None,
+            ewma_alpha=alpha,
+        )
+
+
+@pytest.mark.unit
+def test_product_config_accepts_ewma_alpha_none() -> None:
+    config = ProductConfig(
+        position_limit=20,
+        strategy_name="market_making",
+        fair_value_method="ewma_mid",
+        anchor_price=None,
+        ewma_alpha=None,
+    )
+    assert config.ewma_alpha is None
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("alpha", [0.01, 0.3, 0.5, 0.99, 1.0])
+def test_product_config_accepts_ewma_alpha_inside_interval(alpha: float) -> None:
+    config = ProductConfig(
+        position_limit=20,
+        strategy_name="market_making",
+        fair_value_method="ewma_mid",
+        anchor_price=None,
+        ewma_alpha=alpha,
+    )
+    assert config.ewma_alpha == alpha
+
+
+@pytest.mark.unit
 def test_engine_config_validates_state_version_and_budget() -> None:
     with pytest.raises(ValueError):
         EngineConfig(state_version=0)

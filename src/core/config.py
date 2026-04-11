@@ -38,6 +38,7 @@ class ProductConfig:
     inventory_skew: float = 2.0
     flatten_threshold: float = 0.8
     history_length: int = 32
+    ewma_alpha: float | None = None
 
     def __post_init__(self) -> None:
         if self.position_limit <= 0:
@@ -64,6 +65,10 @@ class ProductConfig:
             )
         if self.history_length < 0:
             raise ValueError("ProductConfig.history_length must be >= 0")
+        if self.ewma_alpha is not None and not 0.0 < self.ewma_alpha <= 1.0:
+            raise ValueError(
+                f"ProductConfig.ewma_alpha must be in (0, 1] (got {self.ewma_alpha})"
+            )
         if self.fair_value_method == "anchor" and self.anchor_price is None:
             raise ValueError("ProductConfig: fair_value_method='anchor' requires anchor_price")
 

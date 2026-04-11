@@ -211,5 +211,12 @@ itself near the limit.
 - Phase 4a (data layer + charts + enriched pack): **complete**
 - Phase 4b (timestamp drilldowns for best/worst trades, explicit
   timestamps, and near-limit slices): **complete**
-- Phase 5+ (TOMATOES dynamic extensions, parameter sweeps,
-  signal scanner): unchanged from prior notes.
+- Phase 5 (TOMATOES dynamic challenger implemented and evaluated):
+  **complete** — see `docs/phase_5_tomatoes_baseline_note.md`. A
+  principled `ewma_mid` estimator was added to the fair-value engine
+  and run through the four-stage evaluation workflow (fit+replay,
+  alpha plateau sweep, challenger-vs-incumbent head-to-head,
+  timestamp divergence drilldown). The incumbent `weighted_mid`
+  baseline was retained; `ewma_mid` ships registered-but-not-default.
+- Phase 6 (robustness sweeps) and Phase 7 (signal scanner): not
+  started.

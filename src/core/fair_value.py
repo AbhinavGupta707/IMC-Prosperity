@@ -28,6 +28,8 @@ from src.core.config import ProductConfig
 from src.core.types import FairValueEstimate, NormalizedSnapshot, ProductMemory, Scalar
 from src.core.utils import weighted_average
 
+_DEFAULT_EWMA_ALPHA = 0.3
+
 
 class Estimator(Protocol):
     name: str
@@ -146,6 +148,68 @@ class WeightedMidEstimator:
         )
 
 
+class EwmaMidEstimator:
+    """Exponentially weighted moving average of recent mids.
+
+    Applies the recurrence ``ewma = alpha * m + (1 - alpha) * ewma`` over
+    ``memory.recent_mids`` oldest-to-newest, seeding with the first
+    available sample, and finally blends in ``snapshot.mid`` if the
+    current book has one. Reads alpha from ``ProductConfig.ewma_alpha``
+    and falls back to ``_DEFAULT_EWMA_ALPHA`` when unset.
+
+    Cold-start behaviour:
+    - empty history AND no current mid -> return ``None`` (let the
+      fallback chain handle it).
+    - empty history, current mid present -> return the current mid and
+      mark ``components["bootstrap"] = 1.0`` so the review pack can see
+      that the estimate was a cold-start.
+    - one-sample history, no current mid -> return that sample,
+      bootstrap flagged.
+    - ``alpha == 1.0`` -> collapses to the current mid (verified in
+      tests).
+    """
+
+    name = "ewma_mid"
+
+    def estimate(
+        self,
+        snapshot: NormalizedSnapshot,
+        memory: ProductMemory,
+        config: ProductConfig,
+    ) -> FairValueEstimate | None:
+        alpha = config.ewma_alpha if config.ewma_alpha is not None else _DEFAULT_EWMA_ALPHA
+        history = memory.recent_mids
+        current = snapshot.mid
+
+        if not history and current is None:
+            return None
+
+        bootstrap = False
+        if not history:
+            # Cold start: no prior samples, use the current mid as seed.
+            ewma = float(current)  # type: ignore[arg-type]
+            bootstrap = True
+        else:
+            ewma = float(history[0])
+            for prior_mid in history[1:]:
+                ewma = alpha * float(prior_mid) + (1.0 - alpha) * ewma
+            if current is None:
+                # No current mid to blend in: still valid, but mark it.
+                bootstrap = len(history) == 1
+            else:
+                ewma = alpha * float(current) + (1.0 - alpha) * ewma
+
+        components: dict[str, Scalar] = {"alpha": float(alpha)}
+        if bootstrap:
+            components["bootstrap"] = 1.0
+        return FairValueEstimate(
+            price=ewma,
+            method=self.name,
+            confidence=0.72,
+            components=MappingProxyType(components),
+        )
+
+
 class DepthMidEstimator:
     name = "depth_mid"
 
@@ -187,6 +251,7 @@ ESTIMATORS: Mapping[str, Estimator] = MappingProxyType(
         "microprice": MicropriceEstimator(),
         "rolling_mid": RollingMidEstimator(),
         "weighted_mid": WeightedMidEstimator(),
+        "ewma_mid": EwmaMidEstimator(),
         "depth_mid": DepthMidEstimator(),
     }
 )
