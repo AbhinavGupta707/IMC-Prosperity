@@ -120,10 +120,96 @@ To reproduce:
    construct a custom `Trader` with the snapshot `engine_config`
    and drive `BacktestSimulator` directly).
 
+## Phase 4b — timestamp-level drilldowns
+
+Phase 4b builds **on top of** a Phase 4a review pack without
+re-running the simulator. It reads `manifest.json`, `trades.json`
+and `series.json`, rebuilds the local book by re-replaying the slice
+of CSVs listed in `manifest.data_files`, and writes per-case
+artifacts under the source pack's own `drilldowns/` subdirectory so
+provenance stays self-contained.
+
+### How to generate drilldowns
+
+```bash
+PYTHONPATH=. python -m src.scripts.run_drilldown \
+  --pack outputs/review_packs/<run_id> \
+  [ --trade-id N
+  | --timestamp T --product P
+  | --best-trades N
+  | --worst-trades N
+  | --near-limit [--near-limit-count N] ] \
+  [--rank-metric edge|markout_1|markout_5|markout_20]   (default markout_5) \
+  [--window 30] \
+  [--no-charts]
+```
+
+The modes combine freely in one call — `--best-trades 3 --worst-trades 3 --near-limit`
+produces up to seven case directories in one run. Cases are de-duplicated by
+case id, so passing the same fill via both `--trade-id` and `--best-trades`
+only writes it once.
+
+### Case layout
+
+```
+outputs/review_packs/<run_id>/drilldowns/<case_id>/
+  summary.json       # case metadata + key figures + trades_in_window
+  window_series.json # mid / fair / pnl / position slices + book snapshots
+  notes.md           # case-specific review template
+  charts/
+    price_vs_fair_window.png  # zoomed mid + fair with the anchor marked
+    book_depth.png            # best bid/ask bars at the anchor step
+    pnl_position_window.png   # two-panel pnl + position over the window
+```
+
+Case id patterns:
+
+| Selection flag  | Case id |
+|-----------------|---------|
+| `--trade-id`    | `trade_<idx>_<product>_<fill_ts>` |
+| `--timestamp`   | `timestamp_<product>_<timestamp>` |
+| `--best-trades` | `best_<rank>_<metric>_<product>_<fill_ts>` |
+| `--worst-trades`| `worst_<rank>_<metric>_<product>_<fill_ts>` |
+| `--near-limit`  | `near_limit_<rank>_<product>_<timestamp>` |
+
+### Picking a rank metric
+
+| Metric      | Meaning                                               | When to use |
+|-------------|-------------------------------------------------------|-------------|
+| `edge`      | Decision-time fair value vs fill price, per unit.     | Decide whether *we believed* the fill was on the favourable side of fair. Dropouts for fills with no decision-time fair value. |
+| `markout_1` | Realized fill vs mid one step later, per unit.        | Fastest signal — surfaces fills where the next tick instantly disagreed with us. |
+| `markout_5` | Realized fill vs mid five steps later, per unit.      | Default. Smooths out 1-step noise without waiting for 20 steps of drift. |
+| `markout_20`| Realized fill vs mid twenty steps later, per unit.    | Surfaces slow edge and mean-reversion traps. Dropouts near the end of the replay. |
+
+Scores are **per unit**, not quantity-weighted, so small decisive
+fills bubble up alongside bigger ones. The aggregate tables in
+`summary.txt` remain quantity-weighted — the two views answer
+different questions and should be read together.
+
+### Anchors: decision vs fill timestamp
+
+The drilldown window is always anchored on the **fill** timestamp
+because that is where the position actually moved and the book
+snapshot is meaningful. For maker fills, `summary.json` preserves
+both timestamps under `extra.decision_timestamp` and
+`extra.fill_timestamp` so the reviewer can see the gap between when
+the trader committed to the quote and when it finally cleared.
+
+### Near-limit drilldowns
+
+Near-limit cases are emitted for steps where
+`|position| / position_limit >= 0.75` (matching
+`simulator._NEAR_LIMIT_FRACTION`). The tutorial baseline has
+**zero** near-limit steps because TOMATOES never accumulates large
+inventory, so `--near-limit` on the tutorial pack is a no-op. The
+flow is covered by synthetic unit tests (`tests/test_drilldown.py`)
+and will exercise real data as soon as a strategy actually parks
+itself near the limit.
+
 ## Current status vs plan
 
 - Phase 4a (data layer + charts + enriched pack): **complete**
-- Phase 4b (interactive timestamp drilldown for best/worst trades
-  and near-limit slices): **deferred**
+- Phase 4b (timestamp drilldowns for best/worst trades, explicit
+  timestamps, and near-limit slices): **complete**
 - Phase 5+ (TOMATOES dynamic extensions, parameter sweeps,
   signal scanner): unchanged from prior notes.
