@@ -82,6 +82,8 @@ PYTHONPATH=. python -m src.scripts.validate_submission
 PYTHONPATH=. python -m src.scripts.run_backtest
 PYTHONPATH=. python -m src.scripts.compare_fair_values
 PYTHONPATH=. python -m src.scripts.run_parameter_sweep
+PYTHONPATH=. python -m src.scripts.run_phase6_emeralds_sweep --label phase6_emeralds
+PYTHONPATH=. python -m src.scripts.run_phase6_tomatoes_sweep --label phase6_tomatoes
 PYTHONPATH=. python -m src.scripts.run_review --label smoke
 ```
 
@@ -91,6 +93,18 @@ markouts and entry-edge, per-trade records, step-indexed series,
 chart PNGs, a provenance manifest, and a human review template.
 See [`docs/phase_4_review_discipline_note.md`](docs/phase_4_review_discipline_note.md)
 for how to read each artifact.
+
+`run_phase6_emeralds_sweep` and `run_phase6_tomatoes_sweep` are the
+Phase 6 cross-day robustness entry points. Each runs its sweep grid
+on `day_-2`, `day_-1`, and the combined tape, intersects the plateau
+bands across all three slices, applies the four sweep-level checks
+of the six-part Phase 6 promotion gate, and writes a per-sub-sweep
+`plateau_intersection.{json,txt}` (plus, for TOMATOES, a top-level
+`product_comparison.{json,txt}`) under
+`outputs/sweeps/<run_id>_phase6_<product>/`. See
+[`docs/phase_6_robustness_note.md`](docs/phase_6_robustness_note.md)
+for the methodology, the per-product verdicts, and the cross-day
+validation read on the Phase 5 EWMA narrow peak.
 
 ## Manual rounds
 
