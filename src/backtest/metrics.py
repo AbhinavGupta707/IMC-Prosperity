@@ -33,6 +33,7 @@ from typing import Literal
 
 TradeSide = Literal["buy", "sell"]
 TradeMode = Literal["taker", "maker"]
+SeriesKey = tuple[int | None, int]
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,14 @@ class TradeRecord:
     fair_value_method_at_decision: str | None
     mid_at_decision: float | None
     mid_at_fill: float | None
+    decision_day: int | None = None
+    fill_day: int | None = None
+
+    def decision_key(self) -> SeriesKey:
+        return (self.decision_day, self.decision_timestamp)
+
+    def fill_key(self) -> SeriesKey:
+        return (self.fill_day, self.fill_timestamp)
 
 
 @dataclass(frozen=True)
@@ -91,6 +100,9 @@ class SimulationResult:
     mid_series: dict[str, TimeSeries] = field(default_factory=dict)
     fair_value_series: dict[str, TimeSeries] = field(default_factory=dict)
     pnl_series: dict[str, TimeSeries] = field(default_factory=dict)
+    mid_keys: dict[str, tuple[SeriesKey, ...]] = field(default_factory=dict)
+    fair_value_keys: dict[str, tuple[SeriesKey, ...]] = field(default_factory=dict)
+    pnl_keys: dict[str, tuple[SeriesKey, ...]] = field(default_factory=dict)
 
     def summary_table(self) -> str:
         header = (
@@ -187,6 +199,8 @@ def compute_markouts(
     records: list[TradeRecord] | tuple[TradeRecord, ...],
     mid_series: dict[str, TimeSeries],
     horizons: list[int] | tuple[int, ...],
+    *,
+    mid_keys: dict[str, tuple[SeriesKey, ...]] | None = None,
 ) -> dict[str, dict[int, tuple[float | None, int]]]:
     """Compute quantity-weighted average markouts per product per horizon.
 
@@ -198,10 +212,11 @@ def compute_markouts(
     Missing horizons (run too short, or one-sided book at
     ``fill_step + k``) drop records out of that horizon's average.
     """
-    # Pre-index mid_series by (product, timestamp) -> step_index for O(1) lookup.
-    index_by_product: dict[str, dict[int, int]] = {}
+    # Pre-index mid_series by (product, day, timestamp) -> step_index for O(1) lookup.
+    index_by_product: dict[str, dict[SeriesKey, int]] = {}
     for product, series in mid_series.items():
-        index_by_product[product] = {ts: idx for idx, (ts, _) in enumerate(series)}
+        keys = _series_keys_or_legacy(series, None if mid_keys is None else mid_keys.get(product))
+        index_by_product[product] = {key: idx for idx, key in enumerate(keys)}
 
     buckets: dict[str, dict[int, list[tuple[float, float]]]] = {}
     counts: dict[str, dict[int, int]] = {}
@@ -212,11 +227,11 @@ def compute_markouts(
 
     for record in records:
         product = record.product
-        series = mid_series.get(product)
+        product_series = mid_series.get(product)
         idx_map = index_by_product.get(product)
-        if not series or idx_map is None:
+        if product_series is None or idx_map is None or not product_series:
             continue
-        fill_index = idx_map.get(record.fill_timestamp)
+        fill_index = idx_map.get(record.fill_key())
         if fill_index is None:
             continue
         sign = 1.0 if record.side == "buy" else -1.0
@@ -224,13 +239,11 @@ def compute_markouts(
         product_counts = counts.setdefault(product, {})
         for horizon in horizons:
             future_index = fill_index + horizon
-            if future_index < 0 or future_index >= len(series):
+            if future_index < 0 or future_index >= len(product_series):
                 continue
-            future_mid = series[future_index][1]
+            future_mid = product_series[future_index][1]
             markout = sign * (future_mid - record.price)
-            product_buckets.setdefault(horizon, []).append(
-                (markout, float(record.quantity))
-            )
+            product_buckets.setdefault(horizon, []).append((markout, float(record.quantity)))
             product_counts[horizon] = product_counts.get(horizon, 0) + 1
 
     out: dict[str, dict[int, tuple[float | None, int]]] = {}
@@ -244,6 +257,20 @@ def compute_markouts(
                 counts[product].get(horizon, 0),
             )
     return out
+
+
+def _series_keys_or_legacy(
+    series: TimeSeries,
+    keys: tuple[SeriesKey, ...] | None,
+) -> tuple[SeriesKey, ...]:
+    if keys is None:
+        return tuple((None, ts) for ts, _ in series)
+    if len(keys) != len(series):
+        raise ValueError(
+            "series keys must have the same length as the corresponding series "
+            f"(got {len(keys)} keys for {len(series)} points)"
+        )
+    return keys
 
 
 def _fmt(value: float | None) -> str:

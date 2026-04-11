@@ -1,7 +1,10 @@
 """Compare fair-value estimators on the tutorial replay data.
 
 Writes a metrics report under ``outputs/fair_value_comparison/<run_id>``
-and prints the summary table to stdout.
+and prints the summary table to stdout. Estimators that are not valid
+for a given product (for example ``anchor`` without a configured
+``anchor_price``) are omitted from that product's table rather than
+being synthesized from future data.
 """
 
 from __future__ import annotations
@@ -27,9 +30,7 @@ def _parse_estimators(raw: str) -> tuple[str, ...]:
     unknown = [name for name in names if name not in ESTIMATORS]
     if unknown:
         available = ", ".join(sorted(ESTIMATORS))
-        raise argparse.ArgumentTypeError(
-            f"unknown estimators: {unknown}; available: {available}"
-        )
+        raise argparse.ArgumentTypeError(f"unknown estimators: {unknown}; available: {available}")
     return names
 
 
@@ -43,6 +44,7 @@ def main() -> None:
         help=(
             "comma-separated list of estimators to compare "
             "(default: full lineup). Example: mid,rolling_mid,weighted_mid,ewma_mid"
+            ". Unsupported estimators are omitted per product."
         ),
     )
     args = parser.parse_args()

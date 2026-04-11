@@ -59,11 +59,16 @@ def _result() -> SimulationResult:
                 fair_value_method_at_decision="anchor",
                 mid_at_decision=70.0,
                 mid_at_fill=70.0,
+                decision_day=-1,
+                fill_day=-1,
             ),
         ),
         mid_series={"P": tuple((ts, 70.0 + 0.1 * ts) for ts in range(10))},
         fair_value_series={"P": tuple((ts, 70.5) for ts in range(10))},
         pnl_series={"P": tuple((ts, float(ts)) for ts in range(10))},
+        mid_keys={"P": tuple((-1, ts) for ts in range(10))},
+        fair_value_keys={"P": tuple((-1, ts) for ts in range(10))},
+        pnl_keys={"P": tuple((-1, ts) for ts in range(10))},
     )
 
 
@@ -150,7 +155,9 @@ def test_write_review_pack_writes_trades_and_series_unconditionally(tmp_path: Pa
     trade = trades["trades"][0]
     assert trade["product"] == "P"
     assert trade["side"] == "buy"
+    assert trade["decision_day"] == -1
     assert trade["decision_timestamp"] == 0
+    assert trade["fill_day"] == -1
     assert trade["fill_timestamp"] == 0
     assert trade["fair_value_at_decision"] == pytest.approx(70.5)
 
@@ -158,6 +165,8 @@ def test_write_review_pack_writes_trades_and_series_unconditionally(tmp_path: Pa
     assert "mid_series" in series
     assert "fair_value_series" in series
     assert "pnl_series" in series
+    assert "mid_keys" in series
+    assert series["mid_keys"]["P"][0] == [-1, 0]
     assert len(series["mid_series"]["P"]) == 10
 
 
@@ -177,9 +186,7 @@ def test_write_review_pack_writes_manifest_with_provenance_fields(tmp_path: Path
     assert manifest["git_commit"] == "abc1234"
     assert manifest["git_dirty"] is False
     assert manifest["markout_horizons"] == [1, 5, 20]
-    assert manifest["data_files"] == [
-        "data/raw/tutorial_round_1/prices_round_0_day_-1.csv"
-    ]
+    assert manifest["data_files"] == ["data/raw/tutorial_round_1/prices_round_0_day_-1.csv"]
     assert manifest["estimators_per_product"]["P"]["primary"] == "anchor"
     assert manifest["engine_config"]["products"]["P"]["anchor_price"] == 70.5
     # Required artifact keys.

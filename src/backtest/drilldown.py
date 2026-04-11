@@ -29,11 +29,12 @@ from __future__ import annotations
 
 import csv
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
-from src.backtest.metrics import TradeRecord
+from src.backtest.metrics import SeriesKey, TradeRecord
 from src.backtest.replay_engine import _order_depth_from_row
 from src.datamodel import OrderDepth
 
@@ -50,6 +51,7 @@ class DrilldownError(RuntimeError):
     and other preconditions that the user should see explicitly
     instead of getting an empty window back.
     """
+
 
 RankMetric = Literal["edge", "markout_1", "markout_5", "markout_20"]
 _MARKOUT_METRICS: dict[str, int] = {
@@ -72,6 +74,7 @@ class BookSnapshot:
     product: str
     bids: tuple[tuple[int, int], ...]  # (price, volume), volumes positive
     asks: tuple[tuple[int, int], ...]  # (price, volume), volumes positive
+    day: int | None = None
 
     @property
     def best_bid(self) -> int | None:
@@ -105,7 +108,11 @@ class ReviewPack:
     mid_series: dict[str, tuple[tuple[int, float], ...]]
     fair_value_series: dict[str, tuple[tuple[int, float], ...]]
     pnl_series: dict[str, tuple[tuple[int, float], ...]]
-    mid_index_by_product: dict[str, dict[int, int]] = field(default_factory=dict)
+    mid_keys: dict[str, tuple[SeriesKey, ...]] = field(default_factory=dict)
+    fair_value_keys: dict[str, tuple[SeriesKey, ...]] = field(default_factory=dict)
+    pnl_keys: dict[str, tuple[SeriesKey, ...]] = field(default_factory=dict)
+    mid_index_by_product: dict[str, dict[object, int]] = field(default_factory=dict)
+    pnl_index_by_product: dict[str, dict[SeriesKey, int]] = field(default_factory=dict)
 
     def products(self) -> list[str]:
         return sorted(self.mid_series)
@@ -137,6 +144,7 @@ class DrilldownCase:
     kind: CaseKind
     product: str
     anchor_timestamp: int
+    anchor_day: int | None = None
     trade_index: int | None = None
     rank_metric: RankMetric | None = None
     rank_score: float | None = None
@@ -149,9 +157,12 @@ class CaseWindow:
 
     product: str
     anchor_timestamp: int
+    anchor_day: int | None
     window_radius: int
     start_timestamp: int
+    start_day: int | None
     end_timestamp: int
+    end_day: int | None
     mid_slice: tuple[tuple[int, float], ...]
     fair_value_slice: tuple[tuple[int, float], ...]
     pnl_slice: tuple[tuple[int, float], ...]
@@ -180,10 +191,18 @@ def load_review_pack(pack_dir: Path | str) -> ReviewPack:
     mid_series = _parse_series(series_payload.get("mid_series", {}))
     fair_value_series = _parse_series(series_payload.get("fair_value_series", {}))
     pnl_series = _parse_series(series_payload.get("pnl_series", {}))
+    mid_keys = _parse_series_keys(series_payload.get("mid_keys", {}), mid_series)
+    fair_value_keys = _parse_series_keys(
+        series_payload.get("fair_value_keys", {}),
+        fair_value_series,
+    )
+    pnl_keys = _parse_series_keys(series_payload.get("pnl_keys", {}), pnl_series)
 
     mid_index_by_product = {
-        product: {ts: idx for idx, (ts, _) in enumerate(series)}
-        for product, series in mid_series.items()
+        product: _build_series_index(keys) for product, keys in mid_keys.items()
+    }
+    pnl_index_by_product = {
+        product: {key: idx for idx, key in enumerate(keys)} for product, keys in pnl_keys.items()
     }
 
     run_id = manifest.get("run_id") or directory.name
@@ -197,14 +216,21 @@ def load_review_pack(pack_dir: Path | str) -> ReviewPack:
         mid_series=mid_series,
         fair_value_series=fair_value_series,
         pnl_series=pnl_series,
+        mid_keys=mid_keys,
+        fair_value_keys=fair_value_keys,
+        pnl_keys=pnl_keys,
         mid_index_by_product=mid_index_by_product,
+        pnl_index_by_product=pnl_index_by_product,
     )
 
 
 def _read_json(path: Path) -> dict[str, Any]:
     if not path.is_file():
         raise FileNotFoundError(f"Review pack is missing {path.name}: {path}")
-    return json.loads(path.read_text())
+    payload = json.loads(path.read_text())
+    if not isinstance(payload, dict):
+        raise ValueError(f"Review pack file {path} must contain a JSON object")
+    return payload
 
 
 def _parse_series(
@@ -214,6 +240,44 @@ def _parse_series(
     for product, points in raw.items():
         parsed[product] = tuple((int(ts), float(value)) for ts, value in points)
     return parsed
+
+
+def _parse_series_keys(
+    raw: dict[str, Any],
+    series: dict[str, tuple[tuple[int, float], ...]],
+) -> dict[str, tuple[SeriesKey, ...]]:
+    parsed: dict[str, tuple[SeriesKey, ...]] = {}
+    for product, points in series.items():
+        raw_points = raw.get(product)
+        if raw_points is None:
+            parsed[product] = tuple((None, ts) for ts, _ in points)
+            continue
+        keys = tuple(
+            (
+                None if day is None else int(day),
+                int(timestamp),
+            )
+            for day, timestamp in raw_points
+        )
+        if len(keys) != len(points):
+            raise ValueError(
+                "series key length mismatch for product "
+                f"{product!r}: {len(keys)} keys vs {len(points)} values"
+            )
+        parsed[product] = keys
+    return parsed
+
+
+def _build_series_index(keys: tuple[SeriesKey, ...]) -> dict[object, int]:
+    index: dict[object, int] = {}
+    timestamp_counts: dict[int, int] = {}
+    for _, timestamp in keys:
+        timestamp_counts[timestamp] = timestamp_counts.get(timestamp, 0) + 1
+    for idx, key in enumerate(keys):
+        index[key] = idx
+        if timestamp_counts[key[1]] == 1:
+            index[key[1]] = idx
+    return index
 
 
 def _trade_from_dict(payload: dict[str, Any]) -> TradeRecord:
@@ -229,6 +293,8 @@ def _trade_from_dict(payload: dict[str, Any]) -> TradeRecord:
         fair_value_method_at_decision=payload.get("fair_value_method_at_decision"),
         mid_at_decision=_opt_float(payload.get("mid_at_decision")),
         mid_at_fill=_opt_float(payload.get("mid_at_fill")),
+        decision_day=_opt_int(payload.get("decision_day")),
+        fill_day=_opt_int(payload.get("fill_day")),
     )
 
 
@@ -238,13 +304,19 @@ def _opt_float(value: Any) -> float | None:
     return float(value)
 
 
+def _opt_int(value: Any) -> int | None:
+    if value is None:
+        return None
+    return int(value)
+
+
 # ------------------------------------------------------------------ scoring
 
 
 def trade_score(
     record: TradeRecord,
     mid_series: dict[str, tuple[tuple[int, float], ...]],
-    mid_index: dict[str, dict[int, int]],
+    mid_index: dict[str, dict[object, int]],
     metric: RankMetric,
 ) -> float | None:
     """Per-unit score for one trade, matching the Phase 4a sign convention.
@@ -265,7 +337,9 @@ def trade_score(
         raise ValueError(f"Unknown rank metric: {metric}")
     series = mid_series.get(record.product, ())
     index_map = mid_index.get(record.product, {})
-    fill_idx = index_map.get(record.fill_timestamp)
+    fill_idx = index_map.get(record.fill_key())
+    if fill_idx is None:
+        fill_idx = index_map.get(record.fill_timestamp)
     if fill_idx is None:
         return None
     future_idx = fill_idx + horizon
@@ -275,9 +349,7 @@ def trade_score(
     return sign * (future_mid - record.price)
 
 
-def rank_trades(
-    pack: ReviewPack, metric: RankMetric
-) -> list[tuple[float, int, TradeRecord]]:
+def rank_trades(pack: ReviewPack, metric: RankMetric) -> list[tuple[float, int, TradeRecord]]:
     """Return (score, trade_index, record) descending, dropping None scores."""
     scored: list[tuple[float, int, TradeRecord]] = []
     for idx, record in enumerate(pack.trades):
@@ -292,9 +364,7 @@ def rank_trades(
 # ------------------------------------------------------------------ selectors
 
 
-def select_best_trades(
-    pack: ReviewPack, n: int, metric: RankMetric
-) -> list[DrilldownCase]:
+def select_best_trades(pack: ReviewPack, n: int, metric: RankMetric) -> list[DrilldownCase]:
     ranked = rank_trades(pack, metric)
     return [
         _trade_case(
@@ -310,9 +380,7 @@ def select_best_trades(
     ]
 
 
-def select_worst_trades(
-    pack: ReviewPack, n: int, metric: RankMetric
-) -> list[DrilldownCase]:
+def select_worst_trades(pack: ReviewPack, n: int, metric: RankMetric) -> list[DrilldownCase]:
     ranked = rank_trades(pack, metric)
     worst = list(reversed(ranked))[:n]
     return [
@@ -332,40 +400,47 @@ def select_worst_trades(
 def select_by_trade_id(pack: ReviewPack, trade_index: int) -> DrilldownCase:
     if trade_index < 0 or trade_index >= len(pack.trades):
         raise IndexError(
-            f"trade_index {trade_index} out of range for pack with "
-            f"{len(pack.trades)} trades"
+            f"trade_index {trade_index} out of range for pack with " f"{len(pack.trades)} trades"
         )
     record = pack.trades[trade_index]
     case_id = _case_id(
-        "trade", str(trade_index), record.product, str(record.fill_timestamp)
+        "trade",
+        str(trade_index),
+        record.product,
+        _day_slug(record.fill_day),
+        str(record.fill_timestamp),
     )
     return DrilldownCase(
         case_id=case_id,
         kind="trade",
         product=record.product,
         anchor_timestamp=record.fill_timestamp,
+        anchor_day=record.fill_day,
         trade_index=trade_index,
         extra=_trade_extras(record),
     )
 
 
 def select_by_timestamp(
-    pack: ReviewPack, product: str, timestamp: int
+    pack: ReviewPack, product: str, timestamp: int, day: int | None = None
 ) -> DrilldownCase:
     if product not in pack.mid_series:
         raise KeyError(f"product {product!r} not present in review pack")
-    case_id = _case_id("timestamp", product, str(timestamp))
+    anchor_day = _resolve_anchor_day(pack, product, timestamp, day)
+    case_id = _case_id("timestamp", product, _day_slug(anchor_day), str(timestamp))
     # Look up a nearby trade record for convenience; it's not required.
     matching = [
-        i for i, t in enumerate(pack.trades)
-        if t.product == product and t.fill_timestamp == timestamp
+        i
+        for i, t in enumerate(pack.trades)
+        if t.product == product and t.fill_timestamp == timestamp and t.fill_day == anchor_day
     ]
-    extra: dict[str, Any] = {"trade_indices": matching}
+    extra: dict[str, Any] = {"trade_indices": matching, "day": anchor_day}
     return DrilldownCase(
         case_id=case_id,
         kind="timestamp",
         product=product,
         anchor_timestamp=timestamp,
+        anchor_day=anchor_day,
         extra=extra,
     )
 
@@ -384,36 +459,44 @@ def select_near_limit(
     examples. Ties are broken by earliest timestamp so the output is
     deterministic.
     """
-    candidates: list[tuple[float, int, str, int]] = []
+    candidates: list[tuple[float, int, str, int | None, int]] = []
     for product in pack.products():
         limit = pack.position_limit(product)
         if limit is None or limit <= 0:
             continue
         threshold = near_limit_fraction * limit
-        positions = reconstruct_position_series(pack.trades, pack.pnl_series, product)
-        for ts, pos in positions:
+        positions = _reconstruct_position_path(pack, product)
+        for key, pos in positions:
             abs_pos = abs(pos)
             if abs_pos < threshold:
                 continue
             ratio = abs_pos / float(limit)
-            candidates.append((ratio, pos, product, ts))
+            candidates.append((ratio, pos, product, key[0], key[1]))
 
     # Descending by ratio, break ties by timestamp ascending for determinism.
-    candidates.sort(key=lambda item: (-item[0], item[3]))
+    candidates.sort(
+        key=lambda item: (
+            -item[0],
+            item[3] if item[3] is not None else 0,
+            item[4],
+        )
+    )
     cases: list[DrilldownCase] = []
-    for rank, (ratio, pos, product, ts) in enumerate(candidates[:n], start=1):
-        case_id = _case_id("near_limit", str(rank), product, str(ts))
+    for rank, (ratio, pos, product, day, ts) in enumerate(candidates[:n], start=1):
+        case_id = _case_id("near_limit", str(rank), product, _day_slug(day), str(ts))
         cases.append(
             DrilldownCase(
                 case_id=case_id,
                 kind="near_limit",
                 product=product,
                 anchor_timestamp=ts,
+                anchor_day=day,
                 extra={
                     "rank": rank,
                     "position": pos,
                     "position_limit": pack.position_limit(product),
                     "abs_ratio": ratio,
+                    "day": day,
                 },
             )
         )
@@ -455,6 +538,30 @@ def reconstruct_position_series(
     return path
 
 
+def _reconstruct_position_path(
+    pack: ReviewPack,
+    product: str,
+) -> list[tuple[SeriesKey, int]]:
+    series = pack.pnl_keys.get(product, ())
+    if not series:
+        return []
+
+    deltas: dict[SeriesKey, int] = {}
+    for record in pack.trades:
+        if record.product != product:
+            continue
+        delta = record.quantity if record.side == "buy" else -record.quantity
+        key = record.fill_key()
+        deltas[key] = deltas.get(key, 0) + delta
+
+    position = 0
+    path: list[tuple[SeriesKey, int]] = []
+    for key in series:
+        position += deltas.get(key, 0)
+        path.append((key, position))
+    return path
+
+
 # ------------------------------------------------------------ window slicing
 
 
@@ -481,39 +588,63 @@ def build_case_window(
             "cannot build a drilldown window"
         )
 
-    pnl_grid = [ts for ts, _ in pnl_series]
-    anchor_idx = _index_of_or_nearest(pnl_grid, case.anchor_timestamp)
-    lo = max(0, anchor_idx - window_radius)
-    hi = min(len(pnl_grid) - 1, anchor_idx + window_radius)
-    start_ts = pnl_grid[lo]
-    end_ts = pnl_grid[hi]
+    pnl_keys = pack.pnl_keys.get(product, ())
+    if not pnl_keys:
+        raise ValueError(
+            f"Review pack has no pnl keys for product {product!r}; "
+            "cannot build a drilldown window"
+        )
 
-    mid_slice = _slice_series(mid_series, start_ts, end_ts)
-    fair_slice = _slice_series(pack.fair_value_series.get(product, ()), start_ts, end_ts)
+    anchor_key = (case.anchor_day, case.anchor_timestamp)
+    anchor_idx = _index_of_or_nearest_key(pnl_keys, anchor_key)
+    lo = max(0, anchor_idx - window_radius)
+    hi = min(len(pnl_keys) - 1, anchor_idx + window_radius)
+    start_key = pnl_keys[lo]
+    end_key = pnl_keys[hi]
+
+    pnl_index = pack.pnl_index_by_product.get(product, {})
+    mid_slice = _slice_series_by_keys(
+        mid_series,
+        pack.mid_keys.get(product, ()),
+        pnl_index,
+        lo,
+        hi,
+    )
+    fair_slice = _slice_series_by_keys(
+        pack.fair_value_series.get(product, ()),
+        pack.fair_value_keys.get(product, ()),
+        pnl_index,
+        lo,
+        hi,
+    )
     pnl_slice = tuple(pnl_series[lo : hi + 1])
 
-    positions = reconstruct_position_series(pack.trades, pack.pnl_series, product)
-    position_slice = tuple(positions[lo : hi + 1])
+    positions = _reconstruct_position_path(pack, product)
+    position_slice = tuple((key[1], position) for key, position in positions[lo : hi + 1])
 
     trades_in_window = tuple(
-        record for record in pack.trades
+        record
+        for record in pack.trades
         if record.product == product
-        and start_ts <= record.fill_timestamp <= end_ts
+        and (idx := pnl_index.get(record.fill_key())) is not None
+        and lo <= idx <= hi
     )
 
     book_snapshots = rebuild_books_for_window(
         data_files=pack.data_files(),
         product=product,
-        start_ts=start_ts,
-        end_ts=end_ts,
+        window_keys=tuple(pnl_keys[lo : hi + 1]),
     )
 
     return CaseWindow(
         product=product,
         anchor_timestamp=case.anchor_timestamp,
+        anchor_day=case.anchor_day,
         window_radius=window_radius,
-        start_timestamp=start_ts,
-        end_timestamp=end_ts,
+        start_timestamp=start_key[1],
+        start_day=start_key[0],
+        end_timestamp=end_key[1],
+        end_day=end_key[0],
         mid_slice=mid_slice,
         fair_value_slice=fair_slice,
         pnl_slice=pnl_slice,
@@ -527,6 +658,26 @@ def _slice_series(
     series: tuple[tuple[int, float], ...], start_ts: int, end_ts: int
 ) -> tuple[tuple[int, float], ...]:
     return tuple((ts, v) for ts, v in series if start_ts <= ts <= end_ts)
+
+
+def _slice_series_by_keys(
+    series: tuple[tuple[int, float], ...],
+    keys: tuple[SeriesKey, ...],
+    pnl_index: dict[SeriesKey, int],
+    lo: int,
+    hi: int,
+) -> tuple[tuple[int, float], ...]:
+    if not series:
+        return ()
+    if not keys:
+        return tuple(series[lo : hi + 1])
+    sliced: list[tuple[int, float]] = []
+    for point, key in zip(series, keys, strict=True):
+        idx = pnl_index.get(key)
+        if idx is None or idx < lo or idx > hi:
+            continue
+        sliced.append(point)
+    return tuple(sliced)
 
 
 def _index_of_or_nearest(timestamps: list[int], target: int) -> int:
@@ -560,6 +711,32 @@ def _index_of_or_nearest(timestamps: list[int], target: int) -> int:
     return hi if (target - before) <= (after - target) else lo
 
 
+def _index_of_or_nearest_key(keys: tuple[SeriesKey, ...], target: SeriesKey) -> int:
+    if not keys:
+        raise ValueError("cannot anchor a window against an empty key grid")
+    for idx, key in enumerate(keys):
+        if key == target:
+            return idx
+
+    target_day, target_ts = target
+    if target_day is not None:
+        same_day = [idx for idx, key in enumerate(keys) if key[0] == target_day]
+        if same_day:
+            return min(same_day, key=lambda idx: abs(keys[idx][1] - target_ts))
+
+    return min(
+        range(len(keys)),
+        key=lambda idx: _key_distance(keys[idx], target),
+    )
+
+
+def _key_distance(a: SeriesKey, b: SeriesKey) -> tuple[int, int]:
+    a_day, a_ts = a
+    b_day, b_ts = b
+    day_penalty = 0 if a_day == b_day else 1
+    return (day_penalty, abs(a_ts - b_ts))
+
+
 # ------------------------------------------------------------- book rebuild
 
 
@@ -567,16 +744,19 @@ def rebuild_books_for_window(
     *,
     data_files: list[Path],
     product: str,
-    start_ts: int,
-    end_ts: int,
+    window_keys: tuple[SeriesKey, ...] | None = None,
+    start_ts: int | None = None,
+    end_ts: int | None = None,
 ) -> tuple[BookSnapshot, ...]:
     """Re-parse price CSVs to reconstruct book snapshots for a window.
 
-    Only rows for ``product`` with ``start_ts <= timestamp <= end_ts``
-    are parsed. Trade CSVs are ignored — drilldowns don't need the
-    trade tape, just the visible book shape. Days are read in order
-    but we key the output by timestamp alone because tutorial days
-    are already merged into the series view by Phase 4a.
+    Rows are selected in one of two ways:
+
+    - preferred: exact ``window_keys`` matching ``(day, timestamp)``
+    - legacy compatibility: plain ``start_ts`` / ``end_ts`` filtering
+
+    Trade CSVs are ignored — drilldowns don't need the trade tape,
+    just the visible book shape.
 
     Raises ``DrilldownError`` when the manifest does not list any
     price CSVs, when a listed price CSV is missing from disk, or when
@@ -585,6 +765,7 @@ def rebuild_books_for_window(
     produces a readable error instead of an empty window.
     """
     price_paths = _classify_price_csvs(data_files)
+    wanted = set(window_keys or ())
     snapshots: list[BookSnapshot] = []
     for path in price_paths:
         with path.open(newline="") as handle:
@@ -594,14 +775,23 @@ def rebuild_books_for_window(
                 if row.get("product") != product:
                     continue
                 try:
+                    day = int(row["day"])
                     ts = int(row["timestamp"])
                 except (KeyError, ValueError) as exc:
                     raise DrilldownError(
-                        f"malformed price row in {path} "
-                        f"(timestamp unparseable): {exc}"
+                        f"malformed price row in {path} " f"(day/timestamp unparseable): {exc}"
                     ) from exc
-                if ts < start_ts or ts > end_ts:
-                    continue
+                if wanted:
+                    if (day, ts) not in wanted and (None, ts) not in wanted:
+                        continue
+                else:
+                    if start_ts is None or end_ts is None:
+                        raise TypeError(
+                            "rebuild_books_for_window requires either window_keys or "
+                            "both start_ts and end_ts"
+                        )
+                    if ts < start_ts or ts > end_ts:
+                        continue
                 depth = _order_depth_from_row(row)
                 snapshots.append(
                     BookSnapshot(
@@ -609,9 +799,10 @@ def rebuild_books_for_window(
                         product=product,
                         bids=_sorted_levels(depth, side="bid"),
                         asks=_sorted_levels(depth, side="ask"),
+                        day=day,
                     )
                 )
-    snapshots.sort(key=lambda s: s.timestamp)
+    snapshots.sort(key=lambda s: ((s.day if s.day is not None else 0), s.timestamp))
     return tuple(snapshots)
 
 
@@ -652,18 +843,12 @@ def _classify_price_csvs(data_files: list[Path]) -> list[Path]:
     return price_paths
 
 
-def _validate_price_csv_columns(
-    path: Path, fieldnames: list[str] | None
-) -> None:
+def _validate_price_csv_columns(path: Path, fieldnames: Sequence[str] | None) -> None:
     if not fieldnames:
-        raise DrilldownError(
-            f"price CSV {path} is empty or has no header row"
-        )
+        raise DrilldownError(f"price CSV {path} is empty or has no header row")
     missing = [col for col in _PRICE_CSV_REQUIRED_COLUMNS if col not in fieldnames]
     if missing:
-        raise DrilldownError(
-            f"price CSV {path} is missing required columns: {missing}"
-        )
+        raise DrilldownError(f"price CSV {path} is missing required columns: {missing}")
 
 
 def _sorted_levels(
@@ -671,14 +856,12 @@ def _sorted_levels(
 ) -> tuple[tuple[int, int], ...]:
     if side == "bid":
         return tuple(
-            (price, int(volume)) for price, volume in sorted(
-                depth.buy_orders.items(), key=lambda item: -item[0]
-            )
+            (price, int(volume))
+            for price, volume in sorted(depth.buy_orders.items(), key=lambda item: -item[0])
         )
     return tuple(
-        (price, int(abs(volume))) for price, volume in sorted(
-            depth.sell_orders.items(), key=lambda item: item[0]
-        )
+        (price, int(abs(volume)))
+        for price, volume in sorted(depth.sell_orders.items(), key=lambda item: item[0])
     )
 
 
@@ -697,13 +880,19 @@ def _trade_case(
 ) -> DrilldownCase:
     del pack  # reserved for future extensions (e.g. include summary fields)
     case_id = _case_id(
-        kind, str(rank), metric, record.product, str(record.fill_timestamp)
+        kind,
+        str(rank),
+        metric,
+        record.product,
+        _day_slug(record.fill_day),
+        str(record.fill_timestamp),
     )
     return DrilldownCase(
         case_id=case_id,
         kind=kind,
         product=record.product,
         anchor_timestamp=record.fill_timestamp,
+        anchor_day=record.fill_day,
         trade_index=idx,
         rank_metric=metric,
         rank_score=score,
@@ -717,7 +906,9 @@ def _trade_extras(record: TradeRecord) -> dict[str, Any]:
         "price": record.price,
         "quantity": record.quantity,
         "mode": record.mode,
+        "decision_day": record.decision_day,
         "decision_timestamp": record.decision_timestamp,
+        "fill_day": record.fill_day,
         "fill_timestamp": record.fill_timestamp,
         "fair_value_at_decision": record.fair_value_at_decision,
         "mid_at_decision": record.mid_at_decision,
@@ -726,10 +917,40 @@ def _trade_extras(record: TradeRecord) -> dict[str, Any]:
 
 
 def _case_id(*parts: str) -> str:
-    clean = [
-        "".join(c if c.isalnum() or c in "-_" else "_" for c in part) for part in parts
-    ]
+    clean = ["".join(c if c.isalnum() or c in "-_" else "_" for c in part) for part in parts]
     return "_".join(clean)
+
+
+def _day_slug(day: int | None) -> str:
+    return "day_unknown" if day is None else f"day_{day}"
+
+
+def _resolve_anchor_day(
+    pack: ReviewPack,
+    product: str,
+    timestamp: int,
+    requested_day: int | None,
+) -> int | None:
+    keys = pack.pnl_keys.get(product, ())
+    matching_days = sorted(
+        {day for day, ts in keys if ts == timestamp},
+        key=lambda day: -1 if day is None else day,
+    )
+    if requested_day is not None:
+        if requested_day not in matching_days:
+            raise KeyError(
+                f"timestamp {timestamp} for product {product!r} does not exist on day "
+                f"{requested_day}; available days: {matching_days}"
+            )
+        return requested_day
+    if not matching_days:
+        raise KeyError(f"timestamp {timestamp} not present for product {product!r}")
+    if len(matching_days) > 1:
+        raise KeyError(
+            f"timestamp {timestamp} is ambiguous for product {product!r}; "
+            f"available days: {matching_days}. Pass an explicit day."
+        )
+    return matching_days[0]
 
 
 # Writer/serialization/notes helpers live in ``drilldown_writer`` so

@@ -1,7 +1,7 @@
 """Phase 6 — EMERALDS cross-slice parameter sweep.
 
-Runs the EMERALDS four-axis sweep (``maker_edge × taker_edge ×
-inventory_skew × flatten_threshold``) across three tutorial slices
+Runs the EMERALDS four-axis sweep (``maker_edge x taker_edge x
+inventory_skew x flatten_threshold``) across three tutorial slices
 (``day_-2``, ``day_-1``, combined), intersects the plateau bands via
 ``src.backtest.plateau.intersect_plateaus``, and prints the verdict
 plus per-slice incumbent baseline block.
@@ -22,6 +22,7 @@ from pathlib import Path
 
 from src.backtest.parameter_sweep import (
     ParameterSweepReport,
+    SweepValue,
     build_parameter_sweep_report,
 )
 from src.backtest.plateau import (
@@ -36,7 +37,7 @@ _PRODUCT = "EMERALDS"
 _SUB_SWEEP_NAME = "emeralds"
 _ROLE = "promotion_eligible"
 
-_EMERALDS_GRID: dict[str, list[object]] = {
+_EMERALDS_GRID: dict[str, list[SweepValue]] = {
     # ``maker_edge`` spans principled tick-margins (1..3) through the
     # tutorial-tape "trade-bearing" prices at 9992/10008 (= edge 8).
     # Phase 2C reverted EMERALDS maker_edge from 8 -> 2 because edge=8
@@ -78,9 +79,7 @@ _SLICES: dict[str, tuple[list[Path], list[Path]]] = {
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Phase 6 EMERALDS cross-slice parameter sweep"
-    )
+    parser = argparse.ArgumentParser(description="Phase 6 EMERALDS cross-slice parameter sweep")
     parser.add_argument("--label", default="phase6_emeralds", help="run label")
     parser.add_argument(
         "--no-charts",
@@ -149,7 +148,7 @@ def _render_heatmaps(
                 slice_name=slice_name,
                 out_dir=heatmap_dir,
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             # Heatmaps are non-blocking per the Phase 6 plan.
             print(
                 f"[phase6 emeralds] heatmap render failed for {slice_name}: {exc}; "
@@ -160,8 +159,7 @@ def _render_heatmaps(
 def _resolve_run_id(label: str, *, product: str) -> str:
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     clean = "".join(
-        char if char.isalnum() or char in "-_" else "_"
-        for char in f"{label}_{product.lower()}"
+        char if char.isalnum() or char in "-_" else "_" for char in f"{label}_{product.lower()}"
     )
     return f"{stamp}_{clean}" if clean else stamp
 

@@ -17,7 +17,6 @@ from src.backtest.parameter_sweep import (
 )
 from src.backtest.plateau import (
     Phase6CrossSliceReport,
-    ProductComparison,
     SlicePlateau,
     compare_subsweep_winners,
     filter_inventory_discipline,
@@ -229,15 +228,9 @@ def _slices(
     combined_rows: tuple[SweepRow, ...],
 ) -> dict[str, ParameterSweepReport]:
     return {
-        "day_-2": _report(
-            run_label="test_day_-2", rows=day_minus_2_rows, baseline=baseline
-        ),
-        "day_-1": _report(
-            run_label="test_day_-1", rows=day_minus_1_rows, baseline=baseline
-        ),
-        "combined": _report(
-            run_label="test_combined", rows=combined_rows, baseline=baseline
-        ),
+        "day_-2": _report(run_label="test_day_-2", rows=day_minus_2_rows, baseline=baseline),
+        "day_-1": _report(run_label="test_day_-1", rows=day_minus_1_rows, baseline=baseline),
+        "combined": _report(run_label="test_combined", rows=combined_rows, baseline=baseline),
     }
 
 
@@ -299,7 +292,9 @@ def test_intersect_plateaus_single_row_intersection_yields_narrow_verdict() -> N
 
 
 @pytest.mark.unit
-def test_intersect_plateaus_three_row_intersection_passing_gate_yields_promotion_candidate() -> None:
+def test_intersect_plateaus_three_row_intersection_passing_gate_yields_promotion_candidate() -> (
+    None
+):
     # Baseline is 50 pnl / 10 trades / 5% maker. Candidates lift pnl >= 1.1x
     # with zero near-limit, trade count 15 (within 0.5x..3x), and same
     # maker_share. A full cartesian of (maker_edge=1 or 2) x
@@ -311,6 +306,7 @@ def test_intersect_plateaus_three_row_intersection_passing_gate_yields_promotion
         _row(maker_edge=2.0, inventory_skew=2.0, pnl=105.0, trade_count=15, maker_share=0.05),
         _row(maker_edge=2.0, inventory_skew=3.0, pnl=102.0, trade_count=15, maker_share=0.05),
     )
+
     # Add one inventory-violating row that would be filtered.
     def make_slice_rows() -> tuple[SweepRow, ...]:
         return (
@@ -521,12 +517,16 @@ def _build_cross_slice_report(
         per_slice=per_slice,
         intersection=intersection,
         center=center_row if intersection_size > 0 else None,
-        gate_checks={} if role == "diagnostic" else {
-            "pnl_lift": True,
-            "inventory": True,
-            "trade_count": True,
-            "regime": True,
-        },
+        gate_checks=(
+            {}
+            if role == "diagnostic"
+            else {
+                "pnl_lift": True,
+                "inventory": True,
+                "trade_count": True,
+                "regime": True,
+            }
+        ),
         verdict=verdict,
         reason="test",
     )

@@ -75,17 +75,13 @@ class _Sentinel:
 _UNSET = _Sentinel()
 
 
-def build_review_pack(
-    result: SimulationResult, *, run_label: str = ""
-) -> dict[str, Any]:
+def build_review_pack(result: SimulationResult, *, run_label: str = "") -> dict[str, Any]:
     return {
         "run_label": run_label,
         "generated_at": datetime.now(UTC).isoformat(),
         "steps": result.steps,
         "total_pnl": result.total_pnl,
-        "per_product": {
-            product: _product_to_dict(r) for product, r in result.per_product.items()
-        },
+        "per_product": {product: _product_to_dict(r) for product, r in result.per_product.items()},
     }
 
 
@@ -126,6 +122,11 @@ def write_review_pack(
                 "mid_series": _series_dict(result.mid_series),
                 "fair_value_series": _series_dict(result.fair_value_series),
                 "pnl_series": _series_dict(result.pnl_series),
+                "mid_keys": _series_keys_dict(result.mid_series, result.mid_keys),
+                "fair_value_keys": _series_keys_dict(
+                    result.fair_value_series, result.fair_value_keys
+                ),
+                "pnl_keys": _series_keys_dict(result.pnl_series, result.pnl_keys),
             },
             indent=2,
             sort_keys=True,
@@ -153,9 +154,7 @@ def write_review_pack(
         commit=commit,
         dirty=dirty,
     )
-    (directory / "manifest.json").write_text(
-        json.dumps(manifest, indent=2, sort_keys=True)
-    )
+    (directory / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True))
 
     if render_charts:
         # Local import keeps the Prosperity submission runtime
@@ -217,6 +216,27 @@ def _series_dict(
         product: [[int(ts), float(value)] for ts, value in points]
         for product, points in series.items()
     }
+
+
+def _series_keys_dict(
+    series: dict[str, tuple[tuple[int, float], ...]],
+    keys: dict[str, tuple[tuple[int | None, int], ...]],
+) -> dict[str, list[list[int | None]]]:
+    payload: dict[str, list[list[int | None]]] = {}
+    for product, points in series.items():
+        point_keys = keys.get(product)
+        if point_keys is None:
+            payload[product] = [[None, int(ts)] for ts, _ in points]
+            continue
+        if len(point_keys) != len(points):
+            raise ValueError(
+                "series keys must align with the persisted series length "
+                f"for product {product!r}"
+            )
+        payload[product] = [
+            [None if day is None else int(day), int(timestamp)] for day, timestamp in point_keys
+        ]
+    return payload
 
 
 def _run_id(run_label: str) -> str:

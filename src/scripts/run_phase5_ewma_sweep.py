@@ -18,6 +18,7 @@ from pathlib import Path
 from src.backtest.parameter_sweep import (
     ParameterSweepReport,
     SweepRow,
+    SweepValue,
     build_parameter_sweep_report,
     write_parameter_sweep_report,
 )
@@ -53,7 +54,7 @@ def main() -> None:
     # dataclasses.replace() call rewrites the product config correctly
     # and so the baseline row (current weighted_mid) is a meaningful
     # contrast when read side-by-side with the report.
-    grid: dict[str, list[object]] = {
+    grid: dict[str, list[SweepValue]] = {
         "fair_value_method": ["ewma_mid"],
         "ewma_alpha": list(alpha_grid),
     }
@@ -78,10 +79,7 @@ def _print_plateau_table(report: ParameterSweepReport) -> None:
     print(f"incumbent method: {report.fair_value_method}")
     print()
 
-    header = (
-        f"{'alpha':>6} {'pnl':>10} {'trades':>7} {'mk%':>6} "
-        f"{'near':>5} {'pos':>4}"
-    )
+    header = f"{'alpha':>6} {'pnl':>10} {'trades':>7} {'mk%':>6} " f"{'near':>5} {'pos':>4}"
     print(header)
     print("-" * len(header))
 

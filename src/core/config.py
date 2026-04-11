@@ -22,6 +22,21 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+KNOWN_STRATEGY_NAMES: tuple[str, ...] = ("market_making",)
+KNOWN_ESTIMATOR_NAMES: tuple[str, ...] = (
+    "anchor",
+    "depth_mid",
+    "ewma_mid",
+    "microprice",
+    "mid",
+    "rolling_mid",
+    "weighted_mid",
+)
+
+
+def _format_known_names(names: tuple[str, ...]) -> str:
+    return ", ".join(names) if names else "<none>"
+
 
 @dataclass(frozen=True)
 class ProductConfig:
@@ -41,6 +56,30 @@ class ProductConfig:
     ewma_alpha: float | None = None
 
     def __post_init__(self) -> None:
+        if self.strategy_name not in KNOWN_STRATEGY_NAMES:
+            raise ValueError(
+                "ProductConfig.strategy_name must be one of "
+                f"{_format_known_names(KNOWN_STRATEGY_NAMES)} "
+                f"(got {self.strategy_name!r})"
+            )
+
+        if self.fair_value_method not in KNOWN_ESTIMATOR_NAMES:
+            raise ValueError(
+                "ProductConfig.fair_value_method must be one of "
+                f"{_format_known_names(KNOWN_ESTIMATOR_NAMES)} "
+                f"(got {self.fair_value_method!r})"
+            )
+
+        unknown_fallbacks = tuple(
+            name for name in self.fair_value_fallbacks if name not in KNOWN_ESTIMATOR_NAMES
+        )
+        if unknown_fallbacks:
+            raise ValueError(
+                "ProductConfig.fair_value_fallbacks contains unknown estimator(s) "
+                f"{unknown_fallbacks}; known estimators: "
+                f"{_format_known_names(KNOWN_ESTIMATOR_NAMES)}"
+            )
+
         if self.position_limit <= 0:
             raise ValueError(
                 f"ProductConfig.position_limit must be > 0 (got {self.position_limit})"
@@ -66,11 +105,14 @@ class ProductConfig:
         if self.history_length < 0:
             raise ValueError("ProductConfig.history_length must be >= 0")
         if self.ewma_alpha is not None and not 0.0 < self.ewma_alpha <= 1.0:
-            raise ValueError(
-                f"ProductConfig.ewma_alpha must be in (0, 1] (got {self.ewma_alpha})"
-            )
+            raise ValueError(f"ProductConfig.ewma_alpha must be in (0, 1] (got {self.ewma_alpha})")
         if self.fair_value_method == "anchor" and self.anchor_price is None:
             raise ValueError("ProductConfig: fair_value_method='anchor' requires anchor_price")
+        if "anchor" in self.fair_value_fallbacks and self.anchor_price is None:
+            raise ValueError(
+                "ProductConfig: fair_value_fallbacks includes 'anchor' "
+                "but anchor_price is not set"
+            )
 
 
 @dataclass(frozen=True)

@@ -15,8 +15,9 @@ trading path stays matplotlib-free.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
-from src.backtest.parameter_sweep import ParameterSweepReport
+from src.backtest.parameter_sweep import ParameterSweepReport, SweepValue
 
 _DEFAULT_BAND_FRACTION = 0.10
 
@@ -51,9 +52,7 @@ def render_plateau_heatmaps(
     out_path.mkdir(parents=True, exist_ok=True)
 
     try:
-        x_values, y_values, pnl_grid = _bucketed_pnl_grid(
-            report, x_axis=x_axis, y_axis=y_axis
-        )
+        x_values, y_values, pnl_grid = _bucketed_pnl_grid(report, x_axis=x_axis, y_axis=y_axis)
     except ValueError:
         return []
 
@@ -63,8 +62,7 @@ def render_plateau_heatmaps(
     # Matplotlib imshow accepts nested lists; masked cells are drawn as
     # the colormap's "bad" colour via NaN.
     display_grid = [
-        [value if value is not None else float("nan") for value in row]
-        for row in pnl_grid
+        [value if value is not None else float("nan") for value in row] for row in pnl_grid
     ]
 
     fig, ax = plt.subplots(figsize=(7.5, 5.5))
@@ -87,12 +85,7 @@ def render_plateau_heatmaps(
         f"fair_value_method={report.fair_value_method}"
     )
 
-    averaged_values = [
-        value
-        for row in pnl_grid
-        for value in row
-        if value is not None
-    ]
+    averaged_values = [value for row in pnl_grid for value in row if value is not None]
     if averaged_values:
         peak_averaged = max(averaged_values)
         threshold = peak_averaged * (1.0 - band_fraction)
@@ -134,7 +127,7 @@ def render_plateau_heatmaps(
     return [target]
 
 
-def _lazy_plt():  # type: ignore[no-untyped-def]
+def _lazy_plt() -> Any:
     """Lazy matplotlib import pinned to the Agg backend.
 
     Mirrors ``src/backtest/charts.py::_plt`` so Phase 6 heatmaps keep
@@ -159,7 +152,7 @@ def _bucketed_pnl_grid(
     *,
     x_axis: str,
     y_axis: str,
-) -> tuple[list[object], list[object], list[list[float | None]]]:
+) -> tuple[list[SweepValue], list[SweepValue], list[list[float | None]]]:
     """Build a 2D mean-pnl grid keyed by ``(x_axis, y_axis)``.
 
     Raises ``ValueError`` if either axis is missing from every row.
@@ -178,7 +171,7 @@ def _bucketed_pnl_grid(
         key=_axis_sort_key,
     )
 
-    buckets: dict[tuple[object, object], list[float]] = {}
+    buckets: dict[tuple[SweepValue | None, SweepValue | None], list[float]] = {}
     for row in report.rows:
         key = (row.params.get(x_axis), row.params.get(y_axis))
         buckets.setdefault(key, []).append(row.pnl)

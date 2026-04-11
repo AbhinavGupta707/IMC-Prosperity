@@ -26,8 +26,9 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
-from src.backtest.metrics import ProductResult, SimulationResult, TradeRecord
+from src.backtest.metrics import ProductResult, SeriesKey, SimulationResult, TradeRecord
 
 CHART_DPI = 150
 CHART_FIGSIZE = (9, 4)
@@ -91,13 +92,22 @@ def render_price_vs_fair(result: SimulationResult, product: str, out: Path) -> b
     if not mid_series and not fv_series:
         return False
 
+    pnl_keys = _series_keys_or_legacy(
+        result.pnl_series.get(product, ()), result.pnl_keys.get(product)
+    )
+    master_index = {key: idx for idx, key in enumerate(pnl_keys)}
+    use_step_axis = _use_step_axis(pnl_keys)
+    x_label = "replay step" if use_step_axis else "timestamp"
+
     fig, ax = plt.subplots(figsize=CHART_FIGSIZE)
     if mid_series:
-        ts = [ts for ts, _ in mid_series]
+        mid_keys = _series_keys_or_legacy(mid_series, result.mid_keys.get(product))
+        ts = _series_x_values(mid_series, mid_keys, master_index, use_step_axis)
         mids = [mid for _, mid in mid_series]
         ax.plot(ts, mids, label="mid", color="#1f77b4", linewidth=1.2)
     if fv_series:
-        fts = [ts for ts, _ in fv_series]
+        fv_keys = _series_keys_or_legacy(fv_series, result.fair_value_keys.get(product))
+        fts = _series_x_values(fv_series, fv_keys, master_index, use_step_axis)
         fvs = [fv for _, fv in fv_series]
         ax.plot(fts, fvs, label="fair value", color="#ff7f0e", linewidth=1.0, alpha=0.85)
 
@@ -112,13 +122,16 @@ def render_price_vs_fair(result: SimulationResult, product: str, out: Path) -> b
     ):
         if not records:
             continue
-        xs = [r.fill_timestamp for r in records]
+        xs = [
+            master_index.get(r.fill_key(), r.fill_timestamp) if use_step_axis else r.fill_timestamp
+            for r in records
+        ]
         ys = [r.price for r in records]
         sizes = [max(20, 10 * r.quantity) for r in records]
         ax.scatter(xs, ys, marker=marker, color=color, s=sizes, alpha=alpha, label=label)
 
     ax.set_title(f"{product} — price vs fair value")
-    ax.set_xlabel("timestamp")
+    ax.set_xlabel(x_label)
     ax.set_ylabel("price")
     ax.legend(loc="best", fontsize=8)
     ax.grid(alpha=0.2)
@@ -132,12 +145,14 @@ def render_pnl_over_time(result: SimulationResult, product: str, out: Path) -> b
         return False
     plt = _plt()
     fig, ax = plt.subplots(figsize=CHART_FIGSIZE)
-    ts = [ts for ts, _ in series]
+    keys = _series_keys_or_legacy(series, result.pnl_keys.get(product))
+    use_step_axis = _use_step_axis(keys)
+    ts = _series_x_values(series, keys, {key: idx for idx, key in enumerate(keys)}, use_step_axis)
     pnl = [pnl for _, pnl in series]
     ax.plot(ts, pnl, color="#1f77b4", linewidth=1.3)
     ax.axhline(0, color="#888", linewidth=0.7, linestyle="--")
     ax.set_title(f"{product} — PnL over time")
-    ax.set_xlabel("timestamp")
+    ax.set_xlabel("replay step" if use_step_axis else "timestamp")
     ax.set_ylabel("PnL (cash + position * mark)")
     ax.grid(alpha=0.2)
     _save(fig, out)
@@ -162,25 +177,30 @@ def render_position_over_time(
 
     plt = _plt()
     # Build a step-indexed position path.
-    timestamps = [ts for ts, _ in series]
-    record_by_ts: dict[int, int] = {}
+    keys = _series_keys_or_legacy(series, result.pnl_keys.get(product))
+    use_step_axis = _use_step_axis(keys)
+    timestamps = _series_x_values(
+        series, keys, {key: idx for idx, key in enumerate(keys)}, use_step_axis
+    )
+    record_by_key: dict[SeriesKey, int] = {}
     for record in result.trade_records:
         if record.product != product:
             continue
         delta = record.quantity if record.side == "buy" else -record.quantity
-        record_by_ts[record.fill_timestamp] = record_by_ts.get(record.fill_timestamp, 0) + delta
+        key = record.fill_key()
+        record_by_key[key] = record_by_key.get(key, 0) + delta
 
     position = 0
     path: list[int] = []
-    for ts in timestamps:
-        position += record_by_ts.get(ts, 0)
+    for key in keys:
+        position += record_by_key.get(key, 0)
         path.append(position)
 
     fig, ax = plt.subplots(figsize=CHART_FIGSIZE)
     ax.plot(timestamps, path, color="#9467bd", linewidth=1.3)
     ax.axhline(0, color="#888", linewidth=0.7, linestyle="--")
     ax.set_title(f"{product} — position over time")
-    ax.set_xlabel("timestamp")
+    ax.set_xlabel("replay step" if use_step_axis else "timestamp")
     ax.set_ylabel("position")
     ax.grid(alpha=0.2)
     _save(fig, out)
@@ -191,33 +211,35 @@ def render_total_pnl(result: SimulationResult, out: Path) -> bool:
     if not result.pnl_series:
         return False
     plt = _plt()
-    # Union-of-timestamps per-step sum. Products with missing steps
-    # inherit their last-seen value so the total line stays gap-free.
-    all_timestamps = sorted(
-        {ts for series in result.pnl_series.values() for ts, _ in series}
-    )
-    if not all_timestamps:
+    all_keys = _ordered_union_pnl_keys(result)
+    if not all_keys:
         return False
+    use_step_axis = _use_step_axis(tuple(all_keys))
 
     last_value: dict[str, float] = dict.fromkeys(result.pnl_series, 0.0)
-    per_product_by_ts: dict[str, dict[int, float]] = {
-        product: dict(series) for product, series in result.pnl_series.items()
-    }
+    per_product_by_key: dict[str, dict[SeriesKey, float]] = {}
+    for product, series in result.pnl_series.items():
+        keys = _series_keys_or_legacy(series, result.pnl_keys.get(product))
+        per_product_by_key[product] = {
+            key: value for key, (_, value) in zip(keys, series, strict=True)
+        }
 
     totals: list[float] = []
-    for ts in all_timestamps:
+    for key in all_keys:
         total = 0.0
         for product in result.pnl_series:
-            if ts in per_product_by_ts[product]:
-                last_value[product] = per_product_by_ts[product][ts]
+            if key in per_product_by_key[product]:
+                last_value[product] = per_product_by_key[product][key]
             total += last_value[product]
         totals.append(total)
 
+    xs = list(range(len(all_keys))) if use_step_axis else [timestamp for _, timestamp in all_keys]
+
     fig, ax = plt.subplots(figsize=CHART_FIGSIZE)
-    ax.plot(all_timestamps, totals, color="#000", linewidth=1.4)
+    ax.plot(xs, totals, color="#000", linewidth=1.4)
     ax.axhline(0, color="#888", linewidth=0.7, linestyle="--")
     ax.set_title("Total PnL over time")
-    ax.set_xlabel("timestamp")
+    ax.set_xlabel("replay step" if use_step_axis else "timestamp")
     ax.set_ylabel("PnL")
     ax.grid(alpha=0.2)
     _save(fig, out)
@@ -225,27 +247,21 @@ def render_total_pnl(result: SimulationResult, out: Path) -> bool:
 
 
 def render_maker_taker(product_result: ProductResult, out: Path) -> bool:
-    total_qty = (
-        product_result.taker_trade_quantity + product_result.maker_trade_quantity
-    )
+    total_qty = product_result.taker_trade_quantity + product_result.maker_trade_quantity
     if total_qty <= 0:
         return False
     plt = _plt()
     fig, ax = plt.subplots(figsize=MAKER_TAKER_FIGSIZE)
     labels = ["buy", "sell"]
-    taker_side = [product_result.taker_trade_quantity, 0]
-    maker_side = [product_result.maker_trade_quantity, 0]
+    taker_side: list[float] = [float(product_result.taker_trade_quantity), 0.0]
+    maker_side: list[float] = [float(product_result.maker_trade_quantity), 0.0]
     # We don't separately track buy-vs-sell by mode in aggregates; show
     # buy/sell totals stacked by mode instead, which is what the
     # chart in the plan described.
     buy_total = product_result.buy_trade_quantity
     sell_total = product_result.sell_trade_quantity
-    taker_ratio = (
-        product_result.taker_trade_quantity / total_qty if total_qty else 0.0
-    )
-    maker_ratio = (
-        product_result.maker_trade_quantity / total_qty if total_qty else 0.0
-    )
+    taker_ratio = product_result.taker_trade_quantity / total_qty if total_qty else 0.0
+    maker_ratio = product_result.maker_trade_quantity / total_qty if total_qty else 0.0
     taker_side = [buy_total * taker_ratio, sell_total * taker_ratio]
     maker_side = [buy_total * maker_ratio, sell_total * maker_ratio]
 
@@ -270,14 +286,15 @@ def render_markouts(
     mid_series = result.mid_series.get(product, ())
     if not mid_series:
         return False
-    index_by_ts = {ts: idx for idx, (ts, _) in enumerate(mid_series)}
+    mid_keys = _series_keys_or_legacy(mid_series, result.mid_keys.get(product))
+    index_by_key = {key: idx for idx, key in enumerate(mid_keys)}
     records = [r for r in result.trade_records if r.product == product]
     if not records:
         return False
 
     per_horizon: dict[int, list[float]] = {h: [] for h in horizons}
     for record in records:
-        fill_index = index_by_ts.get(record.fill_timestamp)
+        fill_index = index_by_key.get(record.fill_key())
         if fill_index is None:
             continue
         sign = 1.0 if record.side == "buy" else -1.0
@@ -344,7 +361,48 @@ def _split_trades_by_side(
     return taker_buys, taker_sells, maker_buys, maker_sells
 
 
-def _plt():  # type: ignore[no-untyped-def]
+def _series_keys_or_legacy(
+    series: tuple[tuple[int, float], ...],
+    keys: tuple[SeriesKey, ...] | None,
+) -> tuple[SeriesKey, ...]:
+    if keys is None:
+        return tuple((None, ts) for ts, _ in series)
+    return keys
+
+
+def _use_step_axis(keys: tuple[SeriesKey, ...]) -> bool:
+    if not keys:
+        return False
+    timestamps = [timestamp for _, timestamp in keys]
+    days = {day for day, _ in keys}
+    return len(days) > 1 or len(timestamps) != len(set(timestamps))
+
+
+def _series_x_values(
+    series: tuple[tuple[int, float], ...],
+    keys: tuple[SeriesKey, ...],
+    master_index: dict[SeriesKey, int],
+    use_step_axis: bool,
+) -> list[int]:
+    if not use_step_axis:
+        return [ts for ts, _ in series]
+    return [master_index.get(key, idx) for idx, key in enumerate(keys)]
+
+
+def _ordered_union_pnl_keys(result: SimulationResult) -> list[SeriesKey]:
+    ordered: list[SeriesKey] = []
+    seen: set[SeriesKey] = set()
+    for product, series in result.pnl_series.items():
+        keys = _series_keys_or_legacy(series, result.pnl_keys.get(product))
+        for key in keys:
+            if key in seen:
+                continue
+            seen.add(key)
+            ordered.append(key)
+    return ordered
+
+
+def _plt() -> Any:
     """Lazy matplotlib import pinned to the Agg backend."""
     import matplotlib
 
@@ -354,7 +412,7 @@ def _plt():  # type: ignore[no-untyped-def]
     return plt
 
 
-def _save(fig, out: Path, **savefig_kwargs) -> None:  # type: ignore[no-untyped-def]
+def _save(fig: Any, out: Path, **savefig_kwargs: Any) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=CHART_DPI, **savefig_kwargs)
     # Release the matplotlib figure handle to avoid leaking memory on

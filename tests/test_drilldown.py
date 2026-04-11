@@ -13,6 +13,7 @@ import json
 import os
 import subprocess
 import sys
+from dataclasses import FrozenInstanceError
 from pathlib import Path
 
 import pytest
@@ -72,9 +73,7 @@ def _write_price_csv(
     lines = [_PRICE_CSV_HEADER]
     for ts, bid, ask in rows:
         lines.append(
-            f"{day};{ts};{product};{bid};5;;;;;"
-            f"{ask};5;;;;;"
-            f"{(bid + ask) / 2.0};0.0"
+            f"{day};{ts};{product};{bid};5;;;;;" f"{ask};5;;;;;" f"{(bid + ask) / 2.0};0.0"
         )
     path.write_text("\n".join(lines) + "\n")
 
@@ -264,8 +263,7 @@ def _write_pack(
     csv_path = tmp_path / f"prices_{label}.csv"
     if price_rows is None:
         price_rows = [
-            (ts, 99, 101) for ts in
-            [ts for ts, _ in next(iter(result.mid_series.values()))]
+            (ts, 99, 101) for ts in [ts for ts, _ in next(iter(result.mid_series.values()))]
         ]
     _write_price_csv(csv_path, rows=price_rows)
     pack_dir = write_review_pack(
@@ -318,9 +316,13 @@ def test_trade_score_edge_sign_convention() -> None:
     buy = pack.trades[0]
     sell = pack.trades[1]
     # buy at 101, fair 100.5 -> edge = 100.5 - 101 = -0.5
-    assert trade_score(buy, pack.mid_series, pack.mid_index_by_product, "edge") == pytest.approx(-0.5)
+    assert trade_score(buy, pack.mid_series, pack.mid_index_by_product, "edge") == pytest.approx(
+        -0.5
+    )
     # sell at 104, fair 103 -> edge = 104 - 103 = 1.0
-    assert trade_score(sell, pack.mid_series, pack.mid_index_by_product, "edge") == pytest.approx(1.0)
+    assert trade_score(sell, pack.mid_series, pack.mid_index_by_product, "edge") == pytest.approx(
+        1.0
+    )
 
 
 @pytest.mark.unit
@@ -342,7 +344,9 @@ def test_trade_score_markout_reaches_future_mid() -> None:
     )
     buy = pack.trades[0]
     # buy at 101 at ts=100 (idx 1). markout_1 -> mid at idx 2 = 101.0 -> +0.0
-    assert trade_score(buy, pack.mid_series, pack.mid_index_by_product, "markout_1") == pytest.approx(0.0)
+    assert trade_score(
+        buy, pack.mid_series, pack.mid_index_by_product, "markout_1"
+    ) == pytest.approx(0.0)
     # Horizon 20 reaches past the end of the 5-step series -> None.
     assert trade_score(buy, pack.mid_series, pack.mid_index_by_product, "markout_20") is None
 
@@ -404,6 +408,64 @@ def test_select_by_trade_id_and_timestamp(tmp_path: Path) -> None:
 
 
 @pytest.mark.unit
+def test_select_by_timestamp_requires_day_when_timestamp_repeats() -> None:
+    keys = ((-2, 100), (-2, 101), (-1, 100), (-1, 101))
+    pack = ReviewPack(
+        pack_dir=Path("."),
+        run_id="combined",
+        manifest={},
+        summary={},
+        trades=(
+            TradeRecord(
+                product="P",
+                side="buy",
+                price=10.0,
+                quantity=1,
+                mode="taker",
+                decision_timestamp=100,
+                fill_timestamp=100,
+                fair_value_at_decision=10.5,
+                fair_value_method_at_decision="anchor",
+                mid_at_decision=10.0,
+                mid_at_fill=10.0,
+                decision_day=-2,
+                fill_day=-2,
+            ),
+            TradeRecord(
+                product="P",
+                side="sell",
+                price=30.0,
+                quantity=1,
+                mode="taker",
+                decision_timestamp=100,
+                fill_timestamp=100,
+                fair_value_at_decision=29.5,
+                fair_value_method_at_decision="anchor",
+                mid_at_decision=30.0,
+                mid_at_fill=30.0,
+                decision_day=-1,
+                fill_day=-1,
+            ),
+        ),
+        mid_series={"P": ((100, 10.0), (101, 11.0), (100, 30.0), (101, 31.0))},
+        fair_value_series={"P": ((100, 10.5), (101, 10.5), (100, 29.5), (101, 29.5))},
+        pnl_series={"P": ((100, 0.0), (101, 1.0), (100, 2.0), (101, 3.0))},
+        mid_keys={"P": keys},
+        fair_value_keys={"P": keys},
+        pnl_keys={"P": keys},
+        mid_index_by_product={"P": {(-2, 100): 0, (-2, 101): 1, (-1, 100): 2, (-1, 101): 3}},
+        pnl_index_by_product={"P": {(-2, 100): 0, (-2, 101): 1, (-1, 100): 2, (-1, 101): 3}},
+    )
+
+    with pytest.raises(KeyError, match="ambiguous"):
+        select_by_timestamp(pack, "P", 100)
+
+    case = select_by_timestamp(pack, "P", 100, -1)
+    assert case.anchor_day == -1
+    assert case.extra["trade_indices"] == [1]
+
+
+@pytest.mark.unit
 def test_reconstruct_position_series_matches_cumulative_signed_qty() -> None:
     result = _taker_result()
     positions = reconstruct_position_series(result.trade_records, result.pnl_series, "P")
@@ -440,9 +502,7 @@ def test_rebuild_books_for_window_returns_correct_bid_ask(tmp_path: Path) -> Non
             (400, 95, 105),
         ],
     )
-    snaps = rebuild_books_for_window(
-        data_files=[csv_path], product="P", start_ts=100, end_ts=300
-    )
+    snaps = rebuild_books_for_window(data_files=[csv_path], product="P", start_ts=100, end_ts=300)
     assert [s.timestamp for s in snaps] == [100, 200, 300]
     assert snaps[0].best_bid == 98
     assert snaps[0].best_ask == 102
@@ -463,9 +523,7 @@ def test_rebuild_books_for_window_filters_other_products(tmp_path: Path) -> None
         )
         + "\n"
     )
-    snaps = rebuild_books_for_window(
-        data_files=[csv_path], product="P", start_ts=100, end_ts=100
-    )
+    snaps = rebuild_books_for_window(data_files=[csv_path], product="P", start_ts=100, end_ts=100)
     assert len(snaps) == 1
     assert snaps[0].product == "P"
     assert snaps[0].best_bid == 99
@@ -482,9 +540,7 @@ def test_write_case_artifacts_taker_case_writes_all_files(tmp_path: Path) -> Non
     window = build_case_window(case, pack, window_radius=2)
 
     out_root = pack_dir / "drilldowns"
-    case_dir = write_case_artifacts(
-        case, window, out_dir=out_root, pack=pack, render_charts=True
-    )
+    case_dir = write_case_artifacts(case, window, out_dir=out_root, pack=pack, render_charts=True)
 
     assert case_dir.is_dir()
     assert (case_dir / "summary.json").is_file()
@@ -526,9 +582,7 @@ def test_write_case_artifacts_maker_case_preserves_decision_vs_fill_ts(
 
     window = build_case_window(case, pack, window_radius=2)
     out_root = pack_dir / "drilldowns"
-    case_dir = write_case_artifacts(
-        case, window, out_dir=out_root, pack=pack, render_charts=True
-    )
+    case_dir = write_case_artifacts(case, window, out_dir=out_root, pack=pack, render_charts=True)
 
     summary = json.loads((case_dir / "summary.json").read_text())
     # Maker fills must preserve the gap between decision and fill.
@@ -590,7 +644,7 @@ def test_drilldown_case_is_immutable() -> None:
         product="P",
         anchor_timestamp=100,
     )
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError):
         case.product = "Q"  # type: ignore[misc]
 
 
@@ -600,18 +654,14 @@ def test_drilldown_case_is_immutable() -> None:
 @pytest.mark.unit
 def test_rebuild_books_raises_on_empty_data_files() -> None:
     with pytest.raises(DrilldownError, match="no data_files"):
-        rebuild_books_for_window(
-            data_files=[], product="P", start_ts=0, end_ts=100
-        )
+        rebuild_books_for_window(data_files=[], product="P", start_ts=0, end_ts=100)
 
 
 @pytest.mark.unit
 def test_rebuild_books_raises_on_missing_price_csv(tmp_path: Path) -> None:
     missing = tmp_path / "does_not_exist.csv"
     with pytest.raises(DrilldownError, match="missing price CSVs"):
-        rebuild_books_for_window(
-            data_files=[missing], product="P", start_ts=0, end_ts=100
-        )
+        rebuild_books_for_window(data_files=[missing], product="P", start_ts=0, end_ts=100)
 
 
 @pytest.mark.unit
@@ -619,9 +669,7 @@ def test_rebuild_books_raises_on_malformed_price_csv(tmp_path: Path) -> None:
     broken = tmp_path / "prices.csv"
     broken.write_text("not;a;valid;header\n1;2;3;4\n")
     with pytest.raises(DrilldownError, match="missing required columns"):
-        rebuild_books_for_window(
-            data_files=[broken], product="P", start_ts=0, end_ts=100
-        )
+        rebuild_books_for_window(data_files=[broken], product="P", start_ts=0, end_ts=100)
 
 
 @pytest.mark.unit
@@ -629,9 +677,7 @@ def test_rebuild_books_ignores_only_trades_csv_and_errors(tmp_path: Path) -> Non
     trade_only = tmp_path / "trades_round_0_day_-1.csv"
     trade_only.write_text("symbol;timestamp\nP;100\n")
     with pytest.raises(DrilldownError, match="no price CSVs"):
-        rebuild_books_for_window(
-            data_files=[trade_only], product="P", start_ts=0, end_ts=100
-        )
+        rebuild_books_for_window(data_files=[trade_only], product="P", start_ts=0, end_ts=100)
 
 
 @pytest.mark.unit
@@ -712,9 +758,7 @@ def test_run_drilldown_cli_subprocess_writes_case_and_index(
         check=False,
         timeout=60,
     )
-    assert result.returncode == 0, (
-        f"CLI failed\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    )
+    assert result.returncode == 0, f"CLI failed\nstdout:\n{result.stdout}\nstderr:\n{result.stderr}"
     assert "Wrote 1 drilldown case" in result.stdout
 
     out_root = pack_dir / "drilldowns"
@@ -740,9 +784,7 @@ def test_run_drilldown_cli_subprocess_writes_case_and_index(
 @pytest.mark.integration
 def test_run_drilldown_cli_exits_clean_on_missing_csv(tmp_path: Path) -> None:
     """Deleting the manifest's CSV should produce a readable error, not a traceback."""
-    pack_dir, csv_path = _write_pack(
-        tmp_path, _taker_result(), label="missing_csv"
-    )
+    pack_dir, csv_path = _write_pack(tmp_path, _taker_result(), label="missing_csv")
     csv_path.unlink()
 
     repo_root = Path(__file__).resolve().parents[1]

@@ -156,34 +156,31 @@ def build_fair_value_report(
         product_replay = filter_replay_to_product(replay, product)
         if not product_replay.steps:
             continue
-        analysis_product_config = _analysis_product_config(
-            product_replay=product_replay,
-            product=product,
+        supported_estimators = _supported_estimator_names(
             product_config=product_config,
+            estimator_names=estimator_names,
         )
 
         records = _build_snapshot_records(
             product_replay,
             product=product,
-            product_config=analysis_product_config,
-            estimator_names=estimator_names,
+            product_config=product_config,
+            estimator_names=supported_estimators,
         )
         baseline_next_mid_mae = _baseline_next_mid_mae(records)
 
         comparisons: list[EstimatorComparison] = []
-        for estimator_name in estimator_names:
-            if estimator_name not in ESTIMATORS:
-                continue
+        for estimator_name in supported_estimators:
             comparisons.append(
                 _compare_estimator(
                     product_replay=product_replay,
                     product=product,
                     estimator_name=estimator_name,
-                    product_config=analysis_product_config,
+                    product_config=product_config,
                     engine_config=engine_config,
                     records=records,
                     baseline_next_mid_mae=baseline_next_mid_mae,
-                    estimator_names=estimator_names,
+                    estimator_names=supported_estimators,
                 )
             )
 
@@ -257,32 +254,20 @@ def _build_snapshot_records(
     return records
 
 
-def _analysis_product_config(
+def _supported_estimator_names(
     *,
-    product_replay: ReplayEngine,
-    product: str,
     product_config: ProductConfig,
-) -> ProductConfig:
-    if product_config.anchor_price is not None:
-        return product_config
+    estimator_names: tuple[str, ...],
+) -> tuple[str, ...]:
+    return tuple(
+        name
+        for name in estimator_names
+        if name in ESTIMATORS and _estimator_supported(product_config, name)
+    )
 
-    adapter = MarketDataAdapter()
-    mids: list[float] = []
-    for step in product_replay.steps:
-        state = ReplayEngine.build_trading_state(
-            step,
-            trader_data="",
-            position={product: 0},
-            own_trades={},
-        )
-        snapshot = adapter.normalize_state(state)[product]
-        if snapshot.mid is not None:
-            mids.append(snapshot.mid)
 
-    if not mids:
-        return product_config
-
-    return replace(product_config, anchor_price=sum(mids) / len(mids))
+def _estimator_supported(product_config: ProductConfig, estimator_name: str) -> bool:
+    return not (estimator_name == "anchor" and product_config.anchor_price is None)
 
 
 def _compare_estimator(
@@ -327,9 +312,7 @@ def _compare_estimator(
         estimator_names=estimator_names,
     )
 
-    total_trade_qty = (
-        replay_result.taker_trade_quantity + replay_result.maker_trade_quantity
-    )
+    total_trade_qty = replay_result.taker_trade_quantity + replay_result.maker_trade_quantity
     maker_share = (
         replay_result.maker_trade_quantity / total_trade_qty if total_trade_qty > 0 else None
     )
@@ -387,7 +370,9 @@ def _comparison_engine_config(
     safe_fallbacks = tuple(
         name
         for name in estimator_names
-        if name != estimator_name and name in ESTIMATORS and (name != "anchor" or product_config.anchor_price is not None)
+        if name != estimator_name
+        and name in ESTIMATORS
+        and (name != "anchor" or product_config.anchor_price is not None)
     )
     comparison_product_config = replace(
         product_config,
@@ -421,7 +406,9 @@ def _baseline_next_mid_mae(records: list[_SnapshotRecord]) -> float | None:
     return _mean(errors)
 
 
-def _update_memory(memory: ProductMemory, snapshot: NormalizedSnapshot, history_length: int) -> None:
+def _update_memory(
+    memory: ProductMemory, snapshot: NormalizedSnapshot, history_length: int
+) -> None:
     if history_length <= 0:
         return
     if snapshot.mid is not None:

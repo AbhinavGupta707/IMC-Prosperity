@@ -20,8 +20,8 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from src.backtest.drilldown import (
     DEFAULT_RANK_METRIC,
@@ -122,6 +122,12 @@ def _build_parser() -> argparse.ArgumentParser:
         help="product symbol, required when using --timestamp",
     )
     parser.add_argument(
+        "--day",
+        type=int,
+        default=None,
+        help="optional day disambiguator for --timestamp on combined multi-day packs",
+    )
+    parser.add_argument(
         "--best-trades",
         type=int,
         default=0,
@@ -164,9 +170,7 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _collect_cases(
-    pack: ReviewPack, args: argparse.Namespace
-) -> list[DrilldownCase]:
+def _collect_cases(pack: ReviewPack, args: argparse.Namespace) -> list[DrilldownCase]:
     cases: list[DrilldownCase] = []
 
     if args.trade_id is not None:
@@ -174,20 +178,14 @@ def _collect_cases(
 
     if args.timestamp is not None:
         if not args.product:
-            raise SystemExit(
-                "--timestamp requires --product PRODUCT (e.g. --product TOMATOES)"
-            )
-        cases.append(select_by_timestamp(pack, args.product, args.timestamp))
+            raise SystemExit("--timestamp requires --product PRODUCT (e.g. --product TOMATOES)")
+        cases.append(select_by_timestamp(pack, args.product, args.timestamp, args.day))
 
     if args.best_trades > 0:
-        cases.extend(
-            select_best_trades(pack, args.best_trades, args.rank_metric)
-        )
+        cases.extend(select_best_trades(pack, args.best_trades, args.rank_metric))
 
     if args.worst_trades > 0:
-        cases.extend(
-            select_worst_trades(pack, args.worst_trades, args.rank_metric)
-        )
+        cases.extend(select_worst_trades(pack, args.worst_trades, args.rank_metric))
 
     if args.near_limit:
         cases.extend(select_near_limit(pack, args.near_limit_count))

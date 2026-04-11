@@ -38,8 +38,9 @@ _CASE_NOTES_TEMPLATE = """# Drilldown: {case_id}
 - **Pack:** {run_id}
 - **Kind:** {kind}
 - **Product:** {product}
+- **Anchor day:** {anchor_day}
 - **Anchor timestamp:** {anchor_timestamp}
-- **Window:** [{window_start}, {window_end}] (radius {window_radius})
+- **Window:** [{window_start_day}/{window_start}, {window_end_day}/{window_end}] (radius {window_radius})
 - **Generated:** {generated_at}
 
 ## What we're looking at
@@ -80,9 +81,7 @@ def write_case_artifacts(
     directory.mkdir(parents=True, exist_ok=True)
 
     summary_payload = _build_summary_payload(case, window, pack)
-    (directory / "summary.json").write_text(
-        json.dumps(summary_payload, indent=2, sort_keys=True)
-    )
+    (directory / "summary.json").write_text(json.dumps(summary_payload, indent=2, sort_keys=True))
     (directory / "window_series.json").write_text(
         json.dumps(_build_window_payload(window), indent=2, sort_keys=True)
     )
@@ -155,6 +154,7 @@ def _index_entry(case: DrilldownCase, generated_at: str) -> dict[str, Any]:
         "case_id": case.case_id,
         "selector": case.kind,
         "product": case.product,
+        "anchor_day": case.anchor_day,
         "anchor_timestamp": case.anchor_timestamp,
         "trade_index": case.trade_index,
         "rank_metric": case.rank_metric,
@@ -171,8 +171,11 @@ def _build_summary_payload(
         "case_id": case.case_id,
         "kind": case.kind,
         "product": case.product,
+        "anchor_day": case.anchor_day,
         "anchor_timestamp": case.anchor_timestamp,
+        "window_start_day": window.start_day,
         "window_start": window.start_timestamp,
+        "window_end_day": window.end_day,
         "window_end": window.end_timestamp,
         "window_radius": window.window_radius,
         "rank_metric": case.rank_metric,
@@ -191,8 +194,11 @@ def _build_summary_payload(
 def _build_window_payload(window: CaseWindow) -> dict[str, Any]:
     return {
         "product": window.product,
+        "anchor_day": window.anchor_day,
         "anchor_timestamp": window.anchor_timestamp,
+        "window_start_day": window.start_day,
         "window_start": window.start_timestamp,
+        "window_end_day": window.end_day,
         "window_end": window.end_timestamp,
         "mid_series": [[ts, v] for ts, v in window.mid_slice],
         "fair_value_series": [[ts, v] for ts, v in window.fair_value_slice],
@@ -200,6 +206,7 @@ def _build_window_payload(window: CaseWindow) -> dict[str, Any]:
         "position_series": [[ts, p] for ts, p in window.position_slice],
         "book_snapshots": [
             {
+                "day": snap.day,
                 "timestamp": snap.timestamp,
                 "bids": [[price, volume] for price, volume in snap.bids],
                 "asks": [[price, volume] for price, volume in snap.asks],
@@ -216,7 +223,9 @@ def _trade_to_dict(record: TradeRecord) -> dict[str, Any]:
         "price": record.price,
         "quantity": record.quantity,
         "mode": record.mode,
+        "decision_day": record.decision_day,
         "decision_timestamp": record.decision_timestamp,
+        "fill_day": record.fill_day,
         "fill_timestamp": record.fill_timestamp,
         "fair_value_at_decision": record.fair_value_at_decision,
         "fair_value_method_at_decision": record.fair_value_method_at_decision,
@@ -225,17 +234,18 @@ def _trade_to_dict(record: TradeRecord) -> dict[str, Any]:
     }
 
 
-def _render_notes(
-    case: DrilldownCase, window: CaseWindow, pack: ReviewPack
-) -> str:
+def _render_notes(case: DrilldownCase, window: CaseWindow, pack: ReviewPack) -> str:
     headline = _headline_for(case)
     return _CASE_NOTES_TEMPLATE.format(
         case_id=case.case_id,
         run_id=pack.run_id,
         kind=case.kind,
         product=case.product,
+        anchor_day=case.anchor_day,
         anchor_timestamp=case.anchor_timestamp,
+        window_start_day=window.start_day,
         window_start=window.start_timestamp,
+        window_end_day=window.end_day,
         window_end=window.end_timestamp,
         window_radius=window.window_radius,
         generated_at=datetime.now(UTC).isoformat(),
@@ -255,7 +265,7 @@ def _headline_for(case: DrilldownCase) -> str:
         return (
             f"{case.kind} by {metric} = {score_str}: "
             f"{mode} {side} {qty}@{price} on {case.product} "
-            f"at ts={case.anchor_timestamp}"
+            f"at day={case.anchor_day}, ts={case.anchor_timestamp}"
         )
     if case.kind == "trade":
         side = case.extra.get("side")
@@ -265,15 +275,15 @@ def _headline_for(case: DrilldownCase) -> str:
         return (
             f"trade #{case.trade_index}: "
             f"{mode} {side} {qty}@{price} on {case.product} "
-            f"at ts={case.anchor_timestamp}"
+            f"at day={case.anchor_day}, ts={case.anchor_timestamp}"
         )
     if case.kind == "timestamp":
-        return f"{case.product} at ts={case.anchor_timestamp}"
+        return f"{case.product} at day={case.anchor_day}, ts={case.anchor_timestamp}"
     if case.kind == "near_limit":
         pos = case.extra.get("position")
         limit = case.extra.get("position_limit")
         return (
-            f"near-limit on {case.product} at ts={case.anchor_timestamp}: "
+            f"near-limit on {case.product} at day={case.anchor_day}, ts={case.anchor_timestamp}: "
             f"position {pos} / limit {limit}"
         )
-    return f"{case.product} at ts={case.anchor_timestamp}"
+    return f"{case.product} at day={case.anchor_day}, ts={case.anchor_timestamp}"

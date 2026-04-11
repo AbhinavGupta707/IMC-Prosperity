@@ -15,6 +15,7 @@ diagnosis.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from src.backtest.drilldown import BookSnapshot, CaseWindow, DrilldownCase
 
@@ -58,9 +59,7 @@ def render_case_charts(
 # ------------------------------------------------------------ individual plots
 
 
-def render_case_price_fair(
-    case: DrilldownCase, window: CaseWindow, out: Path
-) -> bool:
+def render_case_price_fair(case: DrilldownCase, window: CaseWindow, out: Path) -> bool:
     if not window.mid_slice and not window.fair_value_slice:
         return False
     plt = _plt()
@@ -82,7 +81,7 @@ def render_case_price_fair(
         color = "#2ca02c" if record.side == "buy" else "#d62728"
         alpha = 1.0 if record.mode == "taker" else 0.45
         size = max(40, 12 * record.quantity)
-        is_anchor = record.fill_timestamp == anchor_ts
+        is_anchor = record.fill_timestamp == anchor_ts and record.fill_day == case.anchor_day
         ax.scatter(
             [record.fill_timestamp],
             [record.price],
@@ -104,10 +103,12 @@ def render_case_price_fair(
     return True
 
 
-def render_case_book_depth(
-    case: DrilldownCase, window: CaseWindow, out: Path
-) -> bool:
-    snapshot = _snapshot_at_or_near(window.book_snapshots, case.anchor_timestamp)
+def render_case_book_depth(case: DrilldownCase, window: CaseWindow, out: Path) -> bool:
+    snapshot = _snapshot_at_or_near(
+        window.book_snapshots,
+        case.anchor_timestamp,
+        case.anchor_day,
+    )
     if snapshot is None or (not snapshot.bids and not snapshot.asks):
         return False
     plt = _plt()
@@ -125,8 +126,8 @@ def render_case_book_depth(
 
     ax.axvline(0, color="#888", linewidth=0.7)
     ax.set_title(
-        f"{window.product} book @ ts={snapshot.timestamp}"
-        f" (anchor={case.anchor_timestamp})"
+        f"{window.product} book @ day={snapshot.day}, ts={snapshot.timestamp}"
+        f" (anchor day={case.anchor_day}, ts={case.anchor_timestamp})"
     )
     ax.set_xlabel("volume  (asks left / bids right)")
     ax.set_ylabel("price")
@@ -136,15 +137,11 @@ def render_case_book_depth(
     return True
 
 
-def render_case_pnl_position(
-    case: DrilldownCase, window: CaseWindow, out: Path
-) -> bool:
+def render_case_pnl_position(case: DrilldownCase, window: CaseWindow, out: Path) -> bool:
     if not window.pnl_slice and not window.position_slice:
         return False
     plt = _plt()
-    fig, (ax_pnl, ax_pos) = plt.subplots(
-        2, 1, figsize=PNL_POS_FIGSIZE, sharex=True
-    )
+    fig, (ax_pnl, ax_pos) = plt.subplots(2, 1, figsize=PNL_POS_FIGSIZE, sharex=True)
 
     if window.pnl_slice:
         xs = [ts for ts, _ in window.pnl_slice]
@@ -154,9 +151,7 @@ def render_case_pnl_position(
     ax_pnl.set_title(f"{window.product} — PnL (window)")
     ax_pnl.set_ylabel("pnl")
     ax_pnl.grid(alpha=0.2)
-    ax_pnl.axvline(
-        case.anchor_timestamp, color="#7f7f7f", linestyle="--", linewidth=0.8, alpha=0.7
-    )
+    ax_pnl.axvline(case.anchor_timestamp, color="#7f7f7f", linestyle="--", linewidth=0.8, alpha=0.7)
 
     if window.position_slice:
         xs = [ts for ts, _ in window.position_slice]
@@ -167,9 +162,7 @@ def render_case_pnl_position(
     ax_pos.set_xlabel("timestamp")
     ax_pos.set_ylabel("position")
     ax_pos.grid(alpha=0.2)
-    ax_pos.axvline(
-        case.anchor_timestamp, color="#7f7f7f", linestyle="--", linewidth=0.8, alpha=0.7
-    )
+    ax_pos.axvline(case.anchor_timestamp, color="#7f7f7f", linestyle="--", linewidth=0.8, alpha=0.7)
 
     _save(fig, out, bbox_inches="tight")
     return True
@@ -179,19 +172,22 @@ def render_case_pnl_position(
 
 
 def _snapshot_at_or_near(
-    snapshots: tuple[BookSnapshot, ...], target_ts: int
+    snapshots: tuple[BookSnapshot, ...], target_ts: int, target_day: int | None
 ) -> BookSnapshot | None:
     if not snapshots:
         return None
     for snapshot in snapshots:
-        if snapshot.timestamp == target_ts:
+        if snapshot.timestamp == target_ts and snapshot.day == target_day:
             return snapshot
     # Fall back to the closest snapshot in the window so drilldowns
     # anchored on one-sided or missing steps still render.
-    return min(snapshots, key=lambda s: abs(s.timestamp - target_ts))
+    return min(
+        snapshots,
+        key=lambda s: (0 if s.day == target_day else 1, abs(s.timestamp - target_ts)),
+    )
 
 
-def _plt():  # type: ignore[no-untyped-def]
+def _plt() -> Any:
     import matplotlib
 
     matplotlib.use("Agg", force=False)
@@ -200,7 +196,7 @@ def _plt():  # type: ignore[no-untyped-def]
     return plt
 
 
-def _save(fig, out: Path, **savefig_kwargs) -> None:  # type: ignore[no-untyped-def]
+def _save(fig: Any, out: Path, **savefig_kwargs: Any) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out, dpi=CHART_DPI, **savefig_kwargs)
     _plt().close(fig)

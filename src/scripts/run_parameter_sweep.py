@@ -6,13 +6,14 @@ import argparse
 from pathlib import Path
 
 from src.backtest.parameter_sweep import (
+    SweepValue,
     build_parameter_sweep_report,
     write_parameter_sweep_report,
 )
 from src.backtest.replay_engine import ReplayEngine
 
 _TUTORIAL_DIR = Path("data/raw/tutorial_round_1")
-_TOMATOES_GRID = {
+_TOMATOES_GRID: dict[str, list[SweepValue]] = {
     "maker_edge": [1.0, 2.0, 3.0],
     "taker_edge": [1.0, 2.0],
     "inventory_skew": [2.0, 2.5, 3.0],

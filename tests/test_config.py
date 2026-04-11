@@ -8,7 +8,15 @@ from __future__ import annotations
 
 import pytest
 
-from src.core.config import EngineConfig, ProductConfig, default_engine_config
+from src.core.config import (
+    KNOWN_ESTIMATOR_NAMES,
+    KNOWN_STRATEGY_NAMES,
+    EngineConfig,
+    ProductConfig,
+    default_engine_config,
+)
+from src.core.fair_value import ESTIMATORS
+from src.strategies import STRATEGY_REGISTRY
 
 
 @pytest.mark.unit
@@ -33,6 +41,12 @@ def test_product_config_lookup_returns_none_for_unknown_product() -> None:
 
 
 @pytest.mark.unit
+def test_known_validation_names_match_live_registries() -> None:
+    assert tuple(sorted(STRATEGY_REGISTRY)) == KNOWN_STRATEGY_NAMES
+    assert tuple(sorted(ESTIMATORS)) == KNOWN_ESTIMATOR_NAMES
+
+
+@pytest.mark.unit
 def test_anchor_method_requires_anchor_price() -> None:
     with pytest.raises(ValueError, match="anchor_price"):
         ProductConfig(
@@ -40,6 +54,49 @@ def test_anchor_method_requires_anchor_price() -> None:
             strategy_name="market_making",
             fair_value_method="anchor",
             anchor_price=None,
+        )
+
+
+@pytest.mark.unit
+def test_anchor_fallback_requires_anchor_price() -> None:
+    with pytest.raises(ValueError, match="anchor_price"):
+        ProductConfig(
+            position_limit=20,
+            strategy_name="market_making",
+            fair_value_method="mid",
+            fair_value_fallbacks=("anchor",),
+            anchor_price=None,
+        )
+
+
+@pytest.mark.unit
+def test_product_config_rejects_unknown_strategy_name() -> None:
+    with pytest.raises(ValueError, match="strategy_name"):
+        ProductConfig(
+            position_limit=20,
+            strategy_name="does_not_exist",
+            fair_value_method="mid",
+        )
+
+
+@pytest.mark.unit
+def test_product_config_rejects_unknown_primary_estimator() -> None:
+    with pytest.raises(ValueError, match="fair_value_method"):
+        ProductConfig(
+            position_limit=20,
+            strategy_name="market_making",
+            fair_value_method="not_real",
+        )
+
+
+@pytest.mark.unit
+def test_product_config_rejects_unknown_fallback_estimator() -> None:
+    with pytest.raises(ValueError, match="fair_value_fallbacks"):
+        ProductConfig(
+            position_limit=20,
+            strategy_name="market_making",
+            fair_value_method="mid",
+            fair_value_fallbacks=("microprice", "not_real"),
         )
 
 

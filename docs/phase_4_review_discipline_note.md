@@ -135,7 +135,7 @@ provenance stays self-contained.
 PYTHONPATH=. python -m src.scripts.run_drilldown \
   --pack outputs/review_packs/<run_id> \
   [ --trade-id N
-  | --timestamp T --product P
+  | --timestamp T --product P [--day D]
   | --best-trades N
   | --worst-trades N
   | --near-limit [--near-limit-count N] ] \
@@ -148,6 +148,10 @@ The modes combine freely in one call — `--best-trades 3 --worst-trades 3 --nea
 produces up to seven case directories in one run. Cases are de-duplicated by
 case id, so passing the same fill via both `--trade-id` and `--best-trades`
 only writes it once.
+
+On combined multi-day packs, repeated raw timestamps require
+`--day D` when selecting by `--timestamp`. Single-day packs do not
+need it.
 
 ### Case layout
 
@@ -166,11 +170,11 @@ Case id patterns:
 
 | Selection flag  | Case id |
 |-----------------|---------|
-| `--trade-id`    | `trade_<idx>_<product>_<fill_ts>` |
-| `--timestamp`   | `timestamp_<product>_<timestamp>` |
-| `--best-trades` | `best_<rank>_<metric>_<product>_<fill_ts>` |
-| `--worst-trades`| `worst_<rank>_<metric>_<product>_<fill_ts>` |
-| `--near-limit`  | `near_limit_<rank>_<product>_<timestamp>` |
+| `--trade-id`    | `trade_<idx>_<product>_day_<d>_<fill_ts>` |
+| `--timestamp`   | `timestamp_<product>_day_<d>_<timestamp>` |
+| `--best-trades` | `best_<rank>_<metric>_<product>_day_<d>_<fill_ts>` |
+| `--worst-trades`| `worst_<rank>_<metric>_<product>_day_<d>_<fill_ts>` |
+| `--near-limit`  | `near_limit_<rank>_<product>_day_<d>_<timestamp>` |
 
 ### Picking a rank metric
 

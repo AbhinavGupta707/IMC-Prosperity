@@ -11,7 +11,7 @@ tutorial slices (``day_-2``, ``day_-1``, combined):
 2. **Sub-sweep B — ``rolling_mid``** (history-sensitive). Promotion-eligible.
    Adds ``history_length`` because ``rolling_mid`` consumes the entire
    ``recent_mids`` ring buffer.
-3. **Sub-sweep C — ``ewma_mid`` at fixed ``α=0.20``**. **Diagnostic-only.**
+3. **Sub-sweep C — ``ewma_mid`` at fixed ``alpha=0.20``**. **Diagnostic-only.**
    Validates whether the Phase 5 narrow-peak finding survives cross-day
    slices. Phase 6 does NOT promote EWMA regardless of cross-day
    behaviour. ``ewma_alpha=0.20`` is a Phase 5 validation pin, not a
@@ -36,6 +36,7 @@ from pathlib import Path
 
 from src.backtest.parameter_sweep import (
     ParameterSweepReport,
+    SweepValue,
     build_parameter_sweep_report,
 )
 from src.backtest.plateau import (
@@ -57,7 +58,7 @@ _PRODUCT = "TOMATOES"
 # is a single-element axis at the current default (48) because the
 # WeightedMidEstimator hard-caps its LOOKBACK at 4, making history_length
 # a no-op on this estimator for any value >= 4 (src/core/fair_value.py:123).
-_SUB_A_GRID: dict[str, list[object]] = {
+_SUB_A_GRID: dict[str, list[SweepValue]] = {
     "fair_value_method": ["weighted_mid"],
     "history_length": [48],
     "maker_edge": [1.0, 2.0],
@@ -66,7 +67,7 @@ _SUB_A_GRID: dict[str, list[object]] = {
 }
 
 # B — rolling_mid: history-sensitive (uses the entire recent_mids buffer).
-_SUB_B_GRID: dict[str, list[object]] = {
+_SUB_B_GRID: dict[str, list[SweepValue]] = {
     "fair_value_method": ["rolling_mid"],
     "history_length": [16, 32, 48, 64],
     "maker_edge": [1.0, 2.0],
@@ -74,9 +75,9 @@ _SUB_B_GRID: dict[str, list[object]] = {
     "inventory_skew": [2.0, 2.5, 3.0, 3.5],
 }
 
-# C — ewma_mid at FIXED α=0.20 (Phase 5 validation pin, not a Phase 6
+# C — ewma_mid at fixed alpha=0.20 (Phase 5 validation pin, not a Phase 6
 # tunable parameter). Diagnostic-only — never promotes.
-_SUB_C_GRID: dict[str, list[object]] = {
+_SUB_C_GRID: dict[str, list[SweepValue]] = {
     "fair_value_method": ["ewma_mid"],
     "ewma_alpha": [0.20],
     "history_length": [16, 32, 48, 64],
@@ -85,7 +86,7 @@ _SUB_C_GRID: dict[str, list[object]] = {
     "inventory_skew": [2.0, 2.5, 3.0, 3.5],
 }
 
-_SUB_SWEEPS: tuple[tuple[str, dict[str, list[object]], str], ...] = (
+_SUB_SWEEPS: tuple[tuple[str, dict[str, list[SweepValue]], str], ...] = (
     ("weighted_mid", _SUB_A_GRID, "promotion_eligible"),
     ("rolling_mid", _SUB_B_GRID, "promotion_eligible"),
     ("ewma_mid_alpha_020", _SUB_C_GRID, "diagnostic"),
@@ -170,7 +171,7 @@ def _run_slices(
     *,
     label: str,
     sub_sweep_name: str,
-    grid: dict[str, list[object]],
+    grid: dict[str, list[SweepValue]],
 ) -> dict[str, ParameterSweepReport]:
     reports: dict[str, ParameterSweepReport] = {}
     for slice_name, (price_paths, trade_paths) in _SLICES.items():
@@ -208,7 +209,7 @@ def _render_heatmaps(
                 slice_name=slice_name,
                 out_dir=heatmap_dir,
             )
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             # Heatmaps are non-blocking per the Phase 6 plan.
             print(
                 f"[phase6 tomatoes/{sub_sweep_name}] heatmap render failed "
@@ -219,8 +220,7 @@ def _render_heatmaps(
 def _resolve_run_id(label: str, *, product: str) -> str:
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     clean = "".join(
-        char if char.isalnum() or char in "-_" else "_"
-        for char in f"{label}_{product.lower()}"
+        char if char.isalnum() or char in "-_" else "_" for char in f"{label}_{product.lower()}"
     )
     return f"{stamp}_{clean}" if clean else stamp
 

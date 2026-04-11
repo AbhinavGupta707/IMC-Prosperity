@@ -13,16 +13,17 @@ from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean
+from typing import Any, cast
 
 from src.backtest.fair_value_compare import filter_replay_to_product
 from src.backtest.metrics import ProductResult
 from src.backtest.replay_engine import ReplayEngine
 from src.backtest.simulator import BacktestSimulator
-from src.backtest.sweep import parameter_grid
+from src.backtest.sweep import GridValue, parameter_grid
 from src.core.config import EngineConfig, ProductConfig, default_engine_config
 from src.trader import Trader
 
-type SweepValue = int | float | str | bool
+type SweepValue = GridValue
 _DEFAULT_SWEEP_DIR = Path("outputs/sweeps")
 
 
@@ -58,7 +59,12 @@ class ParameterSweepReport:
     def ranked_rows(self) -> list[SweepRow]:
         return sorted(
             self.rows,
-            key=lambda row: (row.pnl, -row.steps_near_limit, -abs(row.final_position), -row.trade_count),
+            key=lambda row: (
+                row.pnl,
+                -row.steps_near_limit,
+                -abs(row.final_position),
+                -row.trade_count,
+            ),
             reverse=True,
         )
 
@@ -127,7 +133,7 @@ def build_parameter_sweep_report(
 
     rows: list[SweepRow] = []
     for params in parameter_grid(grid):
-        candidate = replace(product_config, **params)
+        candidate = replace(product_config, **cast(dict[str, Any], params))
         rows.append(
             _simulate_row(
                 product_replay=product_replay,

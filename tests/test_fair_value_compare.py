@@ -112,3 +112,33 @@ def test_build_fair_value_report_scores_snapshot_fit() -> None:
 
     # Symmetric multi-level book -> depth_mid equals the regular mid here.
     assert rows["depth_mid"].current_mid_mae == pytest.approx(0.0)
+
+
+@pytest.mark.unit
+def test_build_fair_value_report_skips_anchor_without_configured_anchor_price() -> None:
+    config = EngineConfig(
+        products={
+            "P": ProductConfig(
+                position_limit=20,
+                strategy_name="market_making",
+                fair_value_method="weighted_mid",
+                maker_edge=1.0,
+                taker_edge=1.0,
+                quote_size=1,
+                max_aggressive_size=1,
+            )
+        }
+    )
+
+    report = build_fair_value_report(
+        _replay(),
+        config=config,
+        run_label="unit",
+        products=("P",),
+        estimator_names=("anchor", "mid", "weighted_mid"),
+    )
+
+    assert len(report.products) == 1
+    product = report.products[0]
+    assert product.live_method == "weighted_mid"
+    assert {row.estimator for row in product.comparisons} == {"mid", "weighted_mid"}

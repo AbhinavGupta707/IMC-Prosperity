@@ -133,9 +133,7 @@ def _series(values: list[tuple[int, float]]) -> tuple[tuple[int, float], ...]:
 def test_compute_markouts_buy_favorable_future_mid() -> None:
     # Fill at ts=10, price 100. Future mids: 100, 102, 104, 106, 108, 110.
     mid_series = {
-        "P": _series(
-            [(10, 100.0), (11, 102.0), (12, 104.0), (13, 106.0), (14, 108.0), (15, 110.0)]
-        )
+        "P": _series([(10, 100.0), (11, 102.0), (12, 104.0), (13, 106.0), (14, 108.0), (15, 110.0)])
     }
     records = [_record(product="P", side="buy", price=100.0, fill_ts=10, quantity=1)]
     out = compute_markouts(records, mid_series, (1, 5))
@@ -211,6 +209,36 @@ def test_compute_markouts_handles_decision_vs_fill_timestamp_divergence() -> Non
     edges = compute_entry_edges(records)
     # Entry edge uses fair_value_at_decision = 101 - price 100 = +1.
     assert edges["P"] == (pytest.approx(1.0), 1)
+
+
+@pytest.mark.unit
+def test_compute_markouts_uses_day_aware_keys_when_timestamps_repeat() -> None:
+    mid_series = {
+        "P": _series([(100, 10.0), (101, 11.0), (100, 30.0), (101, 40.0)]),
+    }
+    mid_keys = {
+        "P": ((-2, 100), (-2, 101), (-1, 100), (-1, 101)),
+    }
+    records = [
+        TradeRecord(
+            product="P",
+            side="buy",
+            price=30.0,
+            quantity=1,
+            mode="taker",
+            decision_timestamp=100,
+            fill_timestamp=100,
+            fair_value_at_decision=31.0,
+            fair_value_method_at_decision="anchor",
+            mid_at_decision=30.0,
+            mid_at_fill=30.0,
+            decision_day=-1,
+            fill_day=-1,
+        )
+    ]
+    out = compute_markouts(records, mid_series, (1,), mid_keys=mid_keys)
+    # Without day-aware lookup this would incorrectly hit day -2's next step (11.0).
+    assert out["P"][1] == (pytest.approx(10.0), 1)
 
 
 # ----------------------------------------------------- summary_table block

@@ -245,7 +245,7 @@ upgrade.
 
 ## Stage 4 — timestamp divergence drilldown
 
-Top divergence timestamps (per-step `|ewma_mid(α=0.20) − weighted_mid|`):
+Top divergence timestamps on `day_-1` (per-step `|ewma_mid(α=0.20) − weighted_mid|`):
 
 | timestamp | \|Δ\| | ewma | wm | mid |
 |-----------|-------|------|------|------|
@@ -255,21 +255,27 @@ Top divergence timestamps (per-step `|ewma_mid(α=0.20) − weighted_mid|`):
 | 321500 | 1.614 | 4983.280 | 4981.667 | 4979.000 |
 | 432400 | 1.592 | 4997.108 | 4998.700 | 5000.000 |
 
-Drilldowns generated at both
-`outputs/review_packs/20260411T185706Z_phase5_ewma/drilldowns/timestamp_TOMATOES_141800/`
-and
-`outputs/review_packs/20260411T185701Z_phase5_weighted/drilldowns/timestamp_TOMATOES_141800/`.
+After the day-aware timestamp repair landed in Phase 4/5 review
+infrastructure, the original mixed-day drilldowns from
+`20260411T185706Z_phase5_ewma` / `20260411T185701Z_phase5_weighted`
+were superseded by refreshed packs:
 
-In the ±40-step window around `ts=141800`:
+- `outputs/review_packs/20260411T222629Z_phase5_ewma/drilldowns/timestamp_TOMATOES_day_-1_141800/`
+- `outputs/review_packs/20260411T222602Z_phase5_weighted/drilldowns/timestamp_TOMATOES_day_-1_141800/`
 
-- **EWMA pack** executed three taker fills:
+In the corrected ±40-step window around `day_-1 / ts=141800`:
+
+- **EWMA pack** executed two taker fills:
   1. `ts=140200` **buy 6 @ 4991** (EWMA fair 4992.74, mid 4988.5).
      Fair above mid → saw the ask as cheap, bought.
-  2. `ts=140900` **buy 8 @ 5003** (EWMA fair 5005.09, mid 5000.5).
-     Same pattern.
-  3. `ts=141700` **sell 8 @ 4997** (EWMA fair 4995.67, mid 5000.0).
+  2. `ts=141700` **sell 8 @ 4997** (EWMA fair 4995.67, mid 5000.0).
      Fair below mid → sold into the rally at bid.
 - **Incumbent pack** executed zero fills in the same window.
+
+The pre-fix drilldown had mistakenly pulled in a third buy from
+`day_-2 / ts=140900` because both tutorial days reuse the same raw
+timestamp axis. That trade is not part of the corrected `day_-1`
+window.
 
 The EWMA is using its smoothed anchor to fade short-term mid
 dislocations that the four-sample `weighted_mid` collapses into
@@ -293,7 +299,7 @@ something this tutorial sample can answer.
 | 3 | Zero near-limit steps in Stage 3 challenger run | **PASS** | `steps_near_limit=0` at `α=0.20` |
 | 4 | Plateau ≥ 2 contiguous grid points within 10% of peak | **PASS (weakest)** | `α=0.18` (1171) and `α=0.20` (1301) are contiguous and within 10%. Width is exactly 2 of 8 fine-grid points, bordered by inventory-disqualified configurations on one side and a sharp collapse (`α=0.22` → 957, -26%) on the other. Passes the letter; reads as a narrow peak under doctrine §8. |
 | 5 | Stage 3 `markout_5` and `markout_20` ≥ incumbent | **FAIL** | `+1.856` vs `+3.625` and `+2.219` vs `+3.227`. Per-trade realized edge is roughly half the incumbent's; the 4.7× total PnL comes from 7× the trade count (115 vs 16) at smaller per-unit edges, not from better decisions per trade. |
-| 6 | Drilldown does not show adverse systematic pattern | **PASS** | `ts=141800` window shows EWMA fading dislocations back toward a smoothed anchor; aggregate markouts remain positive at all three horizons. |
+| 6 | Drilldown does not show adverse systematic pattern | **PASS** | Corrected `day_-1 / ts=141800` window still shows EWMA fading dislocations while the incumbent stays inactive; no maker/taker regime flip appears in the local book context. |
 
 Two clear failures (rules 1 and 5), one weakest-pass (rule 4), three
 clean passes (rules 2, 3, 6). The plateau is technically contiguous
@@ -354,7 +360,7 @@ PYTHONPATH=. python -m src.scripts.run_phase5_ewma_sweep \
 # product_config (challenger).
 PYTHONPATH=. python -m src.scripts.run_drilldown \
   --pack outputs/review_packs/<run_id> \
-  --timestamp 141800 --product TOMATOES --window 40
+  --timestamp 141800 --product TOMATOES --day -1 --window 40
 ```
 
 ## Status vs plan

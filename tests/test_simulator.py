@@ -296,6 +296,8 @@ def test_simulator_records_decision_context_for_maker_fills() -> None:
     maker_records = [r for r in result.trade_records if r.mode == "maker"]
     assert len(maker_records) == 1
     record = maker_records[0]
+    assert record.decision_day == -1
+    assert record.fill_day == -1
     assert record.decision_timestamp == 0
     assert record.fill_timestamp == 1
     assert record.decision_timestamp < record.fill_timestamp
@@ -310,6 +312,7 @@ def test_simulator_records_decision_context_for_maker_fills() -> None:
 def test_simulator_pnl_series_gap_free_with_carry_forward_mid() -> None:
     """PnL series must have an entry every step, even when the book is
     one-sided and no new mid is observable."""
+
     # Build a replay where step 1 has empty ask (one-sided book).
     def _row_no_ask(timestamp: int) -> dict[str, str]:
         return {
