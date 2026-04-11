@@ -22,12 +22,17 @@ The repository currently contains:
 - tutorial research and planning notes
 - a reusable project skeleton for the live bot and offline harness
 - tutorial CSVs copied into `data/raw/tutorial_round_1`
+- a **manual-round toolkit** (`src/manual_rounds/`) with solvers for
+  the five recurring manual-round families (graph, bid, crowding,
+  hybrid, portfolio) and round-day CLI runners
 
 This is the foundation for building:
 
 1. a production-safe `Trader.run()` engine
 2. a replay and review system for tutorial and round data
 3. round-specific strategy modules on top of shared core services
+4. a parallel manual-round workstream for the closed-form puzzles each
+   round ships alongside the algo challenge
 
 ## Repository Layout
 
@@ -37,6 +42,9 @@ data/
   processed/
 
 docs/
+  manual_round_playbook.md
+  manual_round_agent_brief.md
+
 notebooks/
 
 src/
@@ -45,7 +53,8 @@ src/
   core/
   strategies/
   backtest/
-  scripts/
+  manual_rounds/       # solvers + priors + artifact writer
+  scripts/             # CLI runners (algo + manual)
 
 tests/
 ```
@@ -67,11 +76,36 @@ Create a virtual environment, install dependencies, and run the smoke checks:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-pytest
-python -m src.scripts.validate_submission
-python -m src.scripts.run_backtest
+pip install -r requirements-dev.txt
+PYTHONPATH=. pytest
+PYTHONPATH=. python -m src.scripts.validate_submission
+PYTHONPATH=. python -m src.scripts.run_backtest
+PYTHONPATH=. python -m src.scripts.compare_fair_values
+PYTHONPATH=. python -m src.scripts.run_parameter_sweep
+PYTHONPATH=. python -m src.scripts.run_review --label smoke
 ```
+
+`run_review` writes an enriched Phase 4a review pack under
+`outputs/review_packs/<run_id>/` containing metric aggregates with
+markouts and entry-edge, per-trade records, step-indexed series,
+chart PNGs, a provenance manifest, and a human review template.
+See [`docs/phase_4_review_discipline_note.md`](docs/phase_4_review_discipline_note.md)
+for how to read each artifact.
+
+## Manual rounds
+
+Each Prosperity round ships a closed-form manual puzzle alongside the
+algo challenge. `src/manual_rounds/` contains solvers for the five
+recurring families (graph/path, sealed bid, game-theoretic crowding,
+average-bid hybrid, news portfolio) plus CLI runners that accept a JSON
+input and emit a standardized artifact pack under
+`outputs/manual_rounds/<run_id>/` — `answer.json`,
+`top_alternatives.json`, `assumptions.json`, `sensitivity.json`, and a
+rendered `submission_note.md`. See
+[`docs/manual_round_playbook.md`](docs/manual_round_playbook.md) for the
+operator guide (round → family → runner) and
+[`src/manual_rounds/README.md`](src/manual_rounds/README.md) for worked
+examples from every public round.
 
 ## Important Files
 
@@ -79,5 +113,6 @@ python -m src.scripts.run_backtest
 - [Writing an Algorithm in Python.html](/Users/abhinavgupta/Desktop/IMC/Writing%20an%20Algorithm%20in%20Python.html)
 - [Implementation Plan.md](/Users/abhinavgupta/Desktop/IMC/Tutorial/Implementation%20Plan.md)
 - [Manual Strategy Plan.md](/Users/abhinavgupta/Desktop/IMC/Tutorial/Manual%20Strategy%20Plan.md)
+- [manual_round_playbook.md](/Users/abhinavgupta/Desktop/IMC/docs/manual_round_playbook.md)
+- [manual_round_agent_brief.md](/Users/abhinavgupta/Desktop/IMC/docs/manual_round_agent_brief.md)
 - [deep-research-report.md](/Users/abhinavgupta/Desktop/IMC/Tutorial/deep-research-report.md)
-
