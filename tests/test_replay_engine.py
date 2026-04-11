@@ -86,3 +86,55 @@ def test_replay_step_is_immutable() -> None:
     step = ReplayStep(day=-1, timestamp=0, rows_by_product={})
     with pytest.raises((AttributeError, TypeError)):
         step.day = 5  # type: ignore[misc]
+
+
+@pytest.mark.unit
+def test_from_files_joins_prices_and_trades_by_day_and_timestamp(tmp_path: Path) -> None:
+    price_file = _write_csv(
+        tmp_path,
+        "prices_round_0_day_-1.csv",
+        [
+            "-1;0;EMERALDS;9992;14;;;;;10008;14;;;;;10000.0;0.0",
+            "-1;100;EMERALDS;9993;10;;;;;10005;10;;;;;9999.0;0.0",
+        ],
+    )
+    trade_file = tmp_path / "trades_round_0_day_-1.csv"
+    trade_file.write_text(
+        "timestamp;buyer;seller;symbol;currency;price;quantity\n" "100;;;EMERALDS;XIRECS;9993.0;5\n"
+    )
+
+    engine = ReplayEngine.from_files(price_paths=[price_file], trade_paths=[trade_file])
+
+    assert engine.steps[0].market_trades == {}
+    trades = engine.steps[1].market_trades["EMERALDS"]
+    assert len(trades) == 1
+    assert trades[0].price == 9993
+    assert trades[0].quantity == 5
+    assert trades[0].timestamp == 100
+
+
+@pytest.mark.unit
+def test_from_files_rejects_trade_file_without_day_in_name(tmp_path: Path) -> None:
+    bad = tmp_path / "trades.csv"
+    bad.write_text("timestamp;buyer;seller;symbol;currency;price;quantity\n")
+    with pytest.raises(ValueError, match="infer day"):
+        ReplayEngine.from_files(price_paths=[], trade_paths=[bad])
+
+
+@pytest.mark.unit
+def test_build_trading_state_includes_market_trades_from_step(tmp_path: Path) -> None:
+    price_file = _write_csv(
+        tmp_path,
+        "prices_round_0_day_-1.csv",
+        ["-1;100;EMERALDS;9993;10;;;;;10005;10;;;;;9999.0;0.0"],
+    )
+    trade_file = tmp_path / "trades_round_0_day_-1.csv"
+    trade_file.write_text(
+        "timestamp;buyer;seller;symbol;currency;price;quantity\n" "100;;;EMERALDS;XIRECS;9993.0;5\n"
+    )
+    engine = ReplayEngine.from_files(price_paths=[price_file], trade_paths=[trade_file])
+
+    state = ReplayEngine.build_trading_state(
+        engine.steps[0], trader_data="", position={}, own_trades={}
+    )
+    assert state.market_trades["EMERALDS"][0].price == 9993

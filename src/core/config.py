@@ -79,13 +79,18 @@ class EngineConfig:
 def default_engine_config() -> EngineConfig:
     return EngineConfig(
         products={
+            # EMERALDS maker_edge=8 intentionally quotes at 9992 / 10008
+            # (mid - maker_edge and mid + maker_edge) where the tutorial
+            # trade tape actually prints. Quoting strictly inside the
+            # spread would capture more theoretical edge but produces
+            # zero measurable passive fills in the tutorial replay.
             "EMERALDS": ProductConfig(
                 position_limit=20,
                 strategy_name="stable_anchor",
                 fair_value_method="anchor",
                 anchor_price=10_000.0,
                 taker_edge=1.0,
-                maker_edge=2.0,
+                maker_edge=8.0,
                 quote_size=5,
                 max_aggressive_size=10,
                 inventory_skew=2.0,

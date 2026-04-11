@@ -1,3 +1,19 @@
+"""Translate fair value + snapshot + config into a trading intent.
+
+This module converts "what do we believe" (the fair value estimate)
+into "what would we want to do about it" (a ``SignalIntent`` naming
+taker thresholds, maker prices, and the execution mode). It deliberately
+does NOT emit ``Order``s — that's the execution engine's job.
+
+Capacity recovery rule:
+- When ``|position / limit| >= flatten_threshold`` the engine enters
+  "recovery" mode. It stops adding to the side that already has
+  exposure and tightens the opposite side toward fair value.
+- In practice that means a long position disables buy intent entirely
+  (maker bid size = 0 AND taker ``buy_below`` is set to ``None``) and
+  pulls the maker ask in to fair value so inventory unwinds fastest.
+"""
+
 from __future__ import annotations
 
 import math
@@ -24,8 +40,8 @@ class SignalEngine:
         skew = position_ratio * config.inventory_skew
         flattening = abs(position_ratio) >= config.flatten_threshold
 
-        buy_below = fair_value.price - config.taker_edge - skew
-        sell_above = fair_value.price + config.taker_edge - skew
+        buy_below: float | None = fair_value.price - config.taker_edge - skew
+        sell_above: float | None = fair_value.price + config.taker_edge - skew
 
         raw_bid = math.floor(fair_value.price - config.maker_edge - skew)
         raw_ask = math.ceil(fair_value.price + config.maker_edge - skew)
@@ -44,10 +60,14 @@ class SignalEngine:
             mode = "recovery"
             rationale = "inventory_recovery"
             if snapshot.position > 0:
+                # Long: stop buying entirely, pull ask toward fair value.
                 bid_size = 0
+                buy_below = None
                 raw_ask = min(raw_ask, math.floor(fair_value.price))
             elif snapshot.position < 0:
+                # Short: stop selling entirely, pull bid toward fair value.
                 ask_size = 0
+                sell_above = None
                 raw_bid = max(raw_bid, math.ceil(fair_value.price))
 
         quote = QuoteIntent(
