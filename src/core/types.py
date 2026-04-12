@@ -192,6 +192,21 @@ class ScannerConfig:
 
 
 @dataclass(frozen=True)
+class ResidualConfig:
+    """Controls the optional residual capacity utilizer.
+
+    Ships disabled (framework-only). Enable only after the enablement
+    gate is passed: compare baseline vs baseline+residual on PnL, trade
+    count, maker/taker mix, markouts, and time-near-limits. Record
+    results in a review note before flipping the flag.
+    """
+
+    enabled: bool = False
+    residual_edge: float = 2.0
+    residual_size: int = 2
+
+
+@dataclass(frozen=True)
 class FlowReport:
     """Observational summary of trade-flow patterns for a single step.
 

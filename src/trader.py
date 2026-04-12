@@ -30,6 +30,7 @@ from src.core.execution import ExecutionEngine
 from src.core.fair_value import FairValueEngine
 from src.core.logger import DecisionLogger
 from src.core.market_data import MarketDataAdapter
+from src.core.residual import ResidualAllocator
 from src.core.risk import RiskManager
 from src.core.signals import SignalEngine
 from src.core.state_store import StateStore
@@ -60,6 +61,7 @@ class Trader:
         self.signal_engine = SignalEngine()
         self.execution_engine = ExecutionEngine()
         self.risk_manager = RiskManager()
+        self.residual_allocator = ResidualAllocator(self.config.residual_config)
         self.flow_analyzer = FlowAnalyzer(self.config.scanner_config)
         self.logger = DecisionLogger()
         self._reraise_exceptions = reraise_exceptions
@@ -161,6 +163,15 @@ class Trader:
         )
         intent = strategy.generate_intent(context)
         raw_orders = self.execution_engine.generate_orders(snapshot, intent, product_config)
+        raw_orders = self.residual_allocator.augment_orders(
+            product=product,
+            orders=raw_orders,
+            snapshot=snapshot,
+            fair_value=intent.fair_value.price,
+            position=snapshot.position,
+            limit=product_config.position_limit,
+            mode=intent.mode,
+        )
         legal_orders = self.risk_manager.clip_orders(
             product=product,
             orders=raw_orders,

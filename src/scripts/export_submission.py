@@ -58,6 +58,7 @@ LIVE_MODULE_ORDER: tuple[str, ...] = (
     "src/core/signals.py",
     "src/core/execution.py",
     "src/core/risk.py",
+    "src/core/residual.py",
     "src/strategies/base.py",
     "src/strategies/market_making.py",
     "src/strategies/__init__.py",
