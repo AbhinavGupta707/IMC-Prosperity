@@ -119,8 +119,15 @@ class RollingMidEstimator:
 
 
 class WeightedMidEstimator:
+    """Linearly-weighted average of recent mids.
+
+    Uses ``config.history_length`` as the lookback window so that
+    parameter sweeps of ``history_length`` are meaningful.  Previously
+    this was hardcoded at 4 (``LOOKBACK``), which made sweeps of
+    ``history_length`` a no-op for any value >= 4.
+    """
+
     name = "weighted_mid"
-    LOOKBACK = 4
 
     def estimate(
         self,
@@ -128,7 +135,8 @@ class WeightedMidEstimator:
         memory: ProductMemory,
         config: ProductConfig,
     ) -> FairValueEstimate | None:
-        history = memory.recent_mids[-self.LOOKBACK :]
+        lookback = config.history_length if config.history_length > 0 else 0
+        history = memory.recent_mids[-lookback:] if lookback > 0 else []
         if snapshot.mid is None:
             # Fall back to pure history if the book is one-sided.
             if not history:
@@ -244,6 +252,159 @@ class DepthMidEstimator:
         )
 
 
+class WallMidEstimator:
+    """Fair value as midpoint of the largest bid and ask levels."""
+
+    name = "wall_mid"
+
+    def estimate(
+        self,
+        snapshot: NormalizedSnapshot,
+        memory: ProductMemory,
+        config: ProductConfig,
+    ) -> FairValueEstimate | None:
+        del memory, config
+        if not snapshot.bids or not snapshot.asks:
+            return None
+
+        wall_bid = max(snapshot.bids, key=lambda l: l.volume)
+        wall_ask = max(snapshot.asks, key=lambda l: l.volume)
+
+        return FairValueEstimate(
+            price=(wall_bid.price + wall_ask.price) / 2.0,
+            method=self.name,
+            confidence=0.75,
+            components=MappingProxyType(
+                {
+                    "wall_bid_price": wall_bid.price,
+                    "wall_ask_price": wall_ask.price,
+                    "wall_bid_vol": wall_bid.volume,
+                    "wall_ask_vol": wall_ask.volume,
+                }
+            ),
+        )
+
+
+class FilteredWallMidEstimator:
+    """Wall mid after filtering out small levels.
+
+    Considers only the top N visible levels per side. Filters out levels
+    with volume < 25% of the side's max volume. Among survivors, picks
+    the largest volume; ties broken by closeness to touch.
+    """
+
+    name = "filtered_wall_mid"
+    _TOP_N = 3
+    _MIN_VOLUME_RATIO = 0.25
+
+    def estimate(
+        self,
+        snapshot: NormalizedSnapshot,
+        memory: ProductMemory,
+        config: ProductConfig,
+    ) -> FairValueEstimate | None:
+        del memory, config
+        if not snapshot.bids or not snapshot.asks:
+            return None
+
+        top_bids = snapshot.bids[: self._TOP_N]
+        top_asks = snapshot.asks[: self._TOP_N]
+
+        wall_bid, bid_filtered = self._pick_wall(top_bids)
+        wall_ask, ask_filtered = self._pick_wall(top_asks)
+
+        if wall_bid is None or wall_ask is None:
+            return None
+
+        return FairValueEstimate(
+            price=(wall_bid.price + wall_ask.price) / 2.0,
+            method=self.name,
+            confidence=0.75,
+            components=MappingProxyType(
+                {
+                    "wall_bid_price": wall_bid.price,
+                    "wall_ask_price": wall_ask.price,
+                    "filtered_out_count": bid_filtered + ask_filtered,
+                }
+            ),
+        )
+
+    @staticmethod
+    def _pick_wall(levels: tuple[BookLevel, ...]) -> tuple[BookLevel | None, int]:
+        """Select the wall level after filtering.
+
+        Returns (selected_level, count_filtered_out).
+        """
+        if not levels:
+            return None, 0
+        max_vol = max(l.volume for l in levels)
+        threshold = max_vol * FilteredWallMidEstimator._MIN_VOLUME_RATIO
+        indexed = [(i, l) for i, l in enumerate(levels) if l.volume >= threshold]
+        filtered_count = len(levels) - len(indexed)
+        if not indexed:
+            return None, filtered_count
+        # Largest volume first, then closest to touch (smallest index)
+        indexed.sort(key=lambda x: (-x[1].volume, x[0]))
+        return indexed[0][1], filtered_count
+
+
+class HybridWallMicroEstimator:
+    """Blends wall_mid and microprice estimates."""
+
+    name = "hybrid_wall_micro"
+    wall_weight: float = 0.5
+
+    def __init__(self) -> None:
+        self._wall = WallMidEstimator()
+        self._micro = MicropriceEstimator()
+
+    def estimate(
+        self,
+        snapshot: NormalizedSnapshot,
+        memory: ProductMemory,
+        config: ProductConfig,
+    ) -> FairValueEstimate | None:
+        wall_est = self._wall.estimate(snapshot, memory, config)
+        micro_est = self._micro.estimate(snapshot, memory, config)
+
+        if wall_est is not None and micro_est is not None:
+            price = self.wall_weight * wall_est.price + (1 - self.wall_weight) * micro_est.price
+            return FairValueEstimate(
+                price=price,
+                method=self.name,
+                confidence=0.75,
+                components=MappingProxyType(
+                    {
+                        "wall_mid_price": wall_est.price,
+                        "microprice": micro_est.price,
+                        "wall_weight": self.wall_weight,
+                    }
+                ),
+            )
+
+        if wall_est is not None:
+            return FairValueEstimate(
+                price=wall_est.price,
+                method=self.name,
+                confidence=0.75,
+                components=MappingProxyType(
+                    {"wall_mid_price": wall_est.price, "wall_weight": 1.0}
+                ),
+            )
+
+        if micro_est is not None:
+            return FairValueEstimate(
+                price=micro_est.price,
+                method=self.name,
+                confidence=0.75,
+                components=MappingProxyType(
+                    {"microprice": micro_est.price, "wall_weight": 0.0}
+                ),
+            )
+
+        return None
+
+
 ESTIMATORS: Mapping[str, Estimator] = MappingProxyType(
     {
         "anchor": AnchorEstimator(),
@@ -253,6 +414,9 @@ ESTIMATORS: Mapping[str, Estimator] = MappingProxyType(
         "weighted_mid": WeightedMidEstimator(),
         "ewma_mid": EwmaMidEstimator(),
         "depth_mid": DepthMidEstimator(),
+        "wall_mid": WallMidEstimator(),
+        "filtered_wall_mid": FilteredWallMidEstimator(),
+        "hybrid_wall_micro": HybridWallMicroEstimator(),
     }
 )
 

@@ -11,9 +11,12 @@ from src.core.fair_value import (
     DepthMidEstimator,
     EwmaMidEstimator,
     FairValueEngine,
+    FilteredWallMidEstimator,
+    HybridWallMicroEstimator,
     MicropriceEstimator,
     MidEstimator,
     RollingMidEstimator,
+    WallMidEstimator,
     WeightedMidEstimator,
 )
 from src.core.types import BookLevel, NormalizedSnapshot, ProductMemory
@@ -295,3 +298,170 @@ def test_fair_value_estimate_components_is_immutable() -> None:
     assert result is not None
     with pytest.raises(TypeError):
         result.components["x"] = 1  # type: ignore[index]
+
+
+# ---- Phase 2: WallMidEstimator tests ----
+
+
+@pytest.mark.unit
+def test_wall_mid_symmetric_book() -> None:
+    """Wall mid of symmetric book equals regular mid."""
+    snap = _snapshot(bid=100, bid_vol=10, ask=102, ask_vol=10)
+    result = WallMidEstimator().estimate(snap, ProductMemory(), _mid_config())
+    assert result is not None
+    assert result.price == pytest.approx(101.0)
+    assert result.method == "wall_mid"
+
+
+@pytest.mark.unit
+def test_wall_mid_asymmetric_book_picks_largest_levels() -> None:
+    """Wall mid picks the biggest volume levels on each side."""
+    snap = NormalizedSnapshot(
+        product="P",
+        timestamp=0,
+        bids=(BookLevel(100, 5), BookLevel(98, 20)),  # wall at 98
+        asks=(BookLevel(102, 5), BookLevel(104, 20)),  # wall at 104
+    )
+    result = WallMidEstimator().estimate(snap, ProductMemory(), _mid_config())
+    assert result is not None
+    assert result.price == pytest.approx(101.0)  # (98 + 104) / 2
+    assert result.components["wall_bid_price"] == 98
+    assert result.components["wall_ask_price"] == 104
+
+
+@pytest.mark.unit
+def test_wall_mid_empty_side_returns_none() -> None:
+    snap = NormalizedSnapshot(product="P", timestamp=0, bids=(), asks=(BookLevel(102, 5),))
+    result = WallMidEstimator().estimate(snap, ProductMemory(), _mid_config())
+    assert result is None
+
+
+@pytest.mark.unit
+def test_wall_mid_single_level_per_side() -> None:
+    snap = _snapshot(bid=100, bid_vol=5, ask=102, ask_vol=5)
+    result = WallMidEstimator().estimate(snap, ProductMemory(), _mid_config())
+    assert result is not None
+    assert result.price == pytest.approx(101.0)
+    assert result.components["wall_bid_vol"] == 5
+
+
+# ---- Phase 2: FilteredWallMidEstimator tests ----
+
+
+@pytest.mark.unit
+def test_filtered_wall_mid_filters_small_levels() -> None:
+    """Levels with vol < 25% of max are filtered out."""
+    snap = NormalizedSnapshot(
+        product="P",
+        timestamp=0,
+        bids=(BookLevel(100, 20), BookLevel(99, 1)),  # 1 < 20*0.25=5 -> filtered
+        asks=(BookLevel(102, 20), BookLevel(103, 1)),  # 1 < 20*0.25=5 -> filtered
+    )
+    result = FilteredWallMidEstimator().estimate(snap, ProductMemory(), _mid_config())
+    assert result is not None
+    assert result.price == pytest.approx(101.0)  # (100 + 102) / 2
+    assert result.components["filtered_out_count"] == 2
+
+
+@pytest.mark.unit
+def test_filtered_wall_mid_returns_none_on_empty_side() -> None:
+    snap = NormalizedSnapshot(product="P", timestamp=0, bids=(), asks=(BookLevel(102, 5),))
+    result = FilteredWallMidEstimator().estimate(snap, ProductMemory(), _mid_config())
+    assert result is None
+
+
+@pytest.mark.unit
+def test_filtered_wall_mid_tie_break_by_proximity_to_touch() -> None:
+    """Equal volume: pick the level closest to touch (index 0)."""
+    snap = NormalizedSnapshot(
+        product="P",
+        timestamp=0,
+        bids=(BookLevel(100, 10), BookLevel(99, 10), BookLevel(98, 10)),
+        asks=(BookLevel(102, 10), BookLevel(103, 10), BookLevel(104, 10)),
+    )
+    result = FilteredWallMidEstimator().estimate(snap, ProductMemory(), _mid_config())
+    assert result is not None
+    assert result.components["wall_bid_price"] == 100
+    assert result.components["wall_ask_price"] == 102
+
+
+# ---- Phase 2: HybridWallMicroEstimator tests ----
+
+
+@pytest.mark.unit
+def test_hybrid_wall_micro_blends_correctly() -> None:
+    snap = _snapshot(bid=100, bid_vol=3, ask=102, ask_vol=1)
+    result = HybridWallMicroEstimator().estimate(snap, ProductMemory(), _mid_config())
+    assert result is not None
+    # wall_mid = (100 + 102) / 2 = 101.0
+    # microprice = (100*1 + 102*3) / 4 = 101.5
+    # hybrid = 0.5 * 101.0 + 0.5 * 101.5 = 101.25
+    assert result.price == pytest.approx(101.25)
+    assert result.components["wall_weight"] == pytest.approx(0.5)
+
+
+@pytest.mark.unit
+def test_hybrid_wall_micro_symmetric_book() -> None:
+    """When wall_mid == microprice, blend equals both."""
+    snap = _snapshot(bid=100, bid_vol=5, ask=102, ask_vol=5)
+    result = HybridWallMicroEstimator().estimate(snap, ProductMemory(), _mid_config())
+    assert result is not None
+    assert result.price == pytest.approx(101.0)
+
+
+@pytest.mark.unit
+def test_hybrid_wall_micro_none_when_both_missing() -> None:
+    snap = NormalizedSnapshot(product="P", timestamp=0, bids=(), asks=())
+    result = HybridWallMicroEstimator().estimate(snap, ProductMemory(), _mid_config())
+    assert result is None
+
+
+# ---- Phase 2: Registration tests ----
+
+
+@pytest.mark.unit
+def test_weighted_mid_respects_history_length() -> None:
+    """history_length controls the lookback window for weighted_mid.
+
+    Regression guard: previously weighted_mid hardcoded LOOKBACK=4,
+    making history_length sweeps a no-op.
+    """
+    # 8 mids: first 4 are 90, last 4 are 100
+    memory = ProductMemory(recent_mids=[90.0, 90.0, 90.0, 90.0, 100.0, 100.0, 100.0, 100.0])
+    snap = _snapshot(bid=100, bid_vol=1, ask=100, ask_vol=1)  # mid 100
+
+    short_config = ProductConfig(
+        position_limit=20,
+        strategy_name="market_making",
+        fair_value_method="weighted_mid",
+        fair_value_fallbacks=(),
+        history_length=4,
+    )
+    long_config = ProductConfig(
+        position_limit=20,
+        strategy_name="market_making",
+        fair_value_method="weighted_mid",
+        fair_value_fallbacks=(),
+        history_length=8,
+    )
+
+    short_result = WeightedMidEstimator().estimate(snap, memory, short_config)
+    long_result = WeightedMidEstimator().estimate(snap, memory, long_config)
+
+    assert short_result is not None and long_result is not None
+    # With history_length=4: uses [100,100,100,100] + mid 100 -> all 100
+    assert short_result.price == pytest.approx(100.0)
+    # With history_length=8: uses [90,90,90,90,100,100,100,100] + mid 100
+    # The 90s pull the weighted average below 100
+    assert long_result.price < short_result.price
+
+
+@pytest.mark.unit
+def test_new_estimators_in_estimate_all() -> None:
+    """All three new estimators appear in estimate_all output."""
+    engine = FairValueEngine()
+    snap = _snapshot(bid=99, bid_vol=2, ask=101, ask_vol=2)
+    results = engine.estimate_all(snap, ProductMemory(), _anchor_config())
+    assert "wall_mid" in results
+    assert "filtered_wall_mid" in results
+    assert "hybrid_wall_micro" in results

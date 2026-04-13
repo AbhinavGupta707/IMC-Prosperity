@@ -29,9 +29,12 @@ KNOWN_ESTIMATOR_NAMES: tuple[str, ...] = (
     "anchor",
     "depth_mid",
     "ewma_mid",
+    "filtered_wall_mid",
+    "hybrid_wall_micro",
     "microprice",
     "mid",
     "rolling_mid",
+    "wall_mid",
     "weighted_mid",
 )
 
@@ -161,7 +164,7 @@ def default_engine_config() -> EngineConfig:
             "TOMATOES": ProductConfig(
                 position_limit=80,
                 strategy_name="market_making",
-                fair_value_method="weighted_mid",
+                fair_value_method="wall_mid",
                 fair_value_fallbacks=("mid", "microprice"),
                 taker_edge=1.0,
                 maker_edge=1.0,
