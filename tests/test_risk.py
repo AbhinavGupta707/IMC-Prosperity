@@ -99,3 +99,60 @@ def test_clip_orders_handles_position_beyond_limit_gracefully() -> None:
     orders = [Order("P", 100, 3), Order("P", 99, -10)]
     clipped = risk.clip_orders("P", orders, current_position=25, limit=20)
     assert [(o.price, o.quantity) for o in clipped] == [(99, -10)]
+
+
+# ---- Phase 1: Limit-80 worst-case legality tests ----
+
+
+@pytest.mark.unit
+def test_limit_80_long_exact_boundary_at_65() -> None:
+    """At position 65, buy capacity=15 exactly fits taker(10)+maker(5)."""
+    risk = RiskManager()
+    orders = [Order("P", 100, 10), Order("P", 99, 5)]
+    clipped = risk.clip_orders("P", orders, current_position=65, limit=80)
+    assert [(o.price, o.quantity) for o in clipped] == [(100, 10), (99, 5)]
+
+
+@pytest.mark.unit
+def test_limit_80_long_clip_at_66() -> None:
+    """At position 66, buy capacity=14 clips second order."""
+    risk = RiskManager()
+    orders = [Order("P", 100, 10), Order("P", 99, 5)]
+    clipped = risk.clip_orders("P", orders, current_position=66, limit=80)
+    assert [(o.price, o.quantity) for o in clipped] == [(100, 10), (99, 4)]
+
+
+@pytest.mark.unit
+def test_limit_80_long_minimal_at_78() -> None:
+    """At position 78, buy capacity=2: only 2 units survive."""
+    risk = RiskManager()
+    orders = [Order("P", 100, 10), Order("P", 99, 5)]
+    clipped = risk.clip_orders("P", orders, current_position=78, limit=80)
+    assert [(o.price, o.quantity) for o in clipped] == [(100, 2)]
+
+
+@pytest.mark.unit
+def test_limit_80_short_exact_boundary_at_minus_65() -> None:
+    """At position -65, sell capacity=15 exactly fits."""
+    risk = RiskManager()
+    orders = [Order("P", 100, -10), Order("P", 101, -5)]
+    clipped = risk.clip_orders("P", orders, current_position=-65, limit=80)
+    assert [(o.price, o.quantity) for o in clipped] == [(100, -10), (101, -5)]
+
+
+@pytest.mark.unit
+def test_limit_80_short_clip_at_minus_66() -> None:
+    """At position -66, sell capacity=14 clips second order."""
+    risk = RiskManager()
+    orders = [Order("P", 100, -10), Order("P", 101, -5)]
+    clipped = risk.clip_orders("P", orders, current_position=-66, limit=80)
+    assert [(o.price, o.quantity) for o in clipped] == [(100, -10), (101, -4)]
+
+
+@pytest.mark.unit
+def test_limit_80_short_minimal_at_minus_78() -> None:
+    """At position -78, sell capacity=2: only 2 units survive."""
+    risk = RiskManager()
+    orders = [Order("P", 100, -10), Order("P", 101, -5)]
+    clipped = risk.clip_orders("P", orders, current_position=-78, limit=80)
+    assert [(o.price, o.quantity) for o in clipped] == [(100, -2)]
