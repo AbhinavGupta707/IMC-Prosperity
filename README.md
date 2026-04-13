@@ -121,12 +121,19 @@ operator guide (round → family → runner) and
 [`src/manual_rounds/README.md`](src/manual_rounds/README.md) for worked
 examples from every public round.
 
-## Important Files
+## Documentation
 
-- [ARCHITECTURE_DOCTRINE.md](/Users/abhinavgupta/Desktop/IMC/ARCHITECTURE_DOCTRINE.md)
-- [Writing an Algorithm in Python.html](/Users/abhinavgupta/Desktop/IMC/Writing%20an%20Algorithm%20in%20Python.html)
-- [Implementation Plan.md](/Users/abhinavgupta/Desktop/IMC/Tutorial/Implementation%20Plan.md)
-- [Manual Strategy Plan.md](/Users/abhinavgupta/Desktop/IMC/Tutorial/Manual%20Strategy%20Plan.md)
-- [manual_round_playbook.md](/Users/abhinavgupta/Desktop/IMC/docs/manual_round_playbook.md)
-- [manual_round_agent_brief.md](/Users/abhinavgupta/Desktop/IMC/docs/manual_round_agent_brief.md)
-- [deep-research-report.md](/Users/abhinavgupta/Desktop/IMC/Tutorial/deep-research-report.md)
+See [`docs/README.md`](docs/README.md) for a full index and reading
+order. Start with:
+
+- [ARCHITECTURE_DOCTRINE.md](ARCHITECTURE_DOCTRINE.md) — design principles
+- [docs/architecture.md](docs/architecture.md) — system architecture (modules, data flow, types)
+- [docs/adding_a_product.md](docs/adding_a_product.md) — how to onboard a new product
+- [docs/new_round_checklist.md](docs/new_round_checklist.md) — what to do when a new round drops
+
+## Other Important Files
+
+- [Writing an Algorithm in Python.html](Writing%20an%20Algorithm%20in%20Python.html)
+- [Implementation Plan.md](Tutorial/Implementation%20Plan.md)
+- [Manual Strategy Plan.md](Tutorial/Manual%20Strategy%20Plan.md)
+- [deep-research-report.md](Tutorial/deep-research-report.md)
