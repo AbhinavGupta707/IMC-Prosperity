@@ -13,6 +13,7 @@ from src.core.fair_value import (
     FairValueEngine,
     FilteredWallMidEstimator,
     HybridWallMicroEstimator,
+    LinearDriftEstimator,
     MicropriceEstimator,
     MidEstimator,
     RollingMidEstimator,
@@ -465,3 +466,108 @@ def test_new_estimators_in_estimate_all() -> None:
     assert "wall_mid" in results
     assert "filtered_wall_mid" in results
     assert "hybrid_wall_micro" in results
+
+
+def _linear_drift_config(history_length: int = 32) -> ProductConfig:
+    return ProductConfig(
+        position_limit=20,
+        strategy_name="market_making",
+        fair_value_method="linear_drift",
+        fair_value_fallbacks=("mid",),
+        history_length=history_length,
+    )
+
+
+@pytest.mark.unit
+def test_linear_drift_returns_none_when_no_data() -> None:
+    """With empty memory and a one-sided book, the estimator declines."""
+    snap = NormalizedSnapshot(
+        product="P",
+        timestamp=0,
+        bids=(BookLevel(99, 5),),
+        asks=(),
+    )
+    result = LinearDriftEstimator().estimate(snap, ProductMemory(), _linear_drift_config())
+    assert result is None
+
+
+@pytest.mark.unit
+def test_linear_drift_bootstrap_uses_current_mid() -> None:
+    """With empty memory but a current mid, fall back to current mid."""
+    snap = _snapshot(bid=100, ask=102)  # mid = 101
+    result = LinearDriftEstimator().estimate(snap, ProductMemory(), _linear_drift_config())
+    assert result is not None
+    assert result.price == pytest.approx(101.0)
+    assert result.components.get("bootstrap") == 1.0
+
+
+@pytest.mark.unit
+def test_linear_drift_projects_constant_slope() -> None:
+    """On a perfectly linear history, slope is recovered and next step is projected."""
+    # History: 100, 101, 102, 103 (slope +1 per step).  Current mid = 104.
+    memory = ProductMemory(recent_mids=[100.0, 101.0, 102.0, 103.0])
+    snap = _snapshot(bid=103, bid_vol=1, ask=105, ask_vol=1)  # mid = 104
+    result = LinearDriftEstimator().estimate(snap, memory, _linear_drift_config())
+    assert result is not None
+    # 5 samples total (history + current); OLS fit slope ≈ 1.0.
+    # Forecast at index n=5: slope * 5 + intercept = 105.0.
+    assert result.price == pytest.approx(105.0)
+    assert result.components["slope"] == pytest.approx(1.0)
+
+
+@pytest.mark.unit
+def test_linear_drift_flat_history_returns_intercept() -> None:
+    """When mids are constant, slope is zero and the forecast equals the level."""
+    memory = ProductMemory(recent_mids=[100.0, 100.0, 100.0, 100.0])
+    snap = _snapshot(bid=99, bid_vol=1, ask=101, ask_vol=1)  # mid = 100
+    result = LinearDriftEstimator().estimate(snap, memory, _linear_drift_config())
+    assert result is not None
+    assert result.price == pytest.approx(100.0)
+    assert result.components["slope"] == pytest.approx(0.0)
+
+
+@pytest.mark.unit
+def test_linear_drift_respects_history_length() -> None:
+    """A short history_length ignores the older samples."""
+    # First four samples trend down, last four trend up.
+    memory = ProductMemory(
+        recent_mids=[120.0, 115.0, 110.0, 105.0, 100.0, 102.0, 104.0, 106.0]
+    )
+    snap = _snapshot(bid=107, bid_vol=1, ask=109, ask_vol=1)  # mid = 108
+
+    short_config = _linear_drift_config(history_length=4)
+    long_config = _linear_drift_config(history_length=8)
+
+    short_result = LinearDriftEstimator().estimate(snap, memory, short_config)
+    long_result = LinearDriftEstimator().estimate(snap, memory, long_config)
+
+    assert short_result is not None and long_result is not None
+    # Short window uses [100, 102, 104, 106, 108] (last 4 of history + current):
+    # clean +2/step upward drift.
+    assert short_result.components["slope"] == pytest.approx(2.0)
+    # Long window blends the down-trend with the up-trend; slope is less
+    # steep upward (and the forecast is below the short-window forecast).
+    assert long_result.components["slope"] < short_result.components["slope"]
+
+
+@pytest.mark.unit
+def test_linear_drift_single_prior_falls_back_to_last_mid() -> None:
+    """With only one mid in memory and no current mid, echo that sample."""
+    memory = ProductMemory(recent_mids=[100.0])
+    snap = NormalizedSnapshot(
+        product="P", timestamp=0, bids=(BookLevel(99, 1),), asks=()
+    )
+    result = LinearDriftEstimator().estimate(snap, memory, _linear_drift_config())
+    assert result is not None
+    assert result.price == pytest.approx(100.0)
+    assert result.components.get("bootstrap") == 1.0
+
+
+@pytest.mark.unit
+def test_linear_drift_in_estimate_all() -> None:
+    """Linear drift is registered in the default engine."""
+    engine = FairValueEngine()
+    snap = _snapshot(bid=99, bid_vol=2, ask=101, ask_vol=2)
+    memory = ProductMemory(recent_mids=[95.0, 97.0, 99.0])
+    results = engine.estimate_all(snap, memory, _linear_drift_config())
+    assert "linear_drift" in results

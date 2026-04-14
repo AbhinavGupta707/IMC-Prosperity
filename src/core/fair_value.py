@@ -218,6 +218,102 @@ class EwmaMidEstimator:
         )
 
 
+class LinearDriftEstimator:
+    """Online linear-drift estimator: fair = slope * index + intercept.
+
+    Fits a simple ordinary-least-squares line over the most recent
+    ``config.history_length`` mids held in ``memory.recent_mids`` (or
+    all of them if ``history_length`` is 0) and projects one step
+    ahead to forecast the next mid. Assumes the observations are
+    evenly spaced in time (true for IMC Prosperity replay data, which
+    ticks at a constant 100-timestamp cadence).
+
+    Designed for Round 1 INTARIAN_PEPPER_ROOT, which exhibits an
+    almost-deterministic +0.1 per timestamp-step drift. The estimator
+    does NOT hardcode the slope; it is recovered from recent data so
+    the estimator remains useful if the slope drifts.
+
+    Cold-start behaviour:
+    - 0 prior mids and no current mid -> return ``None``.
+    - 0 prior mids, current mid present -> return the current mid
+      marked as ``bootstrap``.
+    - 1 prior mid: fall back to the most recent mid.
+    - 2+ prior mids: OLS fit with index as the independent variable;
+      project one index step ahead to get the next-step forecast.
+    """
+
+    name = "linear_drift"
+
+    def estimate(
+        self,
+        snapshot: NormalizedSnapshot,
+        memory: ProductMemory,
+        config: ProductConfig,
+    ) -> FairValueEstimate | None:
+        lookback = config.history_length if config.history_length > 0 else None
+        history = list(memory.recent_mids)
+        if lookback is not None:
+            history = history[-lookback:]
+        current = snapshot.mid
+
+        if not history and current is None:
+            return None
+
+        # Cold-start
+        if not history:
+            return FairValueEstimate(
+                price=float(current),  # type: ignore[arg-type]
+                method=self.name,
+                confidence=0.3,
+                components=MappingProxyType({"bootstrap": 1.0}),
+            )
+
+        # Build (index, mid) sample set. Use history, then append the
+        # current mid if we have one.
+        ys: list[float] = [float(y) for y in history]
+        if current is not None:
+            ys.append(float(current))
+
+        n = len(ys)
+        if n < 2:
+            # Not enough points for a slope: return most recent observation.
+            return FairValueEstimate(
+                price=ys[-1],
+                method=self.name,
+                confidence=0.4,
+                components=MappingProxyType({"bootstrap": 1.0, "samples": float(n)}),
+            )
+
+        xs = list(range(n))
+        mean_x = (n - 1) / 2.0
+        mean_y = sum(ys) / n
+        var_x = sum((x - mean_x) ** 2 for x in xs)
+        if var_x <= 0:
+            return FairValueEstimate(
+                price=ys[-1],
+                method=self.name,
+                confidence=0.4,
+                components=MappingProxyType({"samples": float(n)}),
+            )
+        cov_xy = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys, strict=True))
+        slope = cov_xy / var_x
+        intercept = mean_y - slope * mean_x
+        # Project one index step ahead (= the next observation).
+        forecast = slope * n + intercept
+
+        components: dict[str, Scalar] = {
+            "slope": float(slope),
+            "intercept": float(intercept),
+            "samples": float(n),
+        }
+        return FairValueEstimate(
+            price=forecast,
+            method=self.name,
+            confidence=0.7,
+            components=MappingProxyType(components),
+        )
+
+
 class DepthMidEstimator:
     name = "depth_mid"
 
@@ -413,6 +509,7 @@ ESTIMATORS: Mapping[str, Estimator] = MappingProxyType(
         "rolling_mid": RollingMidEstimator(),
         "weighted_mid": WeightedMidEstimator(),
         "ewma_mid": EwmaMidEstimator(),
+        "linear_drift": LinearDriftEstimator(),
         "depth_mid": DepthMidEstimator(),
         "wall_mid": WallMidEstimator(),
         "filtered_wall_mid": FilteredWallMidEstimator(),
@@ -446,6 +543,21 @@ class FairValueEngine:
         fallback, and finally a zero-confidence zero-price marker so the
         caller can still proceed. The doctrine Invariant 5: a fallback
         path always exists.
+
+        **Warning — ``zero_fallback`` is a trap for products without an
+        ``anchor_price``.** The ``price=0.0`` marker exists so the
+        trader never crashes when the book is empty, but if any
+        strategy uses that value as a real fair value it will place
+        catastrophically mispriced orders. Round-1 sweeps caught this:
+        ``depth_mid`` / ``hybrid_wall_micro`` / ``mid`` primaries on
+        INTARIAN_PEPPER_ROOT (no anchor_price) all hit ``zero_fallback``
+        on one-sided books and posted ~-128k PnL. The fix for any
+        production-ready ``ProductConfig`` without an anchor is to put
+        at least one estimator that **always returns a value** (e.g.
+        ``linear_drift`` after warm-up, or any estimator with a
+        non-``None`` bootstrap branch) at the end of the fallback
+        chain. See ``outputs/round_1/notes/phase4_sweep_shortlist.md``
+        for the full diagnosis.
         """
         del product  # reserved for future per-product registries
         chain: list[str] = [config.fair_value_method, *config.fair_value_fallbacks]

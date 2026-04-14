@@ -31,6 +31,7 @@ KNOWN_ESTIMATOR_NAMES: tuple[str, ...] = (
     "ewma_mid",
     "filtered_wall_mid",
     "hybrid_wall_micro",
+    "linear_drift",
     "microprice",
     "mid",
     "rolling_mid",
@@ -140,11 +141,11 @@ class EngineConfig:
 
 
 def default_engine_config() -> EngineConfig:
-    # Both tutorial products use the shared market-making strategy, differing
-    # only by their fair-value choice. maker_edge is kept at a principled 2
-    # (tick beyond the anchor) rather than the data-fit value of 8 we briefly
-    # used to chase the tutorial trade tape. See docs/eda_tutorial_round_1.md
-    # for why the tutorial replay under-rewards inside-spread makers.
+    # Tutorial products (EMERALDS, TOMATOES) plus Round-1 products
+    # (ASH_COATED_OSMIUM, INTARIAN_PEPPER_ROOT). All share the
+    # market-making strategy and differ only by configuration. See
+    # ``outputs/round_1/notes/strategy_family_proposal.md`` for the
+    # per-product Round-1 family rationale.
     return EngineConfig(
         products={
             "EMERALDS": ProductConfig(
@@ -174,5 +175,84 @@ def default_engine_config() -> EngineConfig:
                 flatten_threshold=0.7,
                 history_length=48,
             ),
+            # --- Round 1 ---
+            # ASH_COATED_OSMIUM: anchored oscillator at ~10 000 with a
+            # 16-tick stable spread; classic wide-spread maker product.
+            # Primary wall_mid tracks the center of mass of the visible
+            # book and was the most cross-day robust in Phase 1
+            # (outputs/round_1/research/ash_coated_osmium_dossier.md).
+            # Position limit is a placeholder pending official
+            # confirmation.
+            "ASH_COATED_OSMIUM": ProductConfig(
+                position_limit=50,
+                strategy_name="market_making",
+                fair_value_method="wall_mid",
+                fair_value_fallbacks=("mid", "microprice"),
+                anchor_price=10_000.0,  # fallback only (not primary)
+                taker_edge=1.0,
+                maker_edge=1.0,
+                quote_size=5,
+                max_aggressive_size=10,
+                inventory_skew=4.0,
+                flatten_threshold=0.7,
+                history_length=48,
+            ),
+            # INTARIAN_PEPPER_ROOT: deterministic drift +0.1 per
+            # timestamp step with a +1 000 overnight jump. Fair value
+            # is tracked by the `linear_drift` estimator (added in
+            # Phase 3) with a book-aware fallback chain for warm-up
+            # and one-sided snapshots. See
+            # outputs/round_1/research/intarian_pepper_root_dossier.md.
+            #
+            # Fallback-chain design note: this product has no
+            # `anchor_price`, so the `FairValueEngine.estimate`
+            # zero-fallback (price=0.0) is only avoided when at least
+            # one entry in the chain always returns a value. The chain
+            # below is ordered so that `linear_drift` (always returns
+            # something after warm-up) and `mid` cover that role.
+            # Candidates like `depth_mid` and `hybrid_wall_micro` cannot
+            # be used as primaries here without adding such a safety
+            # net — see outputs/round_1/notes/phase4_sweep_shortlist.md.
+            "INTARIAN_PEPPER_ROOT": ProductConfig(
+                position_limit=50,
+                strategy_name="market_making",
+                fair_value_method="linear_drift",
+                fair_value_fallbacks=("depth_mid", "hybrid_wall_micro", "mid"),
+                taker_edge=1.0,
+                maker_edge=1.5,
+                quote_size=4,
+                max_aggressive_size=8,
+                inventory_skew=2.0,
+                flatten_threshold=0.8,
+                history_length=48,
+            ),
         }
+    )
+
+
+ROUND1_PRODUCTS: tuple[str, ...] = ("ASH_COATED_OSMIUM", "INTARIAN_PEPPER_ROOT")
+
+
+def round1_engine_config() -> EngineConfig:
+    """Engine config containing **only** the Round-1 products.
+
+    Round-1 research scripts (sweeps, dossier, backtest runner) should
+    use this so the tutorial products (EMERALDS, TOMATOES) do not
+    silently join a round-1 replay. This keeps ``default_engine_config``
+    intact for the tutorial harness while giving round-1 tooling a
+    focused baseline to ``replace()`` from.
+    """
+    base = default_engine_config()
+    products = {
+        name: config
+        for name in ROUND1_PRODUCTS
+        if (config := base.product_config(name)) is not None
+    }
+    return EngineConfig(
+        state_version=base.state_version,
+        max_trader_data_chars=base.max_trader_data_chars,
+        diagnostics_verbosity=base.diagnostics_verbosity,
+        products=products,
+        scanner_config=base.scanner_config,
+        residual_config=base.residual_config,
     )
