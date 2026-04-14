@@ -4,6 +4,13 @@ Phase 5 was a **review-only phase**: review packs for each Phase-4
 shortlist candidate, plus a focused day-boundary / EOD diagnostic
 for PEPPER. No new sweep grids were run.
 
+> **Post-official update:** Alt (+3 040) > Promoted (+2 518) >
+> Baseline (+2 276) on the official site — order matches this
+> shortlist. Promoted's ASH leg (ewma_mid, t=0.25) underperformed
+> Baseline's ASH leg on official PnL, which is flagged for review in
+> `docs/round_1/official_results_analysis.md`. Shortlist logic is
+> not modified by this memo.
+
 ## Headline changes vs the Phase-4 shortlist
 
 - **ASH promoted default flips from C1 → C2.** C1 keeps a ~17 %

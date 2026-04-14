@@ -5,6 +5,12 @@ official IMC Prosperity site, in what order, and why. Phase 7
 (in `docs/round_1/imc_testing_plan.md`) covers what to record from
 the official run.
 
+> **Official results landed.** The three variants ran and ranked
+> Alt (+3 040) > Promoted (+2 518) > Baseline (+2 276) — order
+> matches local. Full analysis:
+> `docs/round_1/official_results_analysis.md`. Promoted still
+> stands; the ASH leg is flagged for review.
+
 ## Three submission files
 
 All three are bundled by
