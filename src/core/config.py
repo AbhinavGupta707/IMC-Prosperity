@@ -218,10 +218,9 @@ def default_engine_config() -> EngineConfig:
             # Primary wall_mid tracks the center of mass of the visible
             # book and was the most cross-day robust in Phase 1
             # (outputs/round_1/research/ash_coated_osmium_dossier.md).
-            # Position limit is a placeholder pending official
-            # confirmation.
+            # position_limit=80 — IMC-confirmed Round-1 per-product cap.
             "ASH_COATED_OSMIUM": ProductConfig(
-                position_limit=50,
+                position_limit=80,
                 strategy_name="market_making",
                 fair_value_method="wall_mid",
                 fair_value_fallbacks=("mid", "microprice"),
@@ -253,8 +252,9 @@ def default_engine_config() -> EngineConfig:
             # Candidates like `depth_mid` and `hybrid_wall_micro` cannot
             # be used as primaries here without adding such a safety
             # net — see outputs/round_1/notes/phase4_sweep_shortlist.md.
+            # position_limit=80 — IMC-confirmed Round-1 per-product cap.
             "INTARIAN_PEPPER_ROOT": ProductConfig(
-                position_limit=50,
+                position_limit=80,
                 strategy_name="market_making",
                 fair_value_method="linear_drift",
                 fair_value_fallbacks=("depth_mid", "hybrid_wall_micro", "mid"),
@@ -437,9 +437,9 @@ def round1_test_engine_config() -> EngineConfig:
             fair_value_method="mid",
             fair_value_fallbacks=(),
             # Bump max_aggressive_size so one tick is enough to fill
-            # most of the position limit (50). Keeps the remaining
+            # the full position limit (80). Keeps the remaining
             # session truly "hold".
-            max_aggressive_size=50,
+            max_aggressive_size=80,
         ),
     )
 

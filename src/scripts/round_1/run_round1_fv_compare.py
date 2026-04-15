@@ -48,7 +48,7 @@ _NON_ANCHOR_ESTIMATORS: tuple[str, ...] = (
 # The promoted Round-1 defaults will be chosen in Phase 3.
 _PHASE1_PRODUCT_CONFIGS: dict[str, ProductConfig] = {
     "ASH_COATED_OSMIUM": ProductConfig(
-        position_limit=50,
+        position_limit=80,
         strategy_name="market_making",
         fair_value_method="anchor",
         fair_value_fallbacks=("microprice", "mid"),
@@ -62,7 +62,7 @@ _PHASE1_PRODUCT_CONFIGS: dict[str, ProductConfig] = {
         history_length=48,
     ),
     "INTARIAN_PEPPER_ROOT": ProductConfig(
-        position_limit=50,
+        position_limit=80,
         strategy_name="market_making",
         fair_value_method="weighted_mid",
         fair_value_fallbacks=("mid", "microprice"),

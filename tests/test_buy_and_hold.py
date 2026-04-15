@@ -119,9 +119,10 @@ def test_round1_test_factory_composition() -> None:
     pepper_test = test.product_config("INTARIAN_PEPPER_ROOT")
     assert pepper_test is not None
     assert pepper_test.strategy_name == "buy_and_hold"
-    assert pepper_test.position_limit == 50
-    # max_aggressive_size bumped so one tick fills the limit.
-    assert pepper_test.max_aggressive_size == 50
+    assert pepper_test.position_limit == 80
+    # max_aggressive_size matches position_limit so one tick fills
+    # the cap (buy-and-hold's contract).
+    assert pepper_test.max_aggressive_size == pepper_test.position_limit
 
 
 @pytest.mark.unit

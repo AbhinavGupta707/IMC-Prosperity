@@ -64,10 +64,19 @@ baseline figure is from the Phase-3 minimum-viable run).
 | `flatten_threshold` | 0.8 | **0.7** | **0.9** |
 | `history_length` | 48 | **32** | **32** |
 
-`position_limit=50` and `quote_size`/`max_aggressive_size` are kept
-constant across variants. `position_limit=50` is the Phase-1
-**placeholder** — please confirm the official Round-1 limits and
-re-export if they differ.
+`quote_size`/`max_aggressive_size` are kept constant across
+variants.
+
+**`position_limit` is 80 per product** — IMC-confirmed Round-1 cap.
+The engine config was updated from the 50-placeholder in a separate
+commit, and every variant has been re-exported under
+`outputs/submissions/round_1/limit_80/`. The prior limit=50 bundles
+in `outputs/submissions/round_1/*.py` (one directory up) are
+preserved as historical references matching the already-recorded
+official PnLs in `outputs/round_1/official_results/`. See
+`outputs/round_1/limit_80/analysis.md` for the pre-change review
+and `outputs/submissions/round_1/limit_80/README.md` for the fresh
+fingerprints.
 
 ## Why these three (Phase-6 selection rationale)
 
@@ -264,10 +273,18 @@ same commit to produce byte-identical bundles.
 
 ## Carry-ins for Phase 7
 
-- **Confirm position_limit.** The Phase-1 placeholder of 50 affects
-  every PnL number above. If the official limit is different, every
-  upload must be re-exported.
+- ~~**Confirm position_limit.**~~ Resolved: 80 per product. Fresh
+  limit=80 bundles live under
+  `outputs/submissions/round_1/limit_80/` with SHA256 fingerprints
+  in that folder's `README.md`. The limit=50 bundles at
+  `outputs/submissions/round_1/*.py` remain as the historical
+  references matching the recorded official PnL.
 - **Record what the official site reports** per the Phase-7 checklist
   in `docs/round_1/imc_testing_plan.md`.
 - **Do not re-tune locally on a single official-PnL data point.**
   One run is one sample.
+- **New: limit=80 rankings are NOT known.** Everything in this plan's
+  "upload order" rationale was derived against limit=50 data. Alt in
+  particular gains the most capacity at limit=80 (rides to ±72 now
+  vs ±45 before). Do not treat the old ranking as a guarantee that
+  carries forward.
