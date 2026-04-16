@@ -489,6 +489,36 @@ def round1_ash_deep_k5_engine_config() -> EngineConfig:
     return _round1_ladder_base()
 
 
+def round1_ash_deep_l1_engine_config() -> EngineConfig:
+    """Phase-L L1 — K2_tighter (2.5/3.5/5)."""
+    return _round1_ladder_base()
+
+
+def round1_ash_deep_l2_engine_config() -> EngineConfig:
+    """Phase-L L2 — K2_split (2.5/4.5/7)."""
+    return _round1_ladder_base()
+
+
+def round1_ash_deep_l4_engine_config() -> EngineConfig:
+    """Phase-L L4 — K2_4lvl_tight (2.5/4/6/8, weights 3/1/1/1)."""
+    return _round1_ladder_base()
+
+
+def round1_ash_deep_l5_engine_config() -> EngineConfig:
+    """Phase-L L5 — K2_bigsize (size_mults 1/3/5)."""
+    return _round1_ladder_base()
+
+
+def round1_ash_deep_l5b_engine_config() -> EngineConfig:
+    """Phase-L L5b — K2_midsize (size_mults 1/2/4)."""
+    return _round1_ladder_base()
+
+
+def round1_ash_deep_l6_engine_config() -> EngineConfig:
+    """Phase-L L6 — K2_lighter (weights 5/2/2)."""
+    return _round1_ladder_base()
+
+
 def round1_alt_engine_config() -> EngineConfig:
     """Phase-6 higher-upside alternate. See
     ``outputs/round_1/notes/phase5_review_shortlist.md``.
