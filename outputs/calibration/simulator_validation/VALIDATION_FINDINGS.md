@@ -2,7 +2,27 @@
 
 Validation gates run against round-1 ASH/PEPPER calibration.
 
-## Gate 1: round-trip parameter recovery — **2/2 PASS**
+## CAVEATS DISCOVERED IN ADVERSARIAL REVIEW (post-hoc additions)
+
+1. **Gate 1's arrival-rate check is currently a no-op.** Code line
+   `arr_pass = True  # ... trivially close` in
+   `run_simulator_validation.py:226` hardcodes pass. Only sigma + drift
+   are real checks. P0 fix in flight.
+
+2. **Gate 2 PASS for ASH was generous.** Trade-size TVD=0.17 and
+   trade-loc KS=0.11 both fail the 0.10 threshold; we attributed the
+   failures to small-n trade samples (n=43 ASH trades within fact
+   window), which is true, but doesn't make the gates pass. Trade-
+   distribution marginals on ASH are NOT validated — only the FV
+   process and quote bands are.
+
+3. **Gate 3 (replayer-vs-MC, claimed PASS in MC_VERDICT) is too
+   lenient.** strategy_replay PnL=+58, MC median=+465, official=+1395
+   — 8x and 24x divergences. Calling that "sign-consistent" is a low
+   bar. The fill model in strategy_replay is the source of the gap;
+   it has not been calibrated against official PnL.
+
+## Gate 1: round-trip parameter recovery — **2/2 PASS** (caveat: arrival-rate check is no-op)
 
 Spawning N synthetic ticks with calibrated parameters, then re-fitting
 calibration on those synthetic ticks, recovers the original parameters

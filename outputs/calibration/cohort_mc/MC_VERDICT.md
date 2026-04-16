@@ -1,111 +1,137 @@
-# Monte Carlo cohort verdict
+# Monte Carlo cohort verdict (revised after adversarial review)
 
-**Date**: 2026-04-16 Session B.
+**Date**: 2026-04-16 Session B.  Revised same-day after multi-perspective review surfaced overclaims.
 **Method**: 100 synthetic round-1 day-0-style sessions per candidate,
 ASH-only (PEPPER excluded — its FV process is deterministic, not
 stochastic, so MC can't say anything meaningful about PEPPER strategies).
 **Calibration**: round-1 ASH FV process (sigma=0.41, drift=-0.008,
 quantization=1/1024) recovered from hold-1 submission 206432.
-**Validation**: Gates 1 (round-trip parameter recovery) PASS; Gate 2
-(marginal match) ASH approximately PASS within sampling tolerance;
-Gate 3 (replayer-vs-MC consistency) PASS — F3a's MC median +465 and
-single-day replayer +58 are sign-consistent and order-of-magnitude
-consistent.
 
-## Headline ranking
+## CRITICAL CAVEAT — read first
 
-| Rank | Strategy | MC median | Win rate | R² mean | Official Δ vs baseline | Verdict |
+**This MC is calibrated on n=1 day of data.** All 100 "synthetic
+sessions" sample from the same single day's empirical bot books, trade
+gaps, and FV-process parameters. They are 100 *re-orderings of one
+day's microstructure*, not 100 different days. The variance estimate
+in this report measures **within-day path noise only**; it captures
+**zero across-day variation**.
+
+What this report can claim: "F3a outperforms baseline within the
+microstructure regime observed on round-1 day-0."
+
+What this report cannot claim: "F3a will outperform baseline on a
+different day or a different regime."
+
+The honest confidence on F3a's edge being a real market-making
+property (not a single-day artifact): roughly 70%, not 95%.
+
+Three other limitations propagate through the verdict:
+
+1. **Gate 3 did not really pass.** strategy_replay says F3a PnL +58
+   on the realized day; MC median says +465; official says +1395
+   (lift +434 over baseline). 8x and 24x divergences. The "pass"
+   was issued because the signs match. The fill model in
+   strategy_replay (30% passive at exact-price match) is known
+   miscalibrated, which biases toward favorable selection.
+
+2. **The wall_mid family kill is not safe.** Phase F officially
+   ranked F3d/F2b/F3c/F2d at positions 2-5 with positive lifts
+   +263 to +308. MC says all four lose money in expectation. We
+   do not know whether MC under-credits a wall_mid microstructure
+   feature or whether 4 strategies independently caught a lucky
+   tail. Test required: re-run MC with player-priority-at-touch
+   matching variant. If wall_mid rebounds, MC is biased and the
+   kill is wrong.
+
+3. **The F2c paradox.** Official Phase F: F2c was 8th place at +75.
+   MC: F2c is 2nd at +408. The verdict text earlier framed this
+   as "F2c structural, official under-delivered" — that's
+   selection bias on which source counts. The honest framing:
+   F2c's worst MC seeds are the same as F3a's worst seeds; both
+   strategies are 93% win rate; F2c likely had a tail-realization
+   on day 0 that F3a's m=2.5 + skew protected against. So F3a's
+   tuning is **inventory protection on bad days**, not extra
+   edge on average.
+
+## Headline ranking (with calibrated language)
+
+| Rank | Strategy | MC median | Win rate | R^2 mean | Official Δ vs baseline | Honest verdict |
 |---:|---|---:|---:|---:|---:|---|
-| **1** | **F3a** | **+465** | **93%** | **0.76** | **+434** | ✅ Structural; MC matches official within rounding |
-| **2** | **F2c** | **+408** | **93%** | **0.79** | +75 | ✅ Structural — but official under-delivered relative to MC potential |
-| 3 | F2d | -37 | 48% | 0.54 | +263 | ❌ Officially lucky on day 0; MC says coin-flip in expectation |
-| 4 | F3c | -31 | 46% | 0.54 | +270 | ❌ Same as F2d |
-| 5 | F3d | -158 | 45% | 0.55 | +308 | ❌ Same as F2d/F3c |
-| 6 | F2b | -188 | 43% | 0.54 | +290 | ❌ Same |
+| 1 | **F3a** | **+465** | **93%** | **0.76** | **+434** | Real edge under day-0 microstructure; cross-day untested. m=2.5 + skew=2 functions as INVENTORY PROTECTION, not edge generator. |
+| 2 | F2c | +408 | 93% | 0.79 | +75 | Same edge as F3a in expectation; bigger tail risk because no inventory protection. Official under-performance likely a tail draw. |
+| 3 | F2d | -37 | 48% | 0.54 | +263 | Could be officially lucky. Could be MC bias against wall_mid. UNRESOLVED — needs matching-model test before any kill. |
+| 4 | F3c | -31 | 46% | 0.54 | +270 | Same status as F2d. |
+| 5 | F3d | -158 | 45% | 0.55 | +308 | Same status as F2d. |
+| 6 | F2b | -188 | 43% | 0.54 | +290 | Same status as F2d. |
 
-## Three structural takeaways
+## Three structural takeaways (recalibrated)
 
-### 1. F3a's edge IS structural — MC matches official to within rounding
+### 1. F3a's edge is REAL within day-0 microstructure; cross-day persistence is UNTESTED
 
-F3a's MC median (+465) lands within rounding of its official Phase-F
-lift (+434). With 93% of MC sessions producing positive PnL and a mean
-R^2 of 0.76, F3a's edge is reproducible across many simulated days,
-not a one-day artifact.
+Three signals point the same way:
+- strategy_replay: positive markouts at all 4 horizons on both sides
+- MC: median +465, win rate 93%, R^2 mean 0.76 (*within-day*
+  resamples)
+- Official: +434 lift over baseline
 
-This is the strongest possible MC validation: the simulator (calibrated
-on round-1 day-0) reproduces F3a's official PnL on average across
-100 independent random seeds. Confidence: very high that F3a will
-continue to outperform on similar-microstructure days.
+Read together, F3a probably has a real market-making edge.
+"Probably" — not "certainly". The calibration is from one day.
 
-### 2. The wall_mid family (F2d, F3c, F3d, F2b) was officially lucky
+The right test for cross-day persistence: round-2 day 1 hold-1,
+recalibrate, re-run cohort MC. If F3a's MC median is similarly
+positive on round-2 calibration, that's n=2 — weak but progress.
+Until then, treat F3a as a recipe to RECALIBRATE not a
+configuration to ship verbatim.
 
-Phase F ranked F3d (+308), F2b (+290), F3c (+270), F2d (+263) as
-positions 2-5 — all positive lifts over baseline. MC ranks them
-positions 3-6 with **negative median PnL**.
+### 2. The m=2.5 + skew=2 tuning is INVENTORY PROTECTION, not edge generation
 
-The interpretation: their official Phase-F wins came from one
-favorable random-walk realization on day 0. Across 100 synthetic
-days, they produce negative expected PnL more often than positive
-(win rate 43-48%, vs 93% for F3a/F2c). This is the textbook
-"sample-of-one" signature: high mean PnL on real day, low/negative
-mean PnL across MC.
+F2c (plain weighted_mid, m=1.5, no skew) MC median: +408
+F3a (weighted_mid + m=2.5 + linear skew c=2) MC median: +465
 
-**Implication for round 2**: do not carry the `wall_mid` family
-forward as default candidates. They appear to be **microstructure-
-specific overfits** to round-1 day-0's particular FV path.
+The +57 marginal is borderline-significant in MC noise (within ~0.2σ
+of the per-session std=293). What's NOT borderline: F3a's q05 is
+-37 vs F2c's worst-seed PnLs being similar to F3a's worst-seed PnLs
+(same seeds, similar magnitudes per per-session inspection).
 
-### 3. The FV choice (weighted_mid) is doing the work; edge tuning adds modest extra
+The m=2.5 + skew=2 doesn't generate more edge in expectation; it
+protects against the tail realizations that hurt F2c on the
+official day. **For round 2: re-tune m and skew_c around the new
+sigma, don't ship the literal F3a numbers.**
 
-F2c is `weighted_mid` plain MM (no skew, no extra edge). F3a is the
-SAME `weighted_mid` FV plus `m=2.5` + `linear skew c=2`.
+### 3. The wall_mid family verdict is UNRESOLVED, not "lucky"
 
-|  | MC median | Win rate | Mean alpha | R² mean |
-|---|---:|---:|---:|---:|
-| F2c (plain weighted_mid) | +408 | 93% | +0.40 | 0.79 |
-| F3a (weighted_mid + edge/skew) | +465 | 93% | +0.45 | 0.76 |
+The previous version of this doc said "do not carry these to
+round 2." That was overconfident.
 
-The marginal lift from the edge + skew tuning on top of weighted_mid:
-**+57 PnL median, no change in win rate, slight R² degradation**.
-Most of F3a's edge is the **`weighted_mid` FV choice itself**, with
-a small additional contribution from the skew tuning.
+The 4 wall_mid variants share a worst-seed cluster (498, 434, ...)
+distinct from F3a/F2c's worst seeds (417, 499, ...). So MC sees
+the wall_mid family as having fatter left tails — that's a real
+mechanism difference, not noise.
 
-**Implication for round 2**: prioritize discovering the right FV
-estimator for the new product. Edge/skew tuning is secondary refinement.
+But the wall_mid family also won OFFICIALLY across all 4 variants.
+Either:
+- 4 correlated strategies caught the same lucky tail draw on day 0
+  (low prior given they share FV-estimator family — their PnLs ARE
+  correlated, so this is essentially "they all got lucky once")
+- MC is missing a microstructure feature wall_mid exploits
 
-## Caveats (read these)
+The distinguishing test: re-run MC with player-priority-at-touch
+matching. If wall_mid family medians turn positive, MC has model
+bias. If they stay negative, "officially lucky" is fair.
 
-1. **Single-day calibration**: parameters fit on one day. F3a's edge
-   could be specific to round-1 day-0's particular FV process; another
-   day with different sigma or drift might show different rankings.
-   Mitigation: re-calibrate per day when more hold-1 data is available.
+**Until that test runs, don't kill wall_mid for round 2. Carry one
+wall_mid variant as a hedge candidate.**
 
-2. **PEPPER excluded**: this verdict says nothing about PEPPER
-   performance. F3a's PEPPER component is `buy_hold_80` which is
-   robust regardless of MC, so the omission doesn't affect the
-   ranking decision for F3a as a whole.
-
-3. **MC uses round-1 ASH bot rules**: the bot quote distributions
-   sampled here are from round-1 day-0. If round-2 introduces new
-   bot families, MC predictions transfer poorly. Mitigation:
-   re-calibrate from round-2 hold-1 log day 1.
-
-4. **Microstructure assumptions**: the matching model assumes bot
-   time priority at every price level. If real IMC fill mechanics
-   differ (e.g., player can preempt bots in some conditions), the
-   MC fill rate is conservative. The CONSISTENT positive PnL across
-   F3a/F2c suggests this isn't biting hard, but absolute PnL levels
-   are not directly comparable to official.
-
-## Decision matrix for round 2
+## Decision matrix for round 2 (revised)
 
 | If round 2 has... | Then... |
 |---|---|
-| Same products as round 1 | Ship F3a. Confidence: very high. |
-| New product with similar bot microstructure | Submit hold-1 day 1. Recalibrate. Re-run this MC pipeline. F3a's MECHANISM (weighted_mid + m=2.5 + skew=2) likely transfers. |
-| New product with deterministic-drift dynamics (PEPPER-like) | Skip MC. Just submit hold-1 day 1, observe drift sign, ship buy-and-hold to position limit. |
-| New product with novel structure (baskets, options, etc.) | Recalibrate from scratch. May need new sampler models (current pipeline assumes single-product flat order book). |
+| Same products as round 1 | Re-validate F3a + F2d + F2c via day-1 hold-1 + cohort MC. Ship the cohort winner. Don't ship F3a verbatim without revalidation. |
+| New product with similar bot microstructure | Submit hold-1 day 1. Recalibrate. Re-tune m and skew_c around the new sigma. The RECIPE (weighted_mid + m≈N·sigma + small linear skew) likely transfers; the specific numbers do not. |
+| New product with deterministic-drift dynamics (PEPPER-like) | Skip MC. Submit hold-1, observe drift sign and rate, ship buy-and-hold to position limit. **Carries jump-tail risk that MC cannot quantify** — accept it consciously. |
+| New product with novel structure (baskets, options, etc.) | Recalibrate from scratch. May need new sampler models. |
 
 ## Files in this directory
 
 - `f3a/`, `f2c/`, ..., `f2b/` — per-strategy MC outputs (report.md, per_session.csv, raw_results.json)
-- `MC_VERDICT.md` — this file
+- `MC_VERDICT.md` — this file (v2 revised)

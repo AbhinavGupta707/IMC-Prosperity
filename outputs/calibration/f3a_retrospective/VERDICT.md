@@ -1,4 +1,4 @@
-# F3a retrospective verdict
+# F3a retrospective verdict (revised after adversarial review)
 
 **Question**: was F3a's +434 official ASH PnL lift over baseline
 structural (a real edge) or sample-of-one (luck on day-0's specific
@@ -9,7 +9,37 @@ path)?
 206432), tick by tick. Captured per-quote `(quote_price -
 server_fv)` edge and per-fill markouts at horizons {1, 5, 20, 50}.
 
-**Verdict on ASH: structural edge confirmed.**
+**Verdict on ASH: real edge under day-0 microstructure; cross-day
+persistence untested.** (Was previously "structural edge confirmed" —
+that was overclaiming on n=1 day.)
+
+## CAVEATS (added post-hoc after review)
+
+1. **Fill model is miscalibrated.** This replay uses a 30%
+   passive-fill rule at exact-price match (in `_check_passive_fill`).
+   That number is not calibrated against official PnL. Replay PnL
+   (+58) is 24x smaller than official (+1395 ASH absolute, +434 over
+   baseline). Edge SIGNS are robust to this miscalibration; absolute
+   magnitudes and fill counts are not.
+
+2. **Selection bias on the fills.** A 30% passive cap means the
+   replay only counts the fills that print at our exact quote price.
+   Those are a biased sub-sample of fills the strategy would
+   actually take — biased toward the most-obvious mid-ish quotes.
+   The reported "h=1 markout per fill +0.47" is likely INFLATED
+   by this selection bias.
+
+3. **Position-limit absent.** Unlike the MC simulator,
+   strategy_replay does NOT enforce position limits. So a strategy
+   that misbehaves near the limit will look better in replay than
+   in MC or in production.
+
+4. **Single day.** The +1.56 mean edge per quote and uniformly
+   positive markouts are observed on round-1 day-0 only. We have
+   zero evidence about other days. The "real edge" claim rests on
+   the markout-uniformity argument (positive on bid AND ask at every
+   horizon — unlikely to be coincidence) but cannot guarantee
+   transfer to a different day.
 
 ## ASH summary
 
@@ -72,9 +102,9 @@ realizing +7,349 PnL. This matches the official PEPPER PnL of
 making.** Confirms the original Phase-F finding that PEPPER had a
 real upward drift the buy-and-hold strategy correctly exploited.
 
-## Why the F3a edge is real
+## Why the F3a edge is *probably* real (but caveats apply)
 
-Three independent confirmations:
+Three signals point the same way (subject to caveats above):
 
 1. **Quote-level edge is positive**: 1.56 ticks per quote means
    F3a is systematically quoting on the profitable side of true
