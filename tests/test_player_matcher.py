@@ -146,6 +146,57 @@ def test_bot_taker_buy_bot_inventory_exceeds_taker_size():
     assert fills == []
 
 
+def test_bot_taker_player_priority_mode_fills_player_first():
+    """priority_mode='player': player passive fills BEFORE bot inventory.
+
+    Bot taker buys 5 at price 5002. Bot has 100 ask inventory; player
+    has 3 passive. Under bot priority, bot would fill all 5 → player 0.
+    Under player priority, player fills 3 first, then bot fills 2.
+    """
+    fills = match_bot_taker_trades(
+        bot_takers=[SyntheticTrade(
+            timestamp=100, product="P", price=5002, quantity=5, side="buy",
+        )],
+        player_passive=[PlayerOrder(product="P", price=5002, quantity=-3)],
+        depleted_bid_inv={},
+        depleted_ask_inv={5002: 100},
+        priority_mode="player",
+    )
+    assert len(fills) == 1
+    assert fills[0].quantity == -3  # player filled all 3 ahead of bot
+
+
+def test_bot_taker_split_mode_distributes_proportionally():
+    """priority_mode='split': fills distribute by standing volume share.
+
+    Bot taker buys 10 at price 5002. Bot has 30 ask, player has 10
+    passive. Player fills 10*10/(30+10) = 2; bot fills 10-2 = 8.
+    """
+    fills = match_bot_taker_trades(
+        bot_takers=[SyntheticTrade(
+            timestamp=100, product="P", price=5002, quantity=10, side="buy",
+        )],
+        player_passive=[PlayerOrder(product="P", price=5002, quantity=-10)],
+        depleted_bid_inv={},
+        depleted_ask_inv={5002: 30},
+        priority_mode="split",
+    )
+    assert len(fills) == 1
+    # Player gets 2 (from the proportional formula)
+    assert fills[0].quantity == -2
+
+
+def test_bot_taker_invalid_priority_mode_raises():
+    with pytest.raises(ValueError, match="priority_mode must be"):
+        match_bot_taker_trades(
+            bot_takers=[],
+            player_passive=[],
+            depleted_bid_inv={},
+            depleted_ask_inv={},
+            priority_mode="invalid",
+        )
+
+
 def test_bot_taker_caps_player_fill_at_player_passive_size():
     """Bot inventory 0, taker size 10, player passive only 3 → player fills 3."""
     fills = match_bot_taker_trades(

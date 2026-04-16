@@ -59,16 +59,41 @@ def main(argv: list[str] | None = None) -> int:
         help="Product symbol(s) to include (may be passed multiple times)",
     )
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--n-sessions", type=int, default=100)
+    parser.add_argument(
+        "--n-sessions", type=int, default=100,
+        help="Number of MC sessions per candidate (default 100)",
+    )
+    parser.add_argument(
+        "--fast", action="store_true",
+        help=(
+            "Fast mode: 20 sessions, deterministic seeds. Sufficient "
+            "to distinguish structural-vs-lucky candidates (the 50%% "
+            "win-rate gap between F3a-class and wall_mid-class is "
+            "loud enough at n=20). Use for day-2 quick triage; switch "
+            "to default n=100 for the final memo."
+        ),
+    )
     parser.add_argument("--n-ticks", type=int, default=0,
                         help="0 = match real-data length per product")
     parser.add_argument("--base-seed", type=int, default=20260417)
+    parser.add_argument(
+        "--priority-mode", choices=("bot", "player", "split"),
+        default="bot",
+        help=(
+            "Passive-fill queue priority. 'bot' (default): bots fill "
+            "first at any price level. 'player': player passive fills "
+            "first (test variant for matching-model bias diagnosis). "
+            "'split': proportional by standing volume."
+        ),
+    )
     parser.add_argument("--position-limit", type=int, default=80)
     parser.add_argument(
         "--strategy-name", type=str, default=None,
         help="Display name (defaults to strategy file stem)",
     )
     args = parser.parse_args(argv)
+    if args.fast:
+        args.n_sessions = 20
 
     logging.basicConfig(
         level=logging.INFO,
@@ -136,6 +161,7 @@ def main(argv: list[str] | None = None) -> int:
             trade_samplers=trade_samplers,
             position_limit=args.position_limit,
             seed=seed,
+            priority_mode=args.priority_mode,
         )
         result = run_session(config, trader_factory=trader_cls)
         sessions.append(result)

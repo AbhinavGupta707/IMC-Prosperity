@@ -83,21 +83,31 @@ reflects a real market-making property rather than day-0 noise.
 The remaining 30% is the cross-day persistence question that one
 more day of hold-1 calibration would settle.
 
-### 2. The wall_mid family verdict is UNRESOLVED (was previously claimed "officially lucky")
+### 2. The wall_mid family — distinguishing test run, partial resolution
 
 Phase F's official ranking placed F3d (#2), F2b (#3), F3c (#4), F2d (#5)
 with positive lifts +263 to +308. MC across 100 seeds shows all four
 with negative median PnL and 43-48% win rate.
 
-Two competing explanations:
-- 4 correlated strategies caught the same lucky tail draw on day 0
-- MC is missing a microstructure feature wall_mid exploits
+**Distinguishing test executed** (matching_model_test/WALL_MID_KILL_TEST.md):
+re-ran the cohort under `priority_mode=player` to test whether MC's
+bot-priority matching assumption was the source of the wall_mid kill.
+**Result: wall_mid family does NOT rebound under player-priority** —
+medians change by ≤12 PnL on per-session std ~270 (statistically zero).
 
-**The distinguishing test is required before any kill recommendation**:
-re-run MC with a player-priority-at-touch matching model variant. If
-wall_mid family medians turn positive under that variant, MC is biased
-and the kill is wrong. Until that test runs, **carry one wall_mid
-variant as a hedge candidate for round 2**.
+This rules out the matching-model-bias hypothesis but leaves two
+remaining possibilities:
+- 4 correlated wall_mid variants caught the same lucky tail-draw on
+  day 0 (low base-rate prior, but not impossible)
+- MC is missing some OTHER microstructure feature wall_mid exploits
+  (multi-tick price impact, intra-tick bot refreshes, cross-product
+  effects with PEPPER, etc.)
+
+Updated subjective probabilities: officially-lucky ~55%, other-MC-bias
+~40%, other-mechanism ~5%. **Action**: do not ship wall_mid as
+headline ASH strategy. Carry one wall_mid variant as round-2 hedge
+candidate if a slot permits — the residual ~40-55% uncertainty
+warrants a hedge but not a primary commitment.
 
 ### 3. PEPPER is NOT a Gaussian random walk
 

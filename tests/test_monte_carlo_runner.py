@@ -113,6 +113,30 @@ def test_run_monte_carlo_per_session_seeds_are_unique(tmp_path: Path):
     assert seeds == [1000, 1001, 1002, 1003, 1004]
 
 
+def test_fast_mode_runs_20_sessions(tmp_path: Path):
+    """--fast flag should run exactly 20 sessions regardless of --n-sessions."""
+    log_path = tmp_path / "synth_log.json"
+    trades_csv = tmp_path / "trades.csv"
+    strategy_path = tmp_path / "trader.py"
+    out_dir = tmp_path / "mc_out"
+
+    _build_synthetic_activity_log(log_path)
+    _build_synthetic_trades_csv(trades_csv)
+    strategy_path.write_text(_DUMMY_TRADER_SOURCE)
+
+    rc = mc_main([
+        "--strategy", str(strategy_path),
+        "--hold1-log", str(log_path),
+        "--trades-csv", str(trades_csv),
+        "--product", "EMERALDS",
+        "--fast",
+        "--out", str(out_dir),
+    ])
+    assert rc == 0
+    raw = json.loads((out_dir / "raw_results.json").read_text())
+    assert len(raw) == 20, f"expected 20 fast-mode sessions, got {len(raw)}"
+
+
 def test_run_monte_carlo_rejects_unknown_product(tmp_path: Path):
     log_path = tmp_path / "synth_log.json"
     trades_csv = tmp_path / "trades.csv"

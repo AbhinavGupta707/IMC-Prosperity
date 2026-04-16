@@ -34,14 +34,19 @@ Three other limitations propagate through the verdict:
    strategy_replay (30% passive at exact-price match) is known
    miscalibrated, which biases toward favorable selection.
 
-2. **The wall_mid family kill is not safe.** Phase F officially
-   ranked F3d/F2b/F3c/F2d at positions 2-5 with positive lifts
-   +263 to +308. MC says all four lose money in expectation. We
-   do not know whether MC under-credits a wall_mid microstructure
-   feature or whether 4 strategies independently caught a lucky
-   tail. Test required: re-run MC with player-priority-at-touch
-   matching variant. If wall_mid rebounds, MC is biased and the
-   kill is wrong.
+2. **The wall_mid family kill — partial resolution.** Phase F
+   officially ranked F3d/F2b/F3c/F2d at positions 2-5 with positive
+   lifts +263 to +308. MC says all four lose money in expectation.
+   The matching-model bias hypothesis (MC's bot-priority assumption
+   under-credits wall_mid) was tested in
+   `matching_model_test/WALL_MID_KILL_TEST.md` by re-running the
+   cohort under player-priority matching. **Result: wall_mid family
+   does NOT rebound** — medians change by < 12 PnL on per-session
+   std ~270 (statistically zero). One bias hypothesis ruled out,
+   but ambiguity remains: probability that wall_mid is "officially
+   lucky on day 0" now ~55%; probability MC is missing some OTHER
+   microstructure feature ~40%. Action: don't ship wall_mid as
+   headline; carry one as round-2 hedge.
 
 3. **The F2c paradox.** Official Phase F: F2c was 8th place at +75.
    MC: F2c is 2nd at +408. The verdict text earlier framed this

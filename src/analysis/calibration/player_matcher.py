@@ -138,19 +138,39 @@ def match_bot_taker_trades(
     player_passive: Iterable[PlayerOrder],
     depleted_bid_inv: dict[int, int],
     depleted_ask_inv: dict[int, int],
+    priority_mode: str = "bot",
 ) -> list[Fill]:
     """Phase 2: bot takers walk the combined book; player passive may fill.
 
-    Bots have time priority at every price level (they were resting
-    before the player quoted). Player passive only fills the leftover
-    after bot inventory at the takers's target price is exhausted.
+    ``priority_mode`` controls the queue priority at each price level:
 
-    A bot taker on side ``buy`` consumes asks; ``sell`` consumes bids.
-    The taker's price tells which level got hit. We walk only that
-    exact level, on the assumption bot trades print at the level they
-    consumed (consistent with the trade-sampler's joint-offset model).
+      "bot" (default): bots have time priority. They were resting
+        before the player quoted, so they fill first at any price
+        level. Player passive only fills the leftover after bot
+        inventory at that price is exhausted. This is the conservative
+        model and is the one used for the headline F3a / cohort
+        verdicts.
+
+      "player": the alternative. Player passive at a price level fills
+        FIRST, before any bot inventory at the same price. Models the
+        case where the player can preempt bot quotes (e.g., because
+        IMC's matching engine batches order arrival within a tick and
+        gives the LATEST order priority). This is generally
+        unrealistic but useful as a stress test: if a strategy's MC
+        verdict reverses sign under "player" priority, the bot-
+        priority result is matching-model-sensitive and should not be
+        treated as definitive. Used to test whether the wall_mid kill
+        verdict is bot-priority-biased.
+
+      "split": each side fills proportionally to its standing volume
+        at the price level. Compromise; not currently used but
+        available for completeness.
     """
-    # Group player passive by (side, price) for quick lookup.
+    if priority_mode not in ("bot", "player", "split"):
+        raise ValueError(
+            f"priority_mode must be 'bot' / 'player' / 'split'; got {priority_mode!r}"
+        )
+
     passive_bids: dict[int, int] = {}
     passive_asks: dict[int, int] = {}
     for order in player_passive:
@@ -162,43 +182,74 @@ def match_bot_taker_trades(
     fills: list[Fill] = []
     for taker in bot_takers:
         if taker.side == "buy":
-            # Buyer takes from ask side. Bot ask at this price has time priority.
-            bot_remaining = max(depleted_ask_inv.get(taker.price, 0), 0)
-            consumed_by_bot = min(taker.quantity, bot_remaining)
-            depleted_ask_inv[taker.price] = bot_remaining - consumed_by_bot
-            leftover = taker.quantity - consumed_by_bot
-            if leftover > 0:
-                player_avail = passive_asks.get(taker.price, 0)
-                player_fill = min(leftover, player_avail)
-                if player_fill > 0:
-                    # Player was offering at this ask price → player sells.
-                    fills.append(Fill(
-                        timestamp=taker.timestamp,
-                        product=taker.product,
-                        price=taker.price,
-                        quantity=-player_fill,
-                        counterparty="bot_taker_passive",
-                    ))
-                    passive_asks[taker.price] = player_avail - player_fill
+            bot_avail = max(depleted_ask_inv.get(taker.price, 0), 0)
+            player_avail = passive_asks.get(taker.price, 0)
+            player_fill, bot_consumed = _split_taker_fill(
+                taker_qty=taker.quantity,
+                bot_avail=bot_avail, player_avail=player_avail,
+                priority_mode=priority_mode,
+            )
+            depleted_ask_inv[taker.price] = bot_avail - bot_consumed
+            if player_fill > 0:
+                fills.append(Fill(
+                    timestamp=taker.timestamp, product=taker.product,
+                    price=taker.price, quantity=-player_fill,
+                    counterparty="bot_taker_passive",
+                ))
+                passive_asks[taker.price] = player_avail - player_fill
         elif taker.side == "sell":
-            bot_remaining = max(depleted_bid_inv.get(taker.price, 0), 0)
-            consumed_by_bot = min(taker.quantity, bot_remaining)
-            depleted_bid_inv[taker.price] = bot_remaining - consumed_by_bot
-            leftover = taker.quantity - consumed_by_bot
-            if leftover > 0:
-                player_avail = passive_bids.get(taker.price, 0)
-                player_fill = min(leftover, player_avail)
-                if player_fill > 0:
-                    # Player was bidding at this price → player buys.
-                    fills.append(Fill(
-                        timestamp=taker.timestamp,
-                        product=taker.product,
-                        price=taker.price,
-                        quantity=+player_fill,
-                        counterparty="bot_taker_passive",
-                    ))
-                    passive_bids[taker.price] = player_avail - player_fill
+            bot_avail = max(depleted_bid_inv.get(taker.price, 0), 0)
+            player_avail = passive_bids.get(taker.price, 0)
+            player_fill, bot_consumed = _split_taker_fill(
+                taker_qty=taker.quantity,
+                bot_avail=bot_avail, player_avail=player_avail,
+                priority_mode=priority_mode,
+            )
+            depleted_bid_inv[taker.price] = bot_avail - bot_consumed
+            if player_fill > 0:
+                fills.append(Fill(
+                    timestamp=taker.timestamp, product=taker.product,
+                    price=taker.price, quantity=+player_fill,
+                    counterparty="bot_taker_passive",
+                ))
+                passive_bids[taker.price] = player_avail - player_fill
     return fills
+
+
+def _split_taker_fill(
+    *, taker_qty: int, bot_avail: int, player_avail: int,
+    priority_mode: str,
+) -> tuple[int, int]:
+    """Compute (player_fill, bot_consumed) for one taker hitting a level.
+
+    Returns a tuple where:
+      - player_fill: quantity that fills against player passive
+      - bot_consumed: quantity consumed from bot inventory at this level
+
+    Both are non-negative; their sum is bounded by min(taker_qty,
+    bot_avail + player_avail).
+    """
+    if taker_qty <= 0:
+        return (0, 0)
+    if priority_mode == "bot":
+        bot_consumed = min(taker_qty, bot_avail)
+        leftover = taker_qty - bot_consumed
+        player_fill = min(leftover, player_avail)
+        return (player_fill, bot_consumed)
+    if priority_mode == "player":
+        player_fill = min(taker_qty, player_avail)
+        leftover = taker_qty - player_fill
+        bot_consumed = min(leftover, bot_avail)
+        return (player_fill, bot_consumed)
+    # priority_mode == "split"
+    total_avail = bot_avail + player_avail
+    if total_avail == 0:
+        return (0, 0)
+    fillable = min(taker_qty, total_avail)
+    # Proportional split by standing volume.
+    player_fill = (fillable * player_avail) // total_avail
+    bot_consumed = fillable - player_fill
+    return (player_fill, bot_consumed)
 
 
 def apply_fills_to_account(

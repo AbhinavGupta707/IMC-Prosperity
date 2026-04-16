@@ -47,7 +47,15 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class SessionConfig:
-    """One session's configuration: products + samplers + scheduling."""
+    """One session's configuration: products + samplers + scheduling.
+
+    ``priority_mode`` controls passive-fill queue priority at each
+    price level when bot takers walk the book. "bot" (default) gives
+    bot inventory priority; "player" reverses it (test variant for
+    matching-model bias diagnosis); "split" allocates proportionally
+    by standing volume. See player_matcher.match_bot_taker_trades for
+    detail on when to use each.
+    """
 
     products: tuple[str, ...]
     n_ticks: int
@@ -57,6 +65,7 @@ class SessionConfig:
     position_limit: int = 80
     tick_step: int = 100
     seed: int = 0
+    priority_mode: str = "bot"
 
 
 @dataclass(frozen=True)
@@ -232,6 +241,7 @@ def run_session(
                 player_passive=passive_by_p[product],
                 depleted_bid_inv=dep_bids_by_p[product],
                 depleted_ask_inv=dep_asks_by_p[product],
+                priority_mode=config.priority_mode,
             )
             cash_d, pos_d = apply_fills_to_account(passive_fills)
             cash[product] += cash_d
