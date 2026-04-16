@@ -14,7 +14,10 @@
 | synth_drift | 0.0283 |
 | drift_diff | 0.0366 |
 | drift_pass | PASS |
+| real_p_active | 0.0430 |
 | synth_p_active | 0.0370 |
+| arr_diff | 0.0060 |
+| arr_pass | PASS |
 
 ## INTARIAN_PEPPER_ROOT — PASS
 
@@ -28,4 +31,7 @@
 | synth_drift | 0.1110 |
 | drift_diff | 0.0170 |
 | drift_pass | PASS |
+| real_p_active | 0.0330 |
 | synth_p_active | 0.0310 |
+| arr_diff | 0.0020 |
+| arr_pass | PASS |

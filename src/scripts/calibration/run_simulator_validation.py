@@ -143,8 +143,14 @@ def main(argv: list[str] | None = None) -> int:
             )
         trades = trades_in_range
 
+        # Compute real arrival rate over the in-window trades for Gate 1.
+        max_real_ts = facts[-1].timestamp if facts else 0
+        in_window = [t for t in trades if t.timestamp <= max_real_ts]
+        real_arrivals = fit_trade_arrivals(facts, in_window)
+
         gate1_results.append(_run_gate1(
             product=product, real_fv_fit=fv_fit_real,
+            real_arrivals=real_arrivals,
             synth_facts=synth_facts, synth_trades=synth_trades,
         ))
         gate2_results.append(_run_gate2(
@@ -206,24 +212,41 @@ def _spawn_synthetic_facts_and_trades(
 def _run_gate1(
     *, product: str,
     real_fv_fit: FairValueFit,
+    real_arrivals,  # TradeArrivalFit
     synth_facts: list[FactRow],
     synth_trades: list[TradeRow],
 ) -> GateResult:
-    """Round-trip recovery: re-fit FV process on synthetic data, compare."""
+    """Round-trip recovery: re-fit FV + arrivals on synthetic data, compare.
+
+    Three checks (all must PASS for the product to pass Gate 1):
+      - sigma: re-fitted synth sigma must match input within 5*SE.
+      - drift: re-fitted synth mean must match input within 5*SE.
+      - p_active: re-fitted synth arrival rate must match REAL p_active
+        within 5*SE (binomial). P0-4 fix: this used to be a hardcoded
+        TRUE — now it's a real check against the calibration's empirical
+        rate, so a buggy trade_sampler that produced too many or too
+        few arrivals would actually fail the gate.
+    """
     fv_synth = fit_fair_value_process(synth_facts)
     sigma_se = real_fv_fit.sigma / np.sqrt(2 * len(synth_facts))
     sigma_diff = abs(fv_synth.sigma - real_fv_fit.sigma)
     sigma_pass = sigma_diff < max(0.02, 5 * sigma_se)
 
-    # Drift recovery (allow 5*SE of mean)
     drift_se = real_fv_fit.sigma / np.sqrt(len(synth_facts))
     drift_diff = abs(fv_synth.mean_return - real_fv_fit.mean_return)
     drift_pass = drift_diff < max(0.005, 5 * drift_se)
 
-    # Trade arrival rate recovery
+    # Real arrival-rate check (P0-4): synth p_active vs REAL p_active.
     arr_synth = fit_trade_arrivals(synth_facts, synth_trades)
-    arr_diff = abs(arr_synth.p_active - len(synth_trades) / len(synth_facts))
-    arr_pass = True  # arr_synth.p_active is computed FROM synth, so this is trivially close
+    real_p = real_arrivals.p_active
+    synth_p = arr_synth.p_active
+    # Binomial SE on p with n_trials = number of synth ticks.
+    n = max(len(synth_facts), 1)
+    arr_se = (real_p * (1.0 - real_p) / n) ** 0.5 if 0.0 < real_p < 1.0 else 0.0
+    arr_diff = abs(synth_p - real_p)
+    # Tolerance: 5*SE OR a 0.005 absolute floor (avoids rejecting on tiny
+    # rate differences when n is large).
+    arr_pass = arr_diff < max(0.005, 5 * arr_se)
 
     metrics: dict[str, float | str] = {
         "real_sigma": real_fv_fit.sigma,
@@ -234,11 +257,14 @@ def _run_gate1(
         "synth_drift": fv_synth.mean_return,
         "drift_diff": drift_diff,
         "drift_pass": "PASS" if drift_pass else "FAIL",
-        "synth_p_active": arr_synth.p_active,
+        "real_p_active": real_p,
+        "synth_p_active": synth_p,
+        "arr_diff": arr_diff,
+        "arr_pass": "PASS" if arr_pass else "FAIL",
     }
     return GateResult(
         gate="round_trip", product=product,
-        passed=bool(sigma_pass and drift_pass), metrics=metrics,
+        passed=bool(sigma_pass and drift_pass and arr_pass), metrics=metrics,
     )
 
 

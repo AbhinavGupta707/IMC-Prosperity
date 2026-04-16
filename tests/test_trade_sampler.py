@@ -149,6 +149,32 @@ def test_sample_session_prices_anchored_to_fv_path():
         )
 
 
+def test_zero_offset_trades_get_side_not_unknown():
+    """P0-3 regression: trades printed exactly at FV (offset=0) used
+    to emit side='unknown' which the matcher silently dropped. They
+    should now get a randomized 50/50 side so they participate in
+    matching.
+    """
+    facts = _make_facts(1000)
+    # All historical trades print at FV exactly (offset=0).
+    trades = [_make_trade(ts=i * 4000, price=5000) for i in range(50)]
+    sampler = TradeSampler(product="P", trades=trades, facts=facts)
+    fv_path = np.full(1000, 5000.0)
+    syn = sampler.sample_session(
+        fv_path=fv_path, rng=np.random.default_rng(0),
+    )
+    assert len(syn) > 0, "expected synthetic trades to be emitted"
+    sides = [t.side for t in syn]
+    # No 'unknown' should appear.
+    assert "unknown" not in sides, (
+        f"P0-3 regression: zero-offset trade emitted side='unknown' "
+        f"({sides[:5]})"
+    )
+    # Sides should be a mix of buy and sell (50/50 in expectation).
+    assert "buy" in sides
+    assert "sell" in sides
+
+
 def test_sample_session_clusters_preserved_with_renewal_process():
     """If real gaps are clustered, synthetic gaps should be too."""
     facts = _make_facts(10000)

@@ -116,6 +116,12 @@ class TradeSampler:
             per_tick_counts[tick] = per_tick_counts.get(tick, 0) + 1
         self._trades_per_active_tick = list(per_tick_counts.values())
 
+        # Cache first-arrival jitter cap to avoid recomputing per call.
+        self._first_arrival_max = (
+            max(1, int(np.ceil(np.mean(self._gap_samples))))
+            if self._gap_samples else 1
+        )
+
     @property
     def stats(self) -> TradeSamplerStats:
         n_trades = sum(1 for _ in self._joint_samples)
@@ -159,7 +165,7 @@ class TradeSampler:
         arrival_ticks: list[int] = []
         # Start: sample uniformly over [0, mean_gap) for first arrival,
         # avoids systematic bias toward t=0 vs t=large.
-        first_offset = int(rng.integers(0, max(1, int(np.ceil(np.mean(self._gap_samples))))))
+        first_offset = int(rng.integers(0, self._first_arrival_max))
         cursor = first_offset
         while cursor < n_ticks:
             arrival_ticks.append(cursor)
@@ -179,7 +185,17 @@ class TradeSampler:
                 offset = int(joint_arr_off[idx])
                 size = int(joint_arr_size[idx])
                 price = int(round(fv_path[tick] + offset))
-                side = "buy" if offset > 0 else ("sell" if offset < 0 else "unknown")
+                # P0-3 fix: zero-offset trades (price == FV exactly,
+                # possible at quantization grid points) used to emit
+                # side="unknown" which the matcher silently dropped.
+                # Now: randomize side 50/50 so the trade still
+                # participates in matching.
+                if offset > 0:
+                    side = "buy"
+                elif offset < 0:
+                    side = "sell"
+                else:
+                    side = "buy" if rng.random() < 0.5 else "sell"
                 out.append(SyntheticTrade(
                     timestamp=tick * self._tick_step,
                     product=self._product,
