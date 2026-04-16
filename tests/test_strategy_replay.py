@@ -57,6 +57,23 @@ def _build_minimal_facts(n_ticks: int = 50) -> list[FactRow]:
     return facts
 
 
+_BIG_BUYER_SOURCE = '''
+from datamodel import Order, OrderDepth, TradingState
+
+
+class Trader:
+    """Tries to buy 100 every tick — should be rejected (limit 80)."""
+
+    def run(self, state: TradingState):
+        orders = {}
+        for product, ob in state.order_depths.items():
+            if ob.sell_orders:
+                best_ask = min(ob.sell_orders.keys())
+                orders[product] = [Order(product, best_ask, 100)]
+        return orders, 0, ""
+'''
+
+
 def test_load_trader_class_from_inline_source(tmp_path: Path):
     src = tmp_path / "trader.py"
     src.write_text(_DUMMY_TRADER_SOURCE)
@@ -64,6 +81,34 @@ def test_load_trader_class_from_inline_source(tmp_path: Path):
     assert cls is not None
     instance = cls()
     assert hasattr(instance, "run")
+
+
+def test_replay_enforces_position_limit_rejecting_oversized_batch(tmp_path: Path):
+    """P0-2 regression: a batch that would exceed position_limit in
+    either direction must be rejected entirely (not partially filled).
+    Matches generative_simulator semantics + IMC behavior.
+    """
+    src = tmp_path / "trader.py"
+    src.write_text(_BIG_BUYER_SOURCE)
+    cls = load_trader_class(src)
+    facts = _build_minimal_facts(n_ticks=20)
+    results = replay_strategy(
+        trader_factory=cls,
+        facts=facts,
+        market_trades_by_ts={},
+        products=("P",),
+        position_limit=80,
+    )
+    r = results["P"]
+    # Trader requested 100 every tick. Limit is 80. Every batch should be
+    # rejected → 0 fills → 0 quote_scores recorded (the limit check fires
+    # before quote_score collection).
+    assert r.n_fills == 0, (
+        f"P0-2: oversized buy batch should be rejected; got {r.n_fills} fills"
+    )
+    assert r.n_quotes == 0, (
+        f"P0-2: rejected batch should produce no quote_scores; got {r.n_quotes}"
+    )
 
 
 def test_replay_emits_quote_scores_with_correct_signs(tmp_path: Path):

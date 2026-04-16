@@ -189,9 +189,26 @@ def replay_strategy(
             LOGGER.warning("Trader.run raised at t=%d: %s", ts, exc)
             orders = {}
 
+        # P0-2 fix: enforce position limit per-product per-batch, matching
+        # the generative_simulator.run_session semantics. If the entire
+        # batch for a product would breach the limit (in either direction),
+        # the entire batch is rejected for that product. This makes
+        # strategy_replay's risk model consistent with MC's.
+        validated_orders: dict[str, list] = {}
         for product, product_orders in orders.items():
             if product not in products:
                 continue
+            non_empty = [o for o in product_orders if o.quantity != 0]
+            total_buy = sum(o.quantity for o in non_empty if o.quantity > 0)
+            total_sell = sum(-o.quantity for o in non_empty if o.quantity < 0)
+            current = positions[product]
+            if (current + total_buy > position_limit
+                    or current - total_sell < -position_limit):
+                # Reject entire batch (matches generative_simulator + IMC semantics)
+                continue
+            validated_orders[product] = non_empty
+
+        for product, product_orders in validated_orders.items():
             for order in product_orders:
                 fv = fv_grid.get((product, ts))
                 if fv is None:

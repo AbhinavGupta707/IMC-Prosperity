@@ -198,6 +198,48 @@ def test_realized_alpha_recovered_for_known_drift_strategy():
     )
 
 
+def test_rng_isolation_book_sampling_independent_of_trade_count():
+    """P0-1 regression: book samples must not shift if the trade
+    sampler consumes a different number of randoms.
+
+    Two configs that differ ONLY in trade volume should produce the
+    SAME bot-book sequence (because book and trade RNGs are spawned
+    independently from the master). If they don't, the per-tick book
+    sample is sensitive to trade-sampler internals — a future change
+    would silently break MC reproducibility.
+    """
+    facts = _make_facts(100)
+    fv_proc = FVProcess(sigma=0.0, drift=0.0, start_value=5000.0,
+                        quantization_grid=None)
+    # Config A: no trades.
+    config_a = SessionConfig(
+        products=("P",), n_ticks=50,
+        fv_processes={"P": fv_proc},
+        book_samplers={"P": BookSampler(facts)},
+        trade_samplers={"P": TradeSampler(product="P", trades=[], facts=facts)},
+        seed=12345,
+    )
+    # Config B: many trades (different RNG consumption in trade sampler).
+    trades = [TradeRow(
+        timestamp=ts, product="P", price=5005,
+        quantity=1, buyer=None, seller=None,
+    ) for ts in range(0, 50000, 200)]
+    config_b = SessionConfig(
+        products=("P",), n_ticks=50,
+        fv_processes={"P": fv_proc},
+        book_samplers={"P": BookSampler(facts)},
+        trade_samplers={"P": TradeSampler(product="P", trades=trades, facts=facts)},
+        seed=12345,
+    )
+    res_a = run_session(config_a, trader_factory=_no_op_trader_factory)
+    res_b = run_session(config_b, trader_factory=_no_op_trader_factory)
+    # Same seed + same book_sampler ⇒ same FV trajectory regardless of
+    # what the trade sampler did (RNG isolation).
+    assert res_a.per_tick_fv == res_b.per_tick_fv, (
+        "P0-1 regression: FV path leaked trade-sampler RNG state"
+    )
+
+
 def test_passive_orders_do_not_persist_across_ticks():
     """If trader quotes a passive order at tick 0 and quotes nothing at
     tick 1, no fill should land at tick 1 even if a market trade

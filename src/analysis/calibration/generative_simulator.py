@@ -98,7 +98,22 @@ def run_session(
         Observation, OrderDepth, TradingState,
     )
 
-    rng = np.random.default_rng(config.seed)
+    # P0-1 fix: spawn one Generator per (component, product) pair so that
+    # changes to per-call random consumption in any sampler (e.g. trade
+    # arrivals adding a new draw) cannot break determinism in unrelated
+    # samplers downstream. Each child generator is reproducibly derived
+    # from the master seed.
+    master = np.random.default_rng(config.seed)
+    n_products = len(config.products)
+    # 3 component slots: FV, trade-arrival pre-spawn, per-tick book sample.
+    fv_rngs, trade_rngs, book_rngs = (
+        master.spawn(n_products),
+        master.spawn(n_products),
+        master.spawn(n_products),
+    )
+    fv_rng_by_p = dict(zip(config.products, fv_rngs))
+    trade_rng_by_p = dict(zip(config.products, trade_rngs))
+    book_rng_by_p = dict(zip(config.products, book_rngs))
 
     # 1. Pre-spawn FV paths per product (independent draws).
     fv_paths: dict[str, np.ndarray] = {}
@@ -108,7 +123,7 @@ def run_session(
         fv_paths[product] = spawn_fv_path(
             config.fv_processes[product],
             n_ticks=config.n_ticks,
-            rng=rng,
+            rng=fv_rng_by_p[product],
         )
 
     # 2. Pre-spawn trade tapes per product.
@@ -117,7 +132,7 @@ def run_session(
         if product not in config.trade_samplers:
             continue  # No trade sampler for this product → no synthetic trades
         trade_list = config.trade_samplers[product].sample_session(
-            fv_path=fv_paths[product], rng=rng,
+            fv_path=fv_paths[product], rng=trade_rng_by_p[product],
         )
         for trade in trade_list:
             tick = trade.timestamp // config.tick_step
@@ -142,7 +157,8 @@ def run_session(
         bot_asks_by_p: dict[str, tuple] = {}
         for product in config.products:
             bids, asks = config.book_samplers[product].sample_book(
-                fv=float(fv_paths[product][tick]), rng=rng,
+                fv=float(fv_paths[product][tick]),
+                rng=book_rng_by_p[product],
             )
             order_depths[product] = OrderDepth(
                 buy_orders={lvl.price: lvl.volume for lvl in bids},
