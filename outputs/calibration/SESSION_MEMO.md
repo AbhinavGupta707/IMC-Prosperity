@@ -4,6 +4,29 @@
 **Goal**: build full calibration → audit → Monte Carlo pipeline; deliver
 F3a verdict; produce reusable infra for round 2.
 
+## CRITICAL CAVEAT (added after adversarial review)
+
+The pipeline is solid engineering. The verdicts in this memo were
+initially overstated relative to what n=1 day of calibration data can
+support. Read MC_VERDICT.md (v2) for the calibrated language. Top
+issues uncovered in review:
+
+- The "100 MC sessions" are 100 re-orderings of one day's
+  microstructure. They measure within-day path noise, not across-day
+  variance. Win-rate 93% is conditional on day-0's regime.
+- Gate 3 was called PASS on an 8x divergence (replay +58 vs MC +465);
+  this is too lenient. The fill model in strategy_replay is
+  miscalibrated and biases toward favorable selection.
+- The "wall_mid family was officially LUCKY" claim is unsafe. 4
+  variants won officially +263 to +308; MC says all 4 lose money.
+  Could be MC bias against wall_mid. Test required (player-priority-
+  at-touch matching variant) before any kill recommendation.
+- F2c's m=2.5+skew tuning is INVENTORY PROTECTION on bad-tail days,
+  not extra edge on average. Don't extrapolate to "edge tuning works
+  in general."
+- **The single biggest thing that strengthens the pipeline is one more
+  day of hold-1 data. Round-2 day 1 will provide this automatically.**
+
 ## Pipeline overview (what now exists)
 
 ```
@@ -43,26 +66,38 @@ Day 4-5 — submit, monitor, record (local_replay, MC_median, official_PnL) trip
 
 ## Top-level findings
 
-### 1. F3a's edge IS structural
+### 1. F3a has a real edge under day-0 microstructure (cross-day untested)
 
-Three independent confirmations:
+Three signals point the same way:
 - **strategy_replay**: single-day +58 PnL, mean edge per quote +1.56,
-  all 4 markout horizons positive on both sides
-- **MC median +465** across 100 random seeds (matches official +434
-  within rounding)
-- **Win rate 93%, R^2 mean 0.76** — high consistency across seeds
+  all 4 markout horizons positive on both sides — a lucky-direction
+  artifact would not produce uniform sign across horizons + sides.
+- **MC median +465** across 100 *within-day permutations* of round-1
+  day-0's microstructure (matches official lift +434 within rounding,
+  with the major caveat that PnL absolutes are not meant to match —
+  that's a coincidence of the within-day calibration).
+- **Win rate 93%** within-day permutations.
 
-Confidence: very high that F3a will outperform on similar-microstructure
-days.
+Confidence: ~70% (was previously claimed as ~95%) that F3a's edge
+reflects a real market-making property rather than day-0 noise.
+The remaining 30% is the cross-day persistence question that one
+more day of hold-1 calibration would settle.
 
-### 2. The wall_mid family was officially LUCKY
+### 2. The wall_mid family verdict is UNRESOLVED (was previously claimed "officially lucky")
 
 Phase F's official ranking placed F3d (#2), F2b (#3), F3c (#4), F2d (#5)
-as positive lifts. MC across 100 seeds shows all four with **negative
-median PnL and 43-48% win rate** — textbook sample-of-one signature.
+with positive lifts +263 to +308. MC across 100 seeds shows all four
+with negative median PnL and 43-48% win rate.
 
-Their official wins came from one favorable random-walk realization on
-day 0. **Do not carry these to round 2.**
+Two competing explanations:
+- 4 correlated strategies caught the same lucky tail draw on day 0
+- MC is missing a microstructure feature wall_mid exploits
+
+**The distinguishing test is required before any kill recommendation**:
+re-run MC with a player-priority-at-touch matching model variant. If
+wall_mid family medians turn positive under that variant, MC is biased
+and the kill is wrong. Until that test runs, **carry one wall_mid
+variant as a hedge candidate for round 2**.
 
 ### 3. PEPPER is NOT a Gaussian random walk
 
@@ -75,12 +110,20 @@ This rewrites the Phase F PEPPER narrative: `buy_hold_80`'s consistent
 volatility. For round 2: any product with similar deterministic-drift
 profile should be addressed with buy-and-hold, NOT MM strategies.
 
-### 4. The right FV estimator > parameter tuning
+### 4. m=2.5 + skew tuning is INVENTORY PROTECTION on bad-tail days, not edge generation
 
-For F3a, the `weighted_mid` FV choice contributes most of the edge;
-adding `m=2.5` and `linear skew c=2` on top adds only +57 marginal
-median PnL. Round-2 strategy: prioritize discovering the right FV
-estimator for the new product before tuning edges/skews.
+F2c (plain weighted_mid, m=1.5) MC median: +408
+F3a (weighted_mid + m=2.5 + linear skew c=2) MC median: +465
+
+The +57 marginal in MC is borderline-significant in within-day noise
+(~0.2σ of per-session std=293). What's NOT borderline: F2c's worst MC
+seeds are the same as F3a's worst seeds (417, 499, 474, 498, 511), and
+F2c's official under-performance vs F3a (+75 vs +434) likely reflects
+a single tail-realization that F3a's m=2.5+skew protected against.
+
+For round 2: re-tune m and skew_c around the new sigma; don't ship
+F3a's literal numbers. The recipe (weighted_mid + m≈N·sigma + small
+linear skew) likely transfers; the specific numbers do not.
 
 ## Reusable engine infra (product-agnostic)
 
@@ -177,19 +220,31 @@ To inspect: `git stash list`. To recover: `git stash apply stash@{N}`.
    F3a's ASH config alongside.
 
 2. **Round 2 day 1**: submit `outputs/submissions/calibration/trader_hold_one.py`.
-   Pipeline ready to recalibrate when log lands.
+   Pipeline ready to recalibrate when log lands. **Crucially, this
+   gives us n=2 calibration days — the single biggest pipeline
+   strengthener available.**
 
-3. **Round 2 day 2**: re-run cohort MC on round-2 calibration with the
-   F3a mechanism (`weighted_mid + m=2.5 + skew=2`). If MC says it
-   still wins, ship F3a-port. If MC says it doesn't transfer, audit
-   the new FV estimators (the calibration plots will show which mid
-   approximation is closest to true FV).
+3. **Round 2 day 2**: pre-MC sanity check — compute per-FV-estimator
+   MAE vs recovered server FV. Whichever FV estimator is closest is
+   the strategy's foundation. ~5 min check that should gate which
+   candidates even get sent to MC. Then run cohort MC with F3a-mechanism
+   *retuned* to the new sigma (NOT the literal m=2.5/skew=2 numbers).
 
-4. **Don't ship wall_mid family in round 2** unless MC says otherwise.
-   The single-day evidence is misleading.
+4. **Carry one wall_mid variant as a round-2 hedge** until the
+   distinguishing test (player-priority-at-touch matching variant) is
+   run and confirms whether MC is biased against wall_mid.
 
 5. **For deterministic-drift products** (PEPPER analogs in round 2):
-   skip MC entirely. Just submit hold-1 day 1, observe drift sign,
-   ship buy-and-hold-N.
+   skip MC entirely. Submit hold-1 day 1, observe drift sign, ship
+   buy-and-hold-N. **Carries jump-tail risk that MC cannot quantify
+   (n=1 jump observed) — accept the risk consciously.**
+
+6. **Build the player-priority-at-touch matching variant** (~1 day) to
+   resolve the wall_mid kill question. Should happen before round 2
+   opens.
+
+7. **Build a `--fast` MC mode** (20 sessions × 4 candidates) as a
+   day-2 sanity check. Wall-clock-test the full calibrate→audit→MC
+   path on round-1 data first to confirm the day-2 timeline is feasible.
 
 End of session.
