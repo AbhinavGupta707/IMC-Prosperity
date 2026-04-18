@@ -1,0 +1,6 @@
+Phase 6 product comparison: TOMATOES
+considered: weighted_mid, rolling_mid
+excluded:   ewma_mid_alpha_020
+winner:     (none)
+verdict:    retain
+reason:     no eligible sub-sweep reached promotion_candidate

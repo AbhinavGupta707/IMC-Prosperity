@@ -1,0 +1,25 @@
+{
+  "flagged_steps": [],
+  "generated_at": "2026-04-12T14:39:17.524943+00:00",
+  "per_product": {
+    "EMERALDS": {
+      "flag_histogram": {},
+      "flagged_step_count": 0,
+      "min_flow_score": 0.0,
+      "near_high_count": 0,
+      "near_low_count": 0,
+      "peak_flow_score": 0.0,
+      "steps_scanned": 1
+    },
+    "TOMATOES": {
+      "flag_histogram": {},
+      "flagged_step_count": 0,
+      "min_flow_score": 0.0,
+      "near_high_count": 0,
+      "near_low_count": 0,
+      "peak_flow_score": 0.0,
+      "steps_scanned": 1
+    }
+  },
+  "run_label": "phase7_verify"
+}

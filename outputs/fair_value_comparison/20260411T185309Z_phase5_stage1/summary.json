@@ -1,0 +1,132 @@
+{
+  "generated_at": "2026-04-11T18:53:09.405522+00:00",
+  "products": [
+    {
+      "baseline_next_mid_mae": 0.2544127206360318,
+      "comparisons": [
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.0,
+          "estimator": "mid",
+          "final_position": 0,
+          "horizon_5_mid_mae": 0.256064016004001,
+          "maker_share": null,
+          "next_mid_delta_vs_mid": 0.0,
+          "next_mid_mae": 0.2544127206360318,
+          "pnl": 0.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 0
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.20707946869175858,
+          "estimator": "rolling_mid",
+          "final_position": 0,
+          "horizon_5_mid_mae": 0.21281903708738895,
+          "maker_share": null,
+          "next_mid_delta_vs_mid": -0.04158170130240266,
+          "next_mid_mae": 0.21283101933362916,
+          "pnl": 0.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 0
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.1681066666666331,
+          "estimator": "weighted_mid",
+          "final_position": 0,
+          "horizon_5_mid_mae": 0.25198299574893585,
+          "maker_share": null,
+          "next_mid_delta_vs_mid": -0.0034935080087349912,
+          "next_mid_mae": 0.25091921262729683,
+          "pnl": 0.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 0
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.17335961150430312,
+          "estimator": "ewma_mid",
+          "final_position": 0,
+          "horizon_5_mid_mae": 0.24851317197336417,
+          "maker_share": null,
+          "next_mid_delta_vs_mid": -0.006743800613375511,
+          "next_mid_mae": 0.2476689200226563,
+          "pnl": 0.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 0
+        }
+      ],
+      "live_method": "anchor",
+      "product": "EMERALDS"
+    },
+    {
+      "baseline_next_mid_mae": 0.7896894844742237,
+      "comparisons": [
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.0,
+          "estimator": "mid",
+          "final_position": -1,
+          "horizon_5_mid_mae": 1.2307326831707928,
+          "maker_share": 1.0,
+          "next_mid_delta_vs_mid": 0.0,
+          "next_mid_mae": 0.7896894844742237,
+          "pnl": -9.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 7
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 1.6933610274655853,
+          "estimator": "rolling_mid",
+          "final_position": -6,
+          "horizon_5_mid_mae": 1.9206830236183132,
+          "maker_share": 0.0029914529914529917,
+          "next_mid_delta_vs_mid": 0.9552065132404002,
+          "next_mid_mae": 1.744895997714624,
+          "pnl": 1167.0,
+          "samples": 20000,
+          "steps_near_limit": 1341,
+          "trade_count": 400
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.5360233333333609,
+          "estimator": "weighted_mid",
+          "final_position": 6,
+          "horizon_5_mid_mae": 1.1872118029507461,
+          "maker_share": 0.056818181818181816,
+          "next_mid_delta_vs_mid": 0.025172925312949457,
+          "next_mid_mae": 0.8148624097871732,
+          "pnl": 276.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 16
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.57927921523939,
+          "estimator": "ewma_mid",
+          "final_position": 6,
+          "horizon_5_mid_mae": 1.1894472077406226,
+          "maker_share": 0.02252252252252252,
+          "next_mid_delta_vs_mid": 0.037893630659804334,
+          "next_mid_mae": 0.827583115134028,
+          "pnl": 273.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 34
+        }
+      ],
+      "live_method": "weighted_mid",
+      "product": "TOMATOES"
+    }
+  ],
+  "run_label": "phase5_stage1"
+}

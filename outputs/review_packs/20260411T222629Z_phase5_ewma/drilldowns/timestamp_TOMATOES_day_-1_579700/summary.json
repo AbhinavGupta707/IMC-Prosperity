@@ -1,0 +1,25 @@
+{
+  "anchor_day": -1,
+  "anchor_timestamp": 579700,
+  "book_snapshot_count": 81,
+  "case_id": "timestamp_TOMATOES_day_-1_579700",
+  "extra": {
+    "day": -1,
+    "trade_indices": []
+  },
+  "generated_at": "2026-04-11T22:27:09.063488+00:00",
+  "kind": "timestamp",
+  "near_limit_fraction": 0.75,
+  "pack_dir": "outputs/review_packs/20260411T222629Z_phase5_ewma",
+  "pack_run_id": "20260411T222629Z_phase5_ewma",
+  "product": "TOMATOES",
+  "rank_metric": null,
+  "rank_score": null,
+  "trade_index": null,
+  "trades_in_window": [],
+  "window_end": 583700,
+  "window_end_day": -1,
+  "window_radius": 40,
+  "window_start": 575700,
+  "window_start_day": -1
+}

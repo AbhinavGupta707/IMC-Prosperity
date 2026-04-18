@@ -1,0 +1,87 @@
+[
+  {
+    "seed": 20260417,
+    "n_ticks": 1000,
+    "products": [
+      "ASH_COATED_OSMIUM"
+    ],
+    "final_pnl": -894.57421875,
+    "realized_alpha": -0.7710948954386454,
+    "realized_r2": 0.6290038136179357,
+    "realized_downside_dev": 17.207417451268473,
+    "n_fills": {
+      "ASH_COATED_OSMIUM": 25
+    },
+    "n_orders_rejected_limit": {
+      "ASH_COATED_OSMIUM": 0
+    }
+  },
+  {
+    "seed": 20260418,
+    "n_ticks": 1000,
+    "products": [
+      "ASH_COATED_OSMIUM"
+    ],
+    "final_pnl": -33.2490234375,
+    "realized_alpha": 0.1963359299121018,
+    "realized_r2": 0.29015616009576395,
+    "realized_downside_dev": 9.561924547179958,
+    "n_fills": {
+      "ASH_COATED_OSMIUM": 33
+    },
+    "n_orders_rejected_limit": {
+      "ASH_COATED_OSMIUM": 0
+    }
+  },
+  {
+    "seed": 20260419,
+    "n_ticks": 1000,
+    "products": [
+      "ASH_COATED_OSMIUM"
+    ],
+    "final_pnl": 931.203125,
+    "realized_alpha": 0.8853619385377198,
+    "realized_r2": 0.9732185225191959,
+    "realized_downside_dev": 8.632660016795013,
+    "n_fills": {
+      "ASH_COATED_OSMIUM": 30
+    },
+    "n_orders_rejected_limit": {
+      "ASH_COATED_OSMIUM": 0
+    }
+  },
+  {
+    "seed": 20260420,
+    "n_ticks": 1000,
+    "products": [
+      "ASH_COATED_OSMIUM"
+    ],
+    "final_pnl": -14.080078125,
+    "realized_alpha": -0.13501248962186463,
+    "realized_r2": 0.4209847196271489,
+    "realized_downside_dev": 7.697874672772516,
+    "n_fills": {
+      "ASH_COATED_OSMIUM": 28
+    },
+    "n_orders_rejected_limit": {
+      "ASH_COATED_OSMIUM": 0
+    }
+  },
+  {
+    "seed": 20260421,
+    "n_ticks": 1000,
+    "products": [
+      "ASH_COATED_OSMIUM"
+    ],
+    "final_pnl": 700.2734375,
+    "realized_alpha": 0.8260796802085865,
+    "realized_r2": 0.9345029519911993,
+    "realized_downside_dev": 6.585565327601355,
+    "n_fills": {
+      "ASH_COATED_OSMIUM": 33
+    },
+    "n_orders_rejected_limit": {
+      "ASH_COATED_OSMIUM": 0
+    }
+  }
+]

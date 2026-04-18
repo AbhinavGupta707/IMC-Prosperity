@@ -1,0 +1,33 @@
+Parameter sweep: INTARIAN_PEPPER_ROOT
+run_label: round1_pepper_stage_b_h32_linear_drift_h32
+fair_value_method: linear_drift
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge    mk_1    mk_5   mk_20
+---------------------------------------------------------------------------------------------
+  1.5   1.0   n/a   n/a   30436.00     905    1.2  4162   35   +2.870   +3.47   +3.51   +3.40
+
+Top 10 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge    mk_1    mk_5   mk_20
+---------------------------------------------------------------------------------------------
+  1.0   2.0   n/a   n/a   56300.00     800    0.3  1733   34   +2.949   +3.51   +3.56   +3.44
+  0.5   2.0   n/a   n/a   55821.00     795    0.1  2111   34   +2.950   +3.52   +3.56   +3.44
+  1.5   2.0   n/a   n/a   54235.00     814    1.0  1548   28   +2.955   +3.54   +3.56   +3.44
+  2.0   2.0   n/a   n/a   53830.00     857    2.2  1941   35   +2.951   +3.52   +3.55   +3.43
+  2.5   2.0   n/a   n/a   53612.00     872    2.9  1696   32   +2.962   +3.51   +3.57   +3.44
+  2.0   1.5   n/a   n/a   50023.00     913    1.9  3467   34   +2.895   +3.47   +3.51   +3.40
+  1.5   1.5   n/a   n/a   49695.00     891    1.1  3302   34   +2.889   +3.47   +3.51   +3.39
+  1.0   1.5   n/a   n/a   49517.00     864    0.3  3222   34   +2.882   +3.48   +3.50   +3.39
+  0.5   1.5   n/a   n/a   49482.00     856    0.1  2982   34   +2.882   +3.47   +3.51   +3.40
+  2.5   1.5   n/a   n/a   48824.00     923    2.2  3435   36   +2.898   +3.48   +3.51   +3.40
+
+Average pnl by parameter value
+maker_edge=0.5: mean_pnl=38282.00, mean_trades=854.0, mean_near_limit=3360.5
+maker_edge=1.0: mean_pnl=38381.75, mean_trades=863.8, mean_near_limit=3496.2
+maker_edge=1.5: mean_pnl=37068.75, mean_trades=880.2, mean_near_limit=3456.5
+maker_edge=2.0: mean_pnl=37079.50, mean_trades=902.2, mean_near_limit=3606.2
+maker_edge=2.5: mean_pnl=36206.00, mean_trades=917.5, mean_near_limit=3559.8
+taker_edge=0.5: mean_pnl=15424.00, mean_trades=911.6, mean_near_limit=4898.0
+taker_edge=1.0: mean_pnl=29922.60, mean_trades=905.6, mean_near_limit=3998.0
+taker_edge=1.5: mean_pnl=49508.20, mean_trades=889.4, mean_near_limit=3281.6
+taker_edge=2.0: mean_pnl=54759.60, mean_trades=827.6, mean_near_limit=1805.8

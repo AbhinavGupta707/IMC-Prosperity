@@ -1,0 +1,95 @@
+{
+  "artifacts": {
+    "charts_dir": "charts",
+    "notes_md": "notes.md",
+    "series_json": "series.json",
+    "summary_json": "summary.json",
+    "summary_text": "summary.txt",
+    "trades_json": "trades.json"
+  },
+  "charts_rendered": false,
+  "data_files": [
+    "data/raw/round_1/prices_round_1_day_-1.csv",
+    "data/raw/round_1/prices_round_1_day_-2.csv",
+    "data/raw/round_1/prices_round_1_day_0.csv",
+    "data/raw/round_1/trades_round_1_day_-1.csv",
+    "data/raw/round_1/trades_round_1_day_-2.csv",
+    "data/raw/round_1/trades_round_1_day_0.csv"
+  ],
+  "engine_config": {
+    "diagnostics_verbosity": 1,
+    "max_trader_data_chars": 50000,
+    "products": {
+      "ASH_COATED_OSMIUM": {
+        "anchor_price": 10000.0,
+        "ewma_alpha": null,
+        "fair_value_fallbacks": [
+          "mid",
+          "microprice"
+        ],
+        "fair_value_method": "wall_mid",
+        "flatten_threshold": 0.7,
+        "history_length": 48,
+        "inventory_skew": 4.0,
+        "maker_edge": 1.0,
+        "max_aggressive_size": 10,
+        "position_limit": 50,
+        "quote_size": 5,
+        "strategy_name": "market_making",
+        "taker_edge": 1.0,
+        "tick_size": 1
+      },
+      "INTARIAN_PEPPER_ROOT": {
+        "anchor_price": null,
+        "ewma_alpha": null,
+        "fair_value_fallbacks": [
+          "depth_mid",
+          "hybrid_wall_micro",
+          "mid"
+        ],
+        "fair_value_method": "linear_drift",
+        "flatten_threshold": 0.8,
+        "history_length": 32,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "max_aggressive_size": 8,
+        "position_limit": 50,
+        "quote_size": 4,
+        "strategy_name": "market_making",
+        "taker_edge": 2.0,
+        "tick_size": 1
+      }
+    },
+    "state_version": 1
+  },
+  "estimators_per_product": {
+    "ASH_COATED_OSMIUM": {
+      "fallbacks": [
+        "mid",
+        "microprice"
+      ],
+      "primary": "wall_mid",
+      "primary_known": true
+    },
+    "INTARIAN_PEPPER_ROOT": {
+      "fallbacks": [
+        "depth_mid",
+        "hybrid_wall_micro",
+        "mid"
+      ],
+      "primary": "linear_drift",
+      "primary_known": true
+    }
+  },
+  "generated_at": "2026-04-14T14:04:04.631227+00:00",
+  "git_commit": "0ac4d19",
+  "git_dirty": true,
+  "markout_horizons": [
+    1,
+    5,
+    20
+  ],
+  "python_version": "3.14.3",
+  "run_id": "20260414T140404Z_round1_pepper_c1_linear_drift_h32_t20_f08",
+  "run_label": "round1_pepper_c1_linear_drift_h32_t20_f08"
+}

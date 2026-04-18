@@ -1,0 +1,113 @@
+{
+  "aggregates": [
+    {
+      "mean_pnl": -127371.5,
+      "mean_steps_near_limit": 23144,
+      "mean_trade_count": 806,
+      "parameter": "maker_edge",
+      "value": 1.0
+    },
+    {
+      "mean_pnl": -128225.0,
+      "mean_steps_near_limit": 23480.5,
+      "mean_trade_count": 802,
+      "parameter": "maker_edge",
+      "value": 1.5
+    },
+    {
+      "mean_pnl": -128160.0,
+      "mean_steps_near_limit": 23364,
+      "mean_trade_count": 805,
+      "parameter": "taker_edge",
+      "value": 1.0
+    },
+    {
+      "mean_pnl": -127436.5,
+      "mean_steps_near_limit": 23260.5,
+      "mean_trade_count": 803,
+      "parameter": "taker_edge",
+      "value": 1.5
+    }
+  ],
+  "baseline": {
+    "avg_entry_edge": 5724.278144639719,
+    "avg_markout_1": 3.852401405700898,
+    "avg_markout_20": 5.885982038266302,
+    "avg_markout_5": 4.324677860210855,
+    "final_position": -43,
+    "maker_share": 0.004296035930482328,
+    "params": {
+      "maker_edge": 1.5,
+      "taker_edge": 1.0
+    },
+    "pnl": -128660.0,
+    "steps_near_limit": 23524,
+    "trade_count": 803
+  },
+  "fair_value_method": "hybrid_wall_micro",
+  "generated_at": "2026-04-14T13:31:11.395036+00:00",
+  "product": "INTARIAN_PEPPER_ROOT",
+  "rows": [
+    {
+      "avg_entry_edge": 5710.402375796055,
+      "avg_markout_1": 3.852494154325799,
+      "avg_markout_20": 5.871005455962588,
+      "avg_markout_5": 4.319368667186282,
+      "final_position": -41,
+      "maker_share": 0.005469818323891385,
+      "params": {
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": -127660.0,
+      "steps_near_limit": 23204,
+      "trade_count": 807
+    },
+    {
+      "avg_entry_edge": 5714.507156145853,
+      "avg_markout_1": 3.866392801251956,
+      "avg_markout_20": 5.88556338028169,
+      "avg_markout_5": 4.336071987480438,
+      "final_position": -41,
+      "maker_share": 0.005293079788276808,
+      "params": {
+        "maker_edge": 1.0,
+        "taker_edge": 1.5
+      },
+      "pnl": -127083.0,
+      "steps_near_limit": 23084,
+      "trade_count": 805
+    },
+    {
+      "avg_entry_edge": 5724.278144639719,
+      "avg_markout_1": 3.852401405700898,
+      "avg_markout_20": 5.885982038266302,
+      "avg_markout_5": 4.324677860210855,
+      "final_position": -43,
+      "maker_share": 0.004296035930482328,
+      "params": {
+        "maker_edge": 1.5,
+        "taker_edge": 1.0
+      },
+      "pnl": -128660.0,
+      "steps_near_limit": 23524,
+      "trade_count": 803
+    },
+    {
+      "avg_entry_edge": 5717.2311375269865,
+      "avg_markout_1": 3.882987063896511,
+      "avg_markout_20": 5.9082712661701295,
+      "avg_markout_5": 4.356134849078793,
+      "final_position": -43,
+      "maker_share": 0.004906771344455349,
+      "params": {
+        "maker_edge": 1.5,
+        "taker_edge": 1.5
+      },
+      "pnl": -127790.0,
+      "steps_near_limit": 23437,
+      "trade_count": 801
+    }
+  ],
+  "run_label": "round1_pepper_stage_a_hybrid_wall_micro"
+}

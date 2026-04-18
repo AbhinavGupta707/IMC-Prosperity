@@ -1,0 +1,30 @@
+Fair value comparison report: round1_fv_phase1_INTARIAN_PEPPER_ROOT
+generated_at: 2026-04-14T13:08:07.447206+00:00
+
+[INTARIAN_PEPPER_ROOT] live_method=weighted_mid
+estimator      cov%  mae_now   mae_n1     d_n1   mae_n5        pnl  trades    mk%  near
+---------------------------------------------------------------------------------------
+mid            92.3    0.000    1.078   +0.000    1.274  -67397.00      49   13.4  6290
+microprice     92.3    0.705    1.010   -0.068    1.203  -65277.00      79   21.3  1798
+rolling_mid   100.0    2.688    2.792   +1.714    3.177  -36390.00     878    1.5  4020
+weighted_mid  100.0    1.860    1.969   +0.890    2.346   -8133.00     901    1.3  2786
+ewma_mid      100.0    0.665    0.949   -0.129    1.165   29066.00     829    0.3   568
+depth_mid      92.3    0.595    0.943   -0.136    1.078   40428.00     817    0.9  1762
+wall_mid       92.3    0.865    0.955   -0.123    1.132   18662.00     897    0.7  3180
+filtered_wall_mid   92.3    0.865    0.955   -0.123    1.132   18662.00     897    0.7  3180
+hybrid_wall_micro   92.3    0.784    0.911   -0.167    1.059   33318.00     584    0.4     0
+---------------------------------------------------------------------------------------
+delta_n1 compares estimator next-step MAE against the current-mid baseline (1.078)
+
+Distinctness diagnostics
+estimator           d_primary      d_mid    chg%
+------------------------------------------------
+mid                     1.860      0.000    60.2
+microprice              1.863      0.705    62.6
+rolling_mid             0.865      2.688    98.9
+weighted_mid            0.000      1.860    99.4
+ewma_mid                1.479      0.665    96.6
+depth_mid               1.760      0.595    87.7
+wall_mid                1.771      0.865    56.0
+filtered_wall_mid       1.771      0.865    56.0
+hybrid_wall_micro       1.768      0.784    83.9

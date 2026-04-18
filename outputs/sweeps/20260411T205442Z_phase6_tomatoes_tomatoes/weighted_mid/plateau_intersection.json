@@ -1,0 +1,175 @@
+{
+  "center": null,
+  "gate_checks": {},
+  "generated_at": "2026-04-11T20:55:39.157932+00:00",
+  "intersection": [],
+  "per_slice": [
+    {
+      "band_rows": [
+        {
+          "final_position": 3,
+          "maker_share": 0.0967741935483871,
+          "params": {
+            "fair_value_method": "weighted_mid",
+            "history_length": 48,
+            "inventory_skew": 2.5,
+            "maker_edge": 1.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 207.5,
+          "steps_near_limit": 0,
+          "trade_count": 7
+        },
+        {
+          "final_position": 2,
+          "maker_share": 0.0625,
+          "params": {
+            "fair_value_method": "weighted_mid",
+            "history_length": 48,
+            "inventory_skew": 3.0,
+            "maker_edge": 1.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 225.0,
+          "steps_near_limit": 0,
+          "trade_count": 6
+        }
+      ],
+      "baseline": {
+        "final_position": 2,
+        "maker_share": 0.0625,
+        "params": {
+          "fair_value_method": "weighted_mid",
+          "history_length": 48,
+          "inventory_skew": 3.0,
+          "maker_edge": 1.0,
+          "taker_edge": 1.0
+        },
+        "pnl": 225.0,
+        "steps_near_limit": 0,
+        "trade_count": 6
+      },
+      "baseline_in_band": true,
+      "peak_pnl": 225.0,
+      "slice_name": "day_-2"
+    },
+    {
+      "band_rows": [
+        {
+          "final_position": -2,
+          "maker_share": 1.0,
+          "params": {
+            "fair_value_method": "weighted_mid",
+            "history_length": 48,
+            "inventory_skew": 2.0,
+            "maker_edge": 1.0,
+            "taker_edge": 2.0
+          },
+          "pnl": 45.0,
+          "steps_near_limit": 0,
+          "trade_count": 2
+        },
+        {
+          "final_position": -2,
+          "maker_share": 1.0,
+          "params": {
+            "fair_value_method": "weighted_mid",
+            "history_length": 48,
+            "inventory_skew": 2.5,
+            "maker_edge": 1.0,
+            "taker_edge": 2.0
+          },
+          "pnl": 45.0,
+          "steps_near_limit": 0,
+          "trade_count": 2
+        },
+        {
+          "final_position": -2,
+          "maker_share": 1.0,
+          "params": {
+            "fair_value_method": "weighted_mid",
+            "history_length": 48,
+            "inventory_skew": 3.0,
+            "maker_edge": 1.0,
+            "taker_edge": 2.0
+          },
+          "pnl": 45.0,
+          "steps_near_limit": 0,
+          "trade_count": 2
+        },
+        {
+          "final_position": -2,
+          "maker_share": 1.0,
+          "params": {
+            "fair_value_method": "weighted_mid",
+            "history_length": 48,
+            "inventory_skew": 3.5,
+            "maker_edge": 1.0,
+            "taker_edge": 2.0
+          },
+          "pnl": 45.0,
+          "steps_near_limit": 0,
+          "trade_count": 2
+        }
+      ],
+      "baseline": {
+        "final_position": 7,
+        "maker_share": 0.043478260869565216,
+        "params": {
+          "fair_value_method": "weighted_mid",
+          "history_length": 48,
+          "inventory_skew": 3.0,
+          "maker_edge": 1.0,
+          "taker_edge": 1.0
+        },
+        "pnl": -56.0,
+        "steps_near_limit": 0,
+        "trade_count": 12
+      },
+      "baseline_in_band": false,
+      "peak_pnl": 45.0,
+      "slice_name": "day_-1"
+    },
+    {
+      "band_rows": [
+        {
+          "final_position": 6,
+          "maker_share": 0.056818181818181816,
+          "params": {
+            "fair_value_method": "weighted_mid",
+            "history_length": 48,
+            "inventory_skew": 3.0,
+            "maker_edge": 1.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 276.0,
+          "steps_near_limit": 0,
+          "trade_count": 16
+        }
+      ],
+      "baseline": {
+        "final_position": 6,
+        "maker_share": 0.056818181818181816,
+        "params": {
+          "fair_value_method": "weighted_mid",
+          "history_length": 48,
+          "inventory_skew": 3.0,
+          "maker_edge": 1.0,
+          "taker_edge": 1.0
+        },
+        "pnl": 276.0,
+        "steps_near_limit": 0,
+        "trade_count": 16
+      },
+      "baseline_in_band": true,
+      "peak_pnl": 276.0,
+      "slice_name": "combined"
+    }
+  ],
+  "product": "TOMATOES",
+  "reason": "plateau intersection is empty across slices",
+  "role": "promotion_eligible",
+  "run_label": "phase6_tomatoes",
+  "sub_sweep": "weighted_mid",
+  "verdict": "retain"
+}

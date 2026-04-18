@@ -1,0 +1,290 @@
+{
+  "center": null,
+  "gate_checks": {},
+  "generated_at": "2026-04-11T21:02:27.821785+00:00",
+  "intersection": [],
+  "per_slice": [
+    {
+      "band_rows": [
+        {
+          "final_position": 3,
+          "maker_share": 0.002638522427440633,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 16,
+            "inventory_skew": 3.0,
+            "maker_edge": 1.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 937.5,
+          "steps_near_limit": 0,
+          "trade_count": 52
+        },
+        {
+          "final_position": 2,
+          "maker_share": 0.007575757575757576,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 16,
+            "inventory_skew": 3.0,
+            "maker_edge": 2.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 860.0,
+          "steps_near_limit": 0,
+          "trade_count": 56
+        },
+        {
+          "final_position": 3,
+          "maker_share": 0.002638522427440633,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 32,
+            "inventory_skew": 3.0,
+            "maker_edge": 1.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 937.5,
+          "steps_near_limit": 0,
+          "trade_count": 52
+        },
+        {
+          "final_position": 2,
+          "maker_share": 0.007575757575757576,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 32,
+            "inventory_skew": 3.0,
+            "maker_edge": 2.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 852.0,
+          "steps_near_limit": 0,
+          "trade_count": 56
+        },
+        {
+          "final_position": 3,
+          "maker_share": 0.002638522427440633,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 48,
+            "inventory_skew": 3.0,
+            "maker_edge": 1.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 937.5,
+          "steps_near_limit": 0,
+          "trade_count": 52
+        },
+        {
+          "final_position": 2,
+          "maker_share": 0.007575757575757576,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 48,
+            "inventory_skew": 3.0,
+            "maker_edge": 2.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 852.0,
+          "steps_near_limit": 0,
+          "trade_count": 56
+        },
+        {
+          "final_position": 3,
+          "maker_share": 0.002638522427440633,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 64,
+            "inventory_skew": 3.0,
+            "maker_edge": 1.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 937.5,
+          "steps_near_limit": 0,
+          "trade_count": 52
+        },
+        {
+          "final_position": 2,
+          "maker_share": 0.007575757575757576,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 64,
+            "inventory_skew": 3.0,
+            "maker_edge": 2.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 852.0,
+          "steps_near_limit": 0,
+          "trade_count": 56
+        }
+      ],
+      "baseline": {
+        "final_position": 2,
+        "maker_share": 0.0625,
+        "params": {
+          "ewma_alpha": null,
+          "fair_value_method": "weighted_mid",
+          "history_length": 48,
+          "inventory_skew": 3.0,
+          "maker_edge": 1.0,
+          "taker_edge": 1.0
+        },
+        "pnl": 225.0,
+        "steps_near_limit": 0,
+        "trade_count": 6
+      },
+      "baseline_in_band": false,
+      "peak_pnl": 937.5,
+      "slice_name": "day_-2"
+    },
+    {
+      "band_rows": [
+        {
+          "final_position": 8,
+          "maker_share": 0.0025252525252525255,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 32,
+            "inventory_skew": 3.0,
+            "maker_edge": 2.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 632.0,
+          "steps_near_limit": 0,
+          "trade_count": 57
+        },
+        {
+          "final_position": 8,
+          "maker_share": 0.0025252525252525255,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 48,
+            "inventory_skew": 3.0,
+            "maker_edge": 2.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 632.0,
+          "steps_near_limit": 0,
+          "trade_count": 57
+        },
+        {
+          "final_position": 8,
+          "maker_share": 0.0025252525252525255,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 64,
+            "inventory_skew": 3.0,
+            "maker_edge": 2.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 632.0,
+          "steps_near_limit": 0,
+          "trade_count": 57
+        }
+      ],
+      "baseline": {
+        "final_position": 7,
+        "maker_share": 0.043478260869565216,
+        "params": {
+          "ewma_alpha": null,
+          "fair_value_method": "weighted_mid",
+          "history_length": 48,
+          "inventory_skew": 3.0,
+          "maker_edge": 1.0,
+          "taker_edge": 1.0
+        },
+        "pnl": -56.0,
+        "steps_near_limit": 0,
+        "trade_count": 12
+      },
+      "baseline_in_band": false,
+      "peak_pnl": 632.0,
+      "slice_name": "day_-1"
+    },
+    {
+      "band_rows": [
+        {
+          "final_position": 7,
+          "maker_share": 0.0024183796856106408,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 32,
+            "inventory_skew": 3.0,
+            "maker_edge": 1.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 1301.0,
+          "steps_near_limit": 0,
+          "trade_count": 115
+        },
+        {
+          "final_position": 7,
+          "maker_share": 0.0024183796856106408,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 48,
+            "inventory_skew": 3.0,
+            "maker_edge": 1.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 1301.0,
+          "steps_near_limit": 0,
+          "trade_count": 115
+        },
+        {
+          "final_position": 7,
+          "maker_share": 0.0024183796856106408,
+          "params": {
+            "ewma_alpha": 0.2,
+            "fair_value_method": "ewma_mid",
+            "history_length": 64,
+            "inventory_skew": 3.0,
+            "maker_edge": 1.0,
+            "taker_edge": 1.0
+          },
+          "pnl": 1301.0,
+          "steps_near_limit": 0,
+          "trade_count": 115
+        }
+      ],
+      "baseline": {
+        "final_position": 6,
+        "maker_share": 0.056818181818181816,
+        "params": {
+          "ewma_alpha": null,
+          "fair_value_method": "weighted_mid",
+          "history_length": 48,
+          "inventory_skew": 3.0,
+          "maker_edge": 1.0,
+          "taker_edge": 1.0
+        },
+        "pnl": 276.0,
+        "steps_near_limit": 0,
+        "trade_count": 16
+      },
+      "baseline_in_band": false,
+      "peak_pnl": 1301.0,
+      "slice_name": "combined"
+    }
+  ],
+  "product": "TOMATOES",
+  "reason": "sub-sweep is diagnostic-only (no promotion)",
+  "role": "diagnostic",
+  "run_label": "phase6_tomatoes",
+  "sub_sweep": "ewma_mid_alpha_020",
+  "verdict": "diagnostic"
+}

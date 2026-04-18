@@ -12,20 +12,4 @@ __pycache__/
 .venv/
 venv/
 
-# Track small, human-readable round-1 research artefacts. Bulky
-# per-run sweep / backtest / chart outputs are still ignored.
-outputs/*
-!outputs/round_1
-outputs/round_1/*
-!outputs/round_1/notes
-!outputs/round_1/research
-
 notebooks/.ipynb_checkpoints/
-
-# The user's original Round-1 data drop is duplicated at
-# data/raw/round_1/; don't track the outer copy.
-ROUND 1/
-
-# The implementation plan canonical copy lives under docs/round_1/;
-# the root copy is the user's drop, not a tracked artefact.
-round1_implementation_plan.md

@@ -1,0 +1,17 @@
+{
+  "phase": "k",
+  "n_cells": 7,
+  "elapsed_sec": 44.975106954574585,
+  "best_overall_mean": 3653.3333333333335,
+  "best_overall_exp_off": 8430.864222779717,
+  "by_lever": {
+    "K": {
+      "best_cell_by_mean": "K0_J2_replay",
+      "best_mean": 3653.3333333333335,
+      "best_cell_by_exp_off": "K0_J2_replay",
+      "best_exp_off": 8430.864222779717,
+      "worst_mean": 3496.5,
+      "n": 7
+    }
+  }
+}

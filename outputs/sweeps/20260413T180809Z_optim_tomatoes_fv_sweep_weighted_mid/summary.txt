@@ -1,0 +1,35 @@
+Parameter sweep: TOMATOES
+run_label: optim_tomatoes_fv_sweep_weighted_mid
+fair_value_method: weighted_mid
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge
+---------------------------------------------------------------------
+  1.0   1.0   n/a   n/a     276.00      16    5.7     0    6   +0.683
+
+Top 10 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge
+---------------------------------------------------------------------
+  0.5   0.5   n/a   n/a     582.00      77    0.8     0    5   +0.316
+  0.5   0.5   n/a   n/a     582.00      77    0.8     0    5   +0.316
+  0.5   0.5   n/a   n/a     582.00      77    0.8     0    5   +0.316
+  0.5   0.5   n/a   n/a     582.00      77    0.8     0    5   +0.316
+  2.0   0.5   n/a   n/a     436.00      60    1.0     0    4   +0.366
+  2.0   0.5   n/a   n/a     436.00      60    1.0     0    4   +0.366
+  2.0   0.5   n/a   n/a     436.00      60    1.0     0    4   +0.366
+  2.0   0.5   n/a   n/a     436.00      60    1.0     0    4   +0.366
+  1.5   0.5   n/a   n/a     293.00      64    0.9     0    6   +0.359
+  1.5   0.5   n/a   n/a     293.00      64    0.9     0    6   +0.359
+
+Average pnl by parameter value
+maker_edge=0.5: mean_pnl=147.00, mean_trades=33.7, mean_near_limit=0.0
+maker_edge=1.0: mean_pnl=170.33, mean_trades=30.7, mean_near_limit=0.0
+maker_edge=1.5: mean_pnl=85.67, mean_trades=30.0, mean_near_limit=0.0
+maker_edge=2.0: mean_pnl=158.67, mean_trades=26.7, mean_near_limit=0.0
+taker_edge=0.5: mean_pnl=393.00, mean_trades=67.2, mean_near_limit=0.0
+taker_edge=1.0: mean_pnl=80.00, mean_trades=16.5, mean_near_limit=0.0
+taker_edge=1.5: mean_pnl=-51.75, mean_trades=7.0, mean_near_limit=0.0
+history_length=16: mean_pnl=140.42, mean_trades=30.2, mean_near_limit=0.0
+history_length=32: mean_pnl=140.42, mean_trades=30.2, mean_near_limit=0.0
+history_length=48: mean_pnl=140.42, mean_trades=30.2, mean_near_limit=0.0
+history_length=64: mean_pnl=140.42, mean_trades=30.2, mean_near_limit=0.0

@@ -1,0 +1,24 @@
+Round 1 minimum-viable backtest | label=round1_mvb_post_refactor
+data_dir=data/raw/round_1
+
+Combined (all days)
+  total PnL (entire config): 23719.00
+  steps: 30000
+
+product                       pnl  trades   mk_q   tk_q   pos   near     edge     mk_1     mk_5    mk_20
+---------------------------------------------------------------------------------------------------------
+ASH_COATED_OSMIUM            7301     650     11   4480    -5    100   +2.245   +1.961   +1.864   +1.758
+INTARIAN_PEPPER_ROOT        16418     907     60   4744    28   4872   +3.053   +3.460   +3.504   +3.394
+
+ASH_COATED_OSMIUM per-day
+   day        pnl  trades   pos   near     edge     mk_5
+    -2       2392     197     9      0   +2.182   +1.948
+    -1       2750     196    10      9   +2.257   +1.914
+     0       2172     249     2     68   +2.329   +1.783
+
+INTARIAN_PEPPER_ROOT per-day
+   day        pnl  trades   pos   near     edge     mk_5
+    -2      24864     281   -11   2714   +2.799   +3.155
+    -1        385     322   -22   1123   +2.974   +3.516
+     0      -4174     304    34   1114   +3.343   +3.802
+

@@ -1,0 +1,2 @@
+cell_id,lever,notes,day_-2_pnl,day_-1_pnl,day_0_pnl,mean_pnl,min_pnl,max_pnl,std_pnl,total_maker_fills,total_taker_fills,local_total_pnl_3day,expected_official_pnl_per_day,avg_markout_1,avg_markout_5,avg_markout_20
+D5_weighted_m25_skew2,D5,Empirical stack: weighted_mid FV + m=2.5/t=0.5 + linear skew c=2,3174.00,3817.00,3346.00,3445.67,3174.00,3817.00,271.80,5,701,10337.00,1011.96,1.984,1.902,1.864

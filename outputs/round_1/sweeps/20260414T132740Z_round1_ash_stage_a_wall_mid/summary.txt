@@ -1,0 +1,32 @@
+Parameter sweep: ASH_COATED_OSMIUM
+run_label: round1_ash_stage_a_wall_mid
+fair_value_method: wall_mid
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge    mk_1    mk_5   mk_20
+---------------------------------------------------------------------------------------------
+  1.0   1.0   n/a   n/a    7301.00     650    0.2   100   -5   +2.245   +1.96   +1.86   +1.76
+
+Top 10 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge    mk_1    mk_5   mk_20
+---------------------------------------------------------------------------------------------
+  1.5   0.5   n/a   n/a    7747.00     766    0.3   110   -9   +2.081   +1.89   +1.79   +1.72
+  1.0   0.5   n/a   n/a    7696.00     768    0.2   135   -9   +2.071   +1.88   +1.76   +1.70
+  2.0   1.0   n/a   n/a    7658.00     659    0.3   109    2   +2.247   +1.96   +1.88   +1.77
+  0.5   0.5   n/a   n/a    7643.00     762    0.2    74   -9   +2.079   +1.91   +1.79   +1.70
+  2.0   0.5   n/a   n/a    7551.00     774    0.2   118   -9   +2.055   +1.86   +1.77   +1.68
+  1.5   1.0   n/a   n/a    7510.00     660    0.3    73    1   +2.244   +1.97   +1.89   +1.79
+  0.5   1.0   n/a   n/a    7371.00     655    0.3    73    1   +2.251   +1.96   +1.88   +1.77
+  1.0   1.0   n/a   n/a    7301.00     650    0.2   100   -5   +2.245   +1.96   +1.86   +1.76
+  1.0   1.5   n/a   n/a    6789.00     558    0.5     0    1   +2.400   +1.98   +1.96   +1.88
+  1.5   1.5   n/a   n/a    6650.00     560    0.4     0    1   +2.392   +1.97   +1.95   +1.90
+
+Average pnl by parameter value
+maker_edge=0.5: mean_pnl=6622.50, mean_trades=598.0, mean_near_limit=73.5
+maker_edge=1.0: mean_pnl=6699.75, mean_trades=601.0, mean_near_limit=72.8
+maker_edge=1.5: mean_pnl=6725.50, mean_trades=603.8, mean_near_limit=59.8
+maker_edge=2.0: mean_pnl=6631.00, mean_trades=601.8, mean_near_limit=87.8
+taker_edge=0.5: mean_pnl=7659.25, mean_trades=767.5, mean_near_limit=109.2
+taker_edge=1.0: mean_pnl=7460.00, mean_trades=656.0, mean_near_limit=88.8
+taker_edge=1.5: mean_pnl=6596.00, mean_trades=554.8, mean_near_limit=39.8
+taker_edge=2.0: mean_pnl=4963.50, mean_trades=426.2, mean_near_limit=56.0

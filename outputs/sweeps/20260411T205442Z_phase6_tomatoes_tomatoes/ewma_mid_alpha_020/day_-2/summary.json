@@ -1,0 +1,1083 @@
+{
+  "aggregates": [
+    {
+      "mean_pnl": 486.0390625,
+      "mean_steps_near_limit": 17.375,
+      "mean_trade_count": 30.4375,
+      "parameter": "fair_value_method",
+      "value": "ewma_mid"
+    },
+    {
+      "mean_pnl": 486.0390625,
+      "mean_steps_near_limit": 17.375,
+      "mean_trade_count": 30.4375,
+      "parameter": "ewma_alpha",
+      "value": 0.2
+    },
+    {
+      "mean_pnl": 481.9375,
+      "mean_steps_near_limit": 17.375,
+      "mean_trade_count": 30.25,
+      "parameter": "history_length",
+      "value": 16
+    },
+    {
+      "mean_pnl": 487.40625,
+      "mean_steps_near_limit": 17.375,
+      "mean_trade_count": 30.5,
+      "parameter": "history_length",
+      "value": 32
+    },
+    {
+      "mean_pnl": 487.40625,
+      "mean_steps_near_limit": 17.375,
+      "mean_trade_count": 30.5,
+      "parameter": "history_length",
+      "value": 48
+    },
+    {
+      "mean_pnl": 487.40625,
+      "mean_steps_near_limit": 17.375,
+      "mean_trade_count": 30.5,
+      "parameter": "history_length",
+      "value": 64
+    },
+    {
+      "mean_pnl": 517.140625,
+      "mean_steps_near_limit": 14.75,
+      "mean_trade_count": 30,
+      "parameter": "maker_edge",
+      "value": 1.0
+    },
+    {
+      "mean_pnl": 454.9375,
+      "mean_steps_near_limit": 20,
+      "mean_trade_count": 30.875,
+      "parameter": "maker_edge",
+      "value": 2.0
+    },
+    {
+      "mean_pnl": 836.078125,
+      "mean_steps_near_limit": 34.75,
+      "mean_trade_count": 54.875,
+      "parameter": "taker_edge",
+      "value": 1.0
+    },
+    {
+      "mean_pnl": 136.0,
+      "mean_steps_near_limit": 0,
+      "mean_trade_count": 6,
+      "parameter": "taker_edge",
+      "value": 2.0
+    },
+    {
+      "mean_pnl": 532.0,
+      "mean_steps_near_limit": 17.5,
+      "mean_trade_count": 28,
+      "parameter": "inventory_skew",
+      "value": 2.0
+    },
+    {
+      "mean_pnl": 543.75,
+      "mean_steps_near_limit": 52,
+      "mean_trade_count": 29,
+      "parameter": "inventory_skew",
+      "value": 2.5
+    },
+    {
+      "mean_pnl": 468.0,
+      "mean_steps_near_limit": 0,
+      "mean_trade_count": 30.75,
+      "parameter": "inventory_skew",
+      "value": 3.0
+    },
+    {
+      "mean_pnl": 400.40625,
+      "mean_steps_near_limit": 0,
+      "mean_trade_count": 34,
+      "parameter": "inventory_skew",
+      "value": 3.5
+    }
+  ],
+  "baseline": {
+    "final_position": 2,
+    "maker_share": 0.0625,
+    "params": {
+      "ewma_alpha": null,
+      "fair_value_method": "weighted_mid",
+      "history_length": 48,
+      "inventory_skew": 3.0,
+      "maker_edge": 1.0,
+      "taker_edge": 1.0
+    },
+    "pnl": 225.0,
+    "steps_near_limit": 0,
+    "trade_count": 6
+  },
+  "fair_value_method": "weighted_mid",
+  "generated_at": "2026-04-11T20:59:51.126957+00:00",
+  "product": "TOMATOES",
+  "rows": [
+    {
+      "final_position": 5,
+      "maker_share": 0.002506265664160401,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1024.5,
+      "steps_near_limit": 14,
+      "trade_count": 54
+    },
+    {
+      "final_position": 4,
+      "maker_share": 0.002617801047120419,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 778.0,
+      "steps_near_limit": 104,
+      "trade_count": 53
+    },
+    {
+      "final_position": 3,
+      "maker_share": 0.002638522427440633,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 937.5,
+      "steps_near_limit": 0,
+      "trade_count": 52
+    },
+    {
+      "final_position": -3,
+      "maker_share": 0.0,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 671.5,
+      "steps_near_limit": 0,
+      "trade_count": 54
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.07692307692307693,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 201.0,
+      "steps_near_limit": 0,
+      "trade_count": 5
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.07692307692307693,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 273.0,
+      "steps_near_limit": 0,
+      "trade_count": 5
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.08823529411764706,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 90.0,
+      "steps_near_limit": 0,
+      "trade_count": 7
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.08823529411764706,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 90.0,
+      "steps_near_limit": 0,
+      "trade_count": 7
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.002840909090909091,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 712.0,
+      "steps_near_limit": 56,
+      "trade_count": 49
+    },
+    {
+      "final_position": 3,
+      "maker_share": 0.005194805194805195,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 861.5,
+      "steps_near_limit": 104,
+      "trade_count": 54
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.007575757575757576,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 860.0,
+      "steps_near_limit": 0,
+      "trade_count": 56
+    },
+    {
+      "final_position": -2,
+      "maker_share": 0.006578947368421052,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 778.0,
+      "steps_near_limit": 0,
+      "trade_count": 64
+    },
+    {
+      "final_position": 7,
+      "maker_share": 0.04,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 190.5,
+      "steps_near_limit": 0,
+      "trade_count": 4
+    },
+    {
+      "final_position": 7,
+      "maker_share": 0.04,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 262.5,
+      "steps_near_limit": 0,
+      "trade_count": 4
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.04081632653061224,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": -9.5,
+      "steps_near_limit": 0,
+      "trade_count": 8
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.04081632653061224,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 16,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": -9.5,
+      "steps_near_limit": 0,
+      "trade_count": 8
+    },
+    {
+      "final_position": 5,
+      "maker_share": 0.002506265664160401,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1024.5,
+      "steps_near_limit": 14,
+      "trade_count": 54
+    },
+    {
+      "final_position": 4,
+      "maker_share": 0.002617801047120419,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 778.0,
+      "steps_near_limit": 104,
+      "trade_count": 53
+    },
+    {
+      "final_position": 3,
+      "maker_share": 0.002638522427440633,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 937.5,
+      "steps_near_limit": 0,
+      "trade_count": 52
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.002347417840375587,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 767.0,
+      "steps_near_limit": 0,
+      "trade_count": 58
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.07692307692307693,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 201.0,
+      "steps_near_limit": 0,
+      "trade_count": 5
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.07692307692307693,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 273.0,
+      "steps_near_limit": 0,
+      "trade_count": 5
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.08823529411764706,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 90.0,
+      "steps_near_limit": 0,
+      "trade_count": 7
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.08823529411764706,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 90.0,
+      "steps_near_limit": 0,
+      "trade_count": 7
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.002840909090909091,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 712.0,
+      "steps_near_limit": 56,
+      "trade_count": 49
+    },
+    {
+      "final_position": 3,
+      "maker_share": 0.005194805194805195,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 861.5,
+      "steps_near_limit": 104,
+      "trade_count": 54
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.007575757575757576,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 852.0,
+      "steps_near_limit": 0,
+      "trade_count": 56
+    },
+    {
+      "final_position": -2,
+      "maker_share": 0.006578947368421052,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 778.0,
+      "steps_near_limit": 0,
+      "trade_count": 64
+    },
+    {
+      "final_position": 7,
+      "maker_share": 0.04,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 190.5,
+      "steps_near_limit": 0,
+      "trade_count": 4
+    },
+    {
+      "final_position": 7,
+      "maker_share": 0.04,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 262.5,
+      "steps_near_limit": 0,
+      "trade_count": 4
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.04081632653061224,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": -9.5,
+      "steps_near_limit": 0,
+      "trade_count": 8
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.04081632653061224,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 32,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": -9.5,
+      "steps_near_limit": 0,
+      "trade_count": 8
+    },
+    {
+      "final_position": 5,
+      "maker_share": 0.002506265664160401,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1024.5,
+      "steps_near_limit": 14,
+      "trade_count": 54
+    },
+    {
+      "final_position": 4,
+      "maker_share": 0.002617801047120419,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 778.0,
+      "steps_near_limit": 104,
+      "trade_count": 53
+    },
+    {
+      "final_position": 3,
+      "maker_share": 0.002638522427440633,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 937.5,
+      "steps_near_limit": 0,
+      "trade_count": 52
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.002347417840375587,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 767.0,
+      "steps_near_limit": 0,
+      "trade_count": 58
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.07692307692307693,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 201.0,
+      "steps_near_limit": 0,
+      "trade_count": 5
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.07692307692307693,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 273.0,
+      "steps_near_limit": 0,
+      "trade_count": 5
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.08823529411764706,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 90.0,
+      "steps_near_limit": 0,
+      "trade_count": 7
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.08823529411764706,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 90.0,
+      "steps_near_limit": 0,
+      "trade_count": 7
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.002840909090909091,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 712.0,
+      "steps_near_limit": 56,
+      "trade_count": 49
+    },
+    {
+      "final_position": 3,
+      "maker_share": 0.005194805194805195,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 861.5,
+      "steps_near_limit": 104,
+      "trade_count": 54
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.007575757575757576,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 852.0,
+      "steps_near_limit": 0,
+      "trade_count": 56
+    },
+    {
+      "final_position": -2,
+      "maker_share": 0.006578947368421052,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 778.0,
+      "steps_near_limit": 0,
+      "trade_count": 64
+    },
+    {
+      "final_position": 7,
+      "maker_share": 0.04,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 190.5,
+      "steps_near_limit": 0,
+      "trade_count": 4
+    },
+    {
+      "final_position": 7,
+      "maker_share": 0.04,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 262.5,
+      "steps_near_limit": 0,
+      "trade_count": 4
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.04081632653061224,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": -9.5,
+      "steps_near_limit": 0,
+      "trade_count": 8
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.04081632653061224,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 48,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": -9.5,
+      "steps_near_limit": 0,
+      "trade_count": 8
+    },
+    {
+      "final_position": 5,
+      "maker_share": 0.002506265664160401,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1024.5,
+      "steps_near_limit": 14,
+      "trade_count": 54
+    },
+    {
+      "final_position": 4,
+      "maker_share": 0.002617801047120419,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 778.0,
+      "steps_near_limit": 104,
+      "trade_count": 53
+    },
+    {
+      "final_position": 3,
+      "maker_share": 0.002638522427440633,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 937.5,
+      "steps_near_limit": 0,
+      "trade_count": 52
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.002347417840375587,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 767.0,
+      "steps_near_limit": 0,
+      "trade_count": 58
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.07692307692307693,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 201.0,
+      "steps_near_limit": 0,
+      "trade_count": 5
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.07692307692307693,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 273.0,
+      "steps_near_limit": 0,
+      "trade_count": 5
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.08823529411764706,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 90.0,
+      "steps_near_limit": 0,
+      "trade_count": 7
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.08823529411764706,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 90.0,
+      "steps_near_limit": 0,
+      "trade_count": 7
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.002840909090909091,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 712.0,
+      "steps_near_limit": 56,
+      "trade_count": 49
+    },
+    {
+      "final_position": 3,
+      "maker_share": 0.005194805194805195,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 861.5,
+      "steps_near_limit": 104,
+      "trade_count": 54
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.007575757575757576,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 852.0,
+      "steps_near_limit": 0,
+      "trade_count": 56
+    },
+    {
+      "final_position": -2,
+      "maker_share": 0.006578947368421052,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 778.0,
+      "steps_near_limit": 0,
+      "trade_count": 64
+    },
+    {
+      "final_position": 7,
+      "maker_share": 0.04,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 190.5,
+      "steps_near_limit": 0,
+      "trade_count": 4
+    },
+    {
+      "final_position": 7,
+      "maker_share": 0.04,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 262.5,
+      "steps_near_limit": 0,
+      "trade_count": 4
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.04081632653061224,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": -9.5,
+      "steps_near_limit": 0,
+      "trade_count": 8
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.04081632653061224,
+      "params": {
+        "ewma_alpha": 0.2,
+        "fair_value_method": "ewma_mid",
+        "history_length": 64,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": -9.5,
+      "steps_near_limit": 0,
+      "trade_count": 8
+    }
+  ],
+  "run_label": "phase6_tomatoes_ewma_mid_alpha_020_day_-2"
+}

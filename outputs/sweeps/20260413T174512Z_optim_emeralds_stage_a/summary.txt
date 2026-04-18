@@ -1,0 +1,33 @@
+Parameter sweep: EMERALDS
+run_label: optim_emeralds_stage_a
+fair_value_method: anchor
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge
+---------------------------------------------------------------------
+  2.0   1.0   n/a   n/a       0.00       0    n/a     0    0      n/a
+
+Top 10 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge
+---------------------------------------------------------------------
+  0.5   0.5   n/a   n/a       0.00       0    n/a     0    0      n/a
+  0.5   1.0   n/a   n/a       0.00       0    n/a     0    0      n/a
+  0.5   1.5   n/a   n/a       0.00       0    n/a     0    0      n/a
+  0.5   2.0   n/a   n/a       0.00       0    n/a     0    0      n/a
+  1.0   0.5   n/a   n/a       0.00       0    n/a     0    0      n/a
+  1.0   1.0   n/a   n/a       0.00       0    n/a     0    0      n/a
+  1.0   1.5   n/a   n/a       0.00       0    n/a     0    0      n/a
+  1.0   2.0   n/a   n/a       0.00       0    n/a     0    0      n/a
+  2.0   0.5   n/a   n/a       0.00       0    n/a     0    0      n/a
+  2.0   1.0   n/a   n/a       0.00       0    n/a     0    0      n/a
+
+Average pnl by parameter value
+maker_edge=0.5: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+maker_edge=1.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+maker_edge=2.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+maker_edge=3.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+maker_edge=4.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+taker_edge=0.5: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+taker_edge=1.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+taker_edge=1.5: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+taker_edge=2.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0

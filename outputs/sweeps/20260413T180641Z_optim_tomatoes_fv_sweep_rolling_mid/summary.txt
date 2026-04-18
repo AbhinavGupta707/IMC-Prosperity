@@ -1,0 +1,35 @@
+Parameter sweep: TOMATOES
+run_label: optim_tomatoes_fv_sweep_rolling_mid
+fair_value_method: rolling_mid
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge
+---------------------------------------------------------------------
+  1.0   1.0   n/a   n/a    1188.00     405    0.4     0   -6   +2.058
+
+Top 10 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge
+---------------------------------------------------------------------
+  2.0   1.5   n/a   n/a    1698.00     290    1.0     0    1   +2.101
+  1.5   0.5   n/a   n/a    1630.00     409    0.3     0    1   +1.190
+  1.0   0.5   n/a   n/a    1574.00     481    0.2     0   -6   +1.482
+  2.0   0.5   n/a   n/a    1557.00     406    0.2     0    0   +1.166
+  1.5   1.5   n/a   n/a    1540.00     279    0.5     0    2   +2.091
+  0.5   0.5   n/a   n/a    1530.00     401    0.2     0    2   +1.187
+  1.5   1.5   n/a   n/a    1512.00     353    0.4     0   -2   +2.539
+  1.0   1.5   n/a   n/a    1505.00     354    0.5     0   -6   +2.536
+  1.0   1.5   n/a   n/a    1499.00     278    0.5     0    1   +2.103
+  0.5   1.5   n/a   n/a    1497.00     276    0.5     0    1   +2.108
+
+Average pnl by parameter value
+maker_edge=0.5: mean_pnl=1254.17, mean_trades=382.4, mean_near_limit=0.0
+maker_edge=1.0: mean_pnl=1237.17, mean_trades=382.3, mean_near_limit=0.0
+maker_edge=1.5: mean_pnl=1281.08, mean_trades=384.7, mean_near_limit=0.0
+maker_edge=2.0: mean_pnl=1286.75, mean_trades=385.8, mean_near_limit=0.0
+taker_edge=0.5: mean_pnl=1220.19, mean_trades=485.9, mean_near_limit=0.0
+taker_edge=1.0: mean_pnl=1248.06, mean_trades=381.2, mean_near_limit=0.0
+taker_edge=1.5: mean_pnl=1326.12, mean_trades=284.3, mean_near_limit=0.0
+history_length=16: mean_pnl=1297.75, mean_trades=293.1, mean_near_limit=0.0
+history_length=32: mean_pnl=1456.83, mean_trades=380.8, mean_near_limit=0.0
+history_length=48: mean_pnl=1143.17, mean_trades=413.0, mean_near_limit=0.0
+history_length=64: mean_pnl=1161.42, mean_trades=448.2, mean_near_limit=0.0

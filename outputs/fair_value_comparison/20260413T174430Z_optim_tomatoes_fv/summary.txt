@@ -1,0 +1,30 @@
+Fair value comparison report: optim_tomatoes_fv
+generated_at: 2026-04-13T17:44:30.056644+00:00
+
+[TOMATOES] live_method=weighted_mid
+estimator      cov%  mae_now   mae_n1     d_n1   mae_n5        pnl  trades    mk%  near
+---------------------------------------------------------------------------------------
+mid           100.0    0.000    0.790   +0.000    1.231      -9.00       7  100.0     0
+rolling_mid   100.0    1.693    1.745   +0.955    1.921    1188.00     405    0.4     0
+weighted_mid  100.0    0.536    0.815   +0.025    1.187     276.00      16    5.7     0
+ewma_mid      100.0    0.579    0.828   +0.038    1.189     273.00      34    2.3     0
+depth_mid     100.0    0.345    0.652   -0.137    1.098    -256.00      27    4.4     0
+microprice    100.0    0.069    0.741   -0.049    1.187      -9.00       7  100.0     0
+wall_mid      100.0    0.450    0.647   -0.142    1.092    1296.00     263    0.2     0
+filtered_wall_mid  100.0    0.450    0.647   -0.142    1.092    1296.00     263    0.2     0
+hybrid_wall_micro  100.0    0.252    0.679   -0.110    1.121      -9.00       7  100.0     0
+---------------------------------------------------------------------------------------
+delta_n1 compares estimator next-step MAE against the current-mid baseline (0.790)
+
+Distinctness diagnostics
+estimator           d_primary      d_mid    chg%
+------------------------------------------------
+mid                     0.536      0.000    67.9
+rolling_mid             1.500      1.693    94.6
+weighted_mid            0.000      0.536    95.9
+ewma_mid                0.158      0.579   100.0
+depth_mid               0.445      0.345    84.6
+microprice              0.493      0.069    67.9
+wall_mid                0.512      0.450    42.9
+filtered_wall_mid       0.512      0.450    42.9
+hybrid_wall_micro       0.428      0.252    77.0

@@ -1,0 +1,1011 @@
+{
+  "aggregates": [
+    {
+      "mean_pnl": 1267.703125,
+      "mean_steps_near_limit": 1080.515625,
+      "mean_trade_count": 291.125,
+      "parameter": "fair_value_method",
+      "value": "rolling_mid"
+    },
+    {
+      "mean_pnl": 1301.875,
+      "mean_steps_near_limit": 438.6875,
+      "mean_trade_count": 200.4375,
+      "parameter": "history_length",
+      "value": 16
+    },
+    {
+      "mean_pnl": 1338.375,
+      "mean_steps_near_limit": 729.9375,
+      "mean_trade_count": 281.8125,
+      "parameter": "history_length",
+      "value": 32
+    },
+    {
+      "mean_pnl": 1238.8125,
+      "mean_steps_near_limit": 1260.6875,
+      "mean_trade_count": 324.0625,
+      "parameter": "history_length",
+      "value": 48
+    },
+    {
+      "mean_pnl": 1191.75,
+      "mean_steps_near_limit": 1892.75,
+      "mean_trade_count": 358.1875,
+      "parameter": "history_length",
+      "value": 64
+    },
+    {
+      "mean_pnl": 1237.96875,
+      "mean_steps_near_limit": 1082.34375,
+      "mean_trade_count": 289.09375,
+      "parameter": "maker_edge",
+      "value": 1.0
+    },
+    {
+      "mean_pnl": 1297.4375,
+      "mean_steps_near_limit": 1078.6875,
+      "mean_trade_count": 293.15625,
+      "parameter": "maker_edge",
+      "value": 2.0
+    },
+    {
+      "mean_pnl": 1274.875,
+      "mean_steps_near_limit": 1391.28125,
+      "mean_trade_count": 375.375,
+      "parameter": "taker_edge",
+      "value": 1.0
+    },
+    {
+      "mean_pnl": 1260.53125,
+      "mean_steps_near_limit": 769.75,
+      "mean_trade_count": 206.875,
+      "parameter": "taker_edge",
+      "value": 2.0
+    },
+    {
+      "mean_pnl": 1456.9375,
+      "mean_steps_near_limit": 1477.75,
+      "mean_trade_count": 289.375,
+      "parameter": "inventory_skew",
+      "value": 2.0
+    },
+    {
+      "mean_pnl": 1339.6875,
+      "mean_steps_near_limit": 1172.5,
+      "mean_trade_count": 288.5,
+      "parameter": "inventory_skew",
+      "value": 2.5
+    },
+    {
+      "mean_pnl": 1229.375,
+      "mean_steps_near_limit": 908.1875,
+      "mean_trade_count": 291.5,
+      "parameter": "inventory_skew",
+      "value": 3.0
+    },
+    {
+      "mean_pnl": 1044.8125,
+      "mean_steps_near_limit": 763.625,
+      "mean_trade_count": 295.125,
+      "parameter": "inventory_skew",
+      "value": 3.5
+    }
+  ],
+  "baseline": {
+    "final_position": 6,
+    "maker_share": 0.056818181818181816,
+    "params": {
+      "fair_value_method": "weighted_mid",
+      "history_length": 48,
+      "inventory_skew": 3.0,
+      "maker_edge": 1.0,
+      "taker_edge": 1.0
+    },
+    "pnl": 276.0,
+    "steps_near_limit": 0,
+    "trade_count": 16
+  },
+  "fair_value_method": "weighted_mid",
+  "generated_at": "2026-04-11T20:58:59.679988+00:00",
+  "product": "TOMATOES",
+  "rows": [
+    {
+      "final_position": 6,
+      "maker_share": 0.0032292787944025836,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1839.0,
+      "steps_near_limit": 1063,
+      "trade_count": 291
+    },
+    {
+      "final_position": 1,
+      "maker_share": 0.0016260162601626016,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1485.0,
+      "steps_near_limit": 810,
+      "trade_count": 288
+    },
+    {
+      "final_position": 3,
+      "maker_share": 0.0016348773841961854,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1081.0,
+      "steps_near_limit": 644,
+      "trade_count": 286
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.0021119324181626186,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1241.0,
+      "steps_near_limit": 241,
+      "trade_count": 295
+    },
+    {
+      "final_position": 10,
+      "maker_share": 0.008064516129032258,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1045.0,
+      "steps_near_limit": 603,
+      "trade_count": 116
+    },
+    {
+      "final_position": 12,
+      "maker_share": 0.0027247956403269754,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1195.0,
+      "steps_near_limit": 190,
+      "trade_count": 105
+    },
+    {
+      "final_position": 12,
+      "maker_share": 0.00546448087431694,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1381.0,
+      "steps_near_limit": 101,
+      "trade_count": 109
+    },
+    {
+      "final_position": 8,
+      "maker_share": 0.005263157894736842,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 914.0,
+      "steps_near_limit": 0,
+      "trade_count": 113
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.0031545741324921135,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1564.0,
+      "steps_near_limit": 1123,
+      "trade_count": 295
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.0027624309392265192,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1566.0,
+      "steps_near_limit": 668,
+      "trade_count": 283
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.002642706131078224,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1202.0,
+      "steps_near_limit": 566,
+      "trade_count": 293
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.0036572622779519333,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1248.0,
+      "steps_near_limit": 345,
+      "trade_count": 299
+    },
+    {
+      "final_position": 11,
+      "maker_share": 0.005673758865248227,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1404.0,
+      "steps_near_limit": 414,
+      "trade_count": 106
+    },
+    {
+      "final_position": 9,
+      "maker_share": 0.006622516556291391,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1225.0,
+      "steps_near_limit": 91,
+      "trade_count": 112
+    },
+    {
+      "final_position": 11,
+      "maker_share": 0.008633093525179856,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1346.0,
+      "steps_near_limit": 101,
+      "trade_count": 106
+    },
+    {
+      "final_position": 10,
+      "maker_share": 0.009589041095890411,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 16,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1094.0,
+      "steps_near_limit": 59,
+      "trade_count": 110
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.0018198362147406734,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1368.0,
+      "steps_near_limit": 1652,
+      "trade_count": 367
+    },
+    {
+      "final_position": -3,
+      "maker_share": 0.0013531799729364006,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1116.0,
+      "steps_near_limit": 1280,
+      "trade_count": 370
+    },
+    {
+      "final_position": -3,
+      "maker_share": 0.0031291908806437194,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1439.0,
+      "steps_near_limit": 884,
+      "trade_count": 374
+    },
+    {
+      "final_position": -2,
+      "maker_share": 0.003111111111111111,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 998.0,
+      "steps_near_limit": 872,
+      "trade_count": 373
+    },
+    {
+      "final_position": 8,
+      "maker_share": 0.008620689655172414,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1405.0,
+      "steps_near_limit": 265,
+      "trade_count": 184
+    },
+    {
+      "final_position": 7,
+      "maker_share": 0.006519967400162999,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1524.0,
+      "steps_near_limit": 457,
+      "trade_count": 194
+    },
+    {
+      "final_position": 4,
+      "maker_share": 0.006734006734006734,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1091.0,
+      "steps_near_limit": 257,
+      "trade_count": 188
+    },
+    {
+      "final_position": 2,
+      "maker_share": 0.005591054313099041,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1213.0,
+      "steps_near_limit": 213,
+      "trade_count": 194
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.0045351473922902496,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1624.0,
+      "steps_near_limit": 1678,
+      "trade_count": 374
+    },
+    {
+      "final_position": -5,
+      "maker_share": 0.005476951163852123,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1500.0,
+      "steps_near_limit": 1119,
+      "trade_count": 372
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.004418912947414936,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1485.0,
+      "steps_near_limit": 957,
+      "trade_count": 384
+    },
+    {
+      "final_position": -2,
+      "maker_share": 0.005622837370242215,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1299.0,
+      "steps_near_limit": 1007,
+      "trade_count": 388
+    },
+    {
+      "final_position": 7,
+      "maker_share": 0.006029285099052541,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1355.0,
+      "steps_near_limit": 467,
+      "trade_count": 180
+    },
+    {
+      "final_position": 6,
+      "maker_share": 0.006779661016949152,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1398.0,
+      "steps_near_limit": 333,
+      "trade_count": 189
+    },
+    {
+      "final_position": 5,
+      "maker_share": 0.007712082262210797,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1346.0,
+      "steps_near_limit": 82,
+      "trade_count": 184
+    },
+    {
+      "final_position": 3,
+      "maker_share": 0.01345668629100084,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 32,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1253.0,
+      "steps_near_limit": 156,
+      "trade_count": 194
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.0021691973969631237,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1435.0,
+      "steps_near_limit": 2119,
+      "trade_count": 402
+    },
+    {
+      "final_position": -9,
+      "maker_share": 0.002150537634408602,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1368.0,
+      "steps_near_limit": 1642,
+      "trade_count": 397
+    },
+    {
+      "final_position": -6,
+      "maker_share": 0.0029914529914529917,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1167.0,
+      "steps_near_limit": 1341,
+      "trade_count": 400
+    },
+    {
+      "final_position": -7,
+      "maker_share": 0.0034290612944706386,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1055.0,
+      "steps_near_limit": 774,
+      "trade_count": 398
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.005521048999309869,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1409.0,
+      "steps_near_limit": 1529,
+      "trade_count": 241
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.005460750853242321,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1427.0,
+      "steps_near_limit": 1040,
+      "trade_count": 241
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.004840940525587829,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1142.0,
+      "steps_near_limit": 618,
+      "trade_count": 238
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.006040268456375839,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1212.0,
+      "steps_near_limit": 813,
+      "trade_count": 248
+    },
+    {
+      "final_position": -6,
+      "maker_share": 0.0050933786078098476,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1519.0,
+      "steps_near_limit": 1987,
+      "trade_count": 417
+    },
+    {
+      "final_position": -3,
+      "maker_share": 0.005165733964700818,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1162.0,
+      "steps_near_limit": 2206,
+      "trade_count": 403
+    },
+    {
+      "final_position": -5,
+      "maker_share": 0.006473888649115235,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1111.0,
+      "steps_near_limit": 1129,
+      "trade_count": 403
+    },
+    {
+      "final_position": -11,
+      "maker_share": 0.0046315789473684215,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 931.0,
+      "steps_near_limit": 1352,
+      "trade_count": 408
+    },
+    {
+      "final_position": 1,
+      "maker_share": 0.008247422680412371,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1421.0,
+      "steps_near_limit": 1250,
+      "trade_count": 245
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.010541110330288124,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1184.0,
+      "steps_near_limit": 857,
+      "trade_count": 241
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.009478672985781991,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1153.0,
+      "steps_near_limit": 823,
+      "trade_count": 250
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.008,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 48,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1125.0,
+      "steps_near_limit": 691,
+      "trade_count": 253
+    },
+    {
+      "final_position": -4,
+      "maker_share": 0.0029863481228668944,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1379.0,
+      "steps_near_limit": 2695,
+      "trade_count": 417
+    },
+    {
+      "final_position": -8,
+      "maker_share": 0.0029093931837073984,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1205.0,
+      "steps_near_limit": 2145,
+      "trade_count": 422
+    },
+    {
+      "final_position": -4,
+      "maker_share": 0.002786624203821656,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1176.0,
+      "steps_near_limit": 2049,
+      "trade_count": 439
+    },
+    {
+      "final_position": -5,
+      "maker_share": 0.003221908981071285,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 638.0,
+      "steps_near_limit": 1533,
+      "trade_count": 433
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.005037783375314861,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 2.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1517.0,
+      "steps_near_limit": 1855,
+      "trade_count": 279
+    },
+    {
+      "final_position": 0,
+      "maker_share": 0.0075282308657465494,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 2.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1370.0,
+      "steps_near_limit": 1760,
+      "trade_count": 280
+    },
+    {
+      "final_position": -2,
+      "maker_share": 0.007290400972053463,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 964.0,
+      "steps_near_limit": 1828,
+      "trade_count": 287
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.006138735420503376,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 3.5,
+        "maker_edge": 1.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 816.0,
+      "steps_near_limit": 1362,
+      "trade_count": 282
+    },
+    {
+      "final_position": -4,
+      "maker_share": 0.006808510638297872,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1360.0,
+      "steps_near_limit": 2924,
+      "trade_count": 424
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.006175380815150268,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1333.0,
+      "steps_near_limit": 2280,
+      "trade_count": 433
+    },
+    {
+      "final_position": -4,
+      "maker_share": 0.004382470119521913,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1268.0,
+      "steps_near_limit": 1859,
+      "trade_count": 443
+    },
+    {
+      "final_position": -4,
+      "maker_share": 0.007293354943273906,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 634.0,
+      "steps_near_limit": 1577,
+      "trade_count": 441
+    },
+    {
+      "final_position": -1,
+      "maker_share": 0.011063306699446834,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1667.0,
+      "steps_near_limit": 2020,
+      "trade_count": 292
+    },
+    {
+      "final_position": 1,
+      "maker_share": 0.010526315789473684,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 2.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1377.0,
+      "steps_near_limit": 1882,
+      "trade_count": 286
+    },
+    {
+      "final_position": 1,
+      "maker_share": 0.009428032683846637,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 3.0,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1318.0,
+      "steps_near_limit": 1292,
+      "trade_count": 280
+    },
+    {
+      "final_position": -2,
+      "maker_share": 0.010869565217391304,
+      "params": {
+        "fair_value_method": "rolling_mid",
+        "history_length": 64,
+        "inventory_skew": 3.5,
+        "maker_edge": 2.0,
+        "taker_edge": 2.0
+      },
+      "pnl": 1046.0,
+      "steps_near_limit": 1223,
+      "trade_count": 293
+    }
+  ],
+  "run_label": "phase6_tomatoes_rolling_mid_combined"
+}

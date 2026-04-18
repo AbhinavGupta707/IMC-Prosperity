@@ -1,0 +1,7 @@
+cell_id,lever,notes,day_-2_pnl,day_-1_pnl,day_0_pnl,mean_pnl,min_pnl,max_pnl,std_pnl,total_maker_fills,total_taker_fills,local_total_pnl_3day,expected_official_pnl_per_day,avg_markout_1,avg_markout_5,avg_markout_20
+G1_wall_m25_c2,G,F3a tuning on wall_mid (FV swap),2743.00,3556.00,2876.00,3058.33,2743.00,3556.00,356.07,12,770,9175.00,1597.72,1.958,1.888,1.802
+G3_weighted_m30_c2,G,F3a with m=3.0 (wider edge probe),3149.00,3696.00,3343.00,3396.00,3149.00,3696.00,226.43,1,699,10188.00,465.93,1.974,1.894,1.864
+G4_wall_m30_c2,G,G1 with m=3.0,2738.50,3565.00,2873.00,3058.83,2738.50,3565.00,362.10,9,772,9176.50,1274.41,1.959,1.889,1.801
+G5_weighted_m25_c1,G,F3a with skew c=1 (softer),3117.00,3717.00,3650.00,3494.67,3117.00,3717.00,268.45,7,695,10484.00,1305.85,2.010,1.933,1.887
+G6_weighted_m25_c05,G,F3a with skew c=0.5 (even softer),3129.50,3776.00,3536.00,3480.50,3129.50,3776.00,266.83,6,697,10441.50,1162.15,1.985,1.935,1.899
+G7_weighted_m35_c2,G,F3a with m=3.5 (extreme edge),3143.50,3799.00,3346.00,3429.50,3143.50,3799.00,274.04,6,702,10288.50,1139.39,1.976,1.899,1.865

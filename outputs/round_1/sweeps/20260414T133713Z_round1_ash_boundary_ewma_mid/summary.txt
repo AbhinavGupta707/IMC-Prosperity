@@ -1,0 +1,29 @@
+Parameter sweep: ASH_COATED_OSMIUM
+run_label: round1_ash_boundary_ewma_mid
+fair_value_method: ewma_mid
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge    mk_1    mk_5   mk_20
+---------------------------------------------------------------------------------------------
+  1.0   1.0   n/a   n/a    2827.00     193    0.8     0    8   +1.251   +2.03   +2.20   +1.92
+
+Top 9 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge    mk_1    mk_5   mk_20
+---------------------------------------------------------------------------------------------
+  1.5  0.25   n/a   n/a    6471.00     477    0.4     0    4   +0.805   +2.06   +1.94   +1.93
+  1.0  0.25   n/a   n/a    6447.00     472    0.3     0    4   +0.803   +2.08   +1.94   +1.93
+  2.0  0.25   n/a   n/a    6419.00     466    0.3     0    4   +0.805   +2.06   +1.93   +1.90
+  2.0   0.5   n/a   n/a    5456.00     393    0.5     0    5   +0.895   +2.10   +1.94   +1.88
+  1.0   0.5   n/a   n/a    5376.00     387    0.3     0    6   +0.897   +2.11   +1.94   +1.90
+  1.5   0.5   n/a   n/a    5346.00     380    0.5     0    4   +0.912   +2.09   +1.98   +1.88
+  1.5  0.75   n/a   n/a    4196.00     289    0.8     0    4   +1.062   +2.09   +2.05   +1.96
+  1.0  0.75   n/a   n/a    4176.00     285    0.4     0    4   +1.053   +2.09   +2.05   +1.84
+  2.0  0.75   n/a   n/a    4095.00     287    0.7     0    4   +1.066   +2.11   +2.06   +1.89
+
+Average pnl by parameter value
+maker_edge=1.0: mean_pnl=5333.00, mean_trades=381.3, mean_near_limit=0.0
+maker_edge=1.5: mean_pnl=5337.67, mean_trades=382.0, mean_near_limit=0.0
+maker_edge=2.0: mean_pnl=5323.33, mean_trades=382.0, mean_near_limit=0.0
+taker_edge=0.25: mean_pnl=6445.67, mean_trades=471.7, mean_near_limit=0.0
+taker_edge=0.5: mean_pnl=5392.67, mean_trades=386.7, mean_near_limit=0.0
+taker_edge=0.75: mean_pnl=4155.67, mean_trades=287.0, mean_near_limit=0.0

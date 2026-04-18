@@ -1,0 +1,17 @@
+{
+  "phase": "h",
+  "n_cells": 9,
+  "elapsed_sec": 50.89063787460327,
+  "best_overall_mean": 3345.0,
+  "best_overall_exp_off": 1638.5630417787152,
+  "by_lever": {
+    "H": {
+      "best_cell_by_mean": "H0a_ewma10_c2",
+      "best_mean": 3345.0,
+      "best_cell_by_exp_off": "H5_ewma500_c2",
+      "best_exp_off": 1638.5630417787152,
+      "worst_mean": 601.8333333333334,
+      "n": 9
+    }
+  }
+}

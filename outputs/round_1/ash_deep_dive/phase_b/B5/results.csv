@@ -1,0 +1,5 @@
+cell_id,lever,notes,day_-2_pnl,day_-1_pnl,day_0_pnl,mean_pnl,min_pnl,max_pnl,std_pnl,total_maker_fills,total_taker_fills,local_total_pnl_3day,expected_official_pnl_per_day,avg_markout_1,avg_markout_5,avg_markout_20
+B5_constant,B5,constant per-side size = quote_size (C_h1_alt),2582.00,3359.00,2541.00,2827.33,2541.00,3359.00,376.32,6,768,8482.00,882.78,1.936,1.848,1.770
+B5_linear,B5,linear inventory-driven size skew,2582.00,3359.00,2541.00,2827.33,2541.00,3359.00,376.32,6,768,8482.00,882.78,1.936,1.848,1.770
+B5_as_optimal,B5,AS-optimal size (1/gamma*sigma^2),2582.00,3359.00,2541.00,2827.33,2541.00,3359.00,376.32,6,768,8482.00,882.78,1.936,1.848,1.770
+B5_stepwise,B5,"stepwise size — shrink adding side, grow unwinding side",2582.00,3359.00,2541.00,2827.33,2541.00,3359.00,376.32,6,768,8482.00,882.78,1.936,1.848,1.770

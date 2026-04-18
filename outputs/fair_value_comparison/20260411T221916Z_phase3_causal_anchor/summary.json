@@ -1,0 +1,174 @@
+{
+  "generated_at": "2026-04-11T22:19:16.789061+00:00",
+  "products": [
+    {
+      "baseline_next_mid_mae": 0.2544127206360318,
+      "comparisons": [
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.1308,
+          "estimator": "anchor",
+          "final_position": 0,
+          "horizon_5_mid_mae": 0.13083270817704426,
+          "maker_share": null,
+          "next_mid_delta_vs_mid": -0.12360618030901546,
+          "next_mid_mae": 0.13080654032701636,
+          "pnl": 0.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 0
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.0,
+          "estimator": "mid",
+          "final_position": 0,
+          "horizon_5_mid_mae": 0.256064016004001,
+          "maker_share": null,
+          "next_mid_delta_vs_mid": 0.0,
+          "next_mid_mae": 0.2544127206360318,
+          "pnl": 0.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 0
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.03198219310191625,
+          "estimator": "microprice",
+          "final_position": -1,
+          "horizon_5_mid_mae": 0.2251274782166151,
+          "maker_share": 1.0,
+          "next_mid_delta_vs_mid": -0.030205090246112093,
+          "next_mid_mae": 0.22420763038991973,
+          "pnl": 0.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 1
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.20707946869175858,
+          "estimator": "rolling_mid",
+          "final_position": 0,
+          "horizon_5_mid_mae": 0.21281903708738895,
+          "maker_share": null,
+          "next_mid_delta_vs_mid": -0.04158170130240266,
+          "next_mid_mae": 0.21283101933362916,
+          "pnl": 0.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 0
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.1681066666666331,
+          "estimator": "weighted_mid",
+          "final_position": 0,
+          "horizon_5_mid_mae": 0.25198299574893585,
+          "maker_share": null,
+          "next_mid_delta_vs_mid": -0.0034935080087349912,
+          "next_mid_mae": 0.25091921262729683,
+          "pnl": 0.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 0
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.10504938120204096,
+          "estimator": "depth_mid",
+          "final_position": 0,
+          "horizon_5_mid_mae": 0.155395072882117,
+          "maker_share": null,
+          "next_mid_delta_vs_mid": -0.09920142086463898,
+          "next_mid_mae": 0.15521129977139284,
+          "pnl": 0.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 0
+        }
+      ],
+      "live_method": "anchor",
+      "product": "EMERALDS"
+    },
+    {
+      "baseline_next_mid_mae": 0.7896894844742237,
+      "comparisons": [
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.0,
+          "estimator": "mid",
+          "final_position": -1,
+          "horizon_5_mid_mae": 1.2307326831707928,
+          "maker_share": 1.0,
+          "next_mid_delta_vs_mid": 0.0,
+          "next_mid_mae": 0.7896894844742237,
+          "pnl": -9.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 7
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.06911131690119336,
+          "estimator": "microprice",
+          "final_position": -1,
+          "horizon_5_mid_mae": 1.1871626846434604,
+          "maker_share": 1.0,
+          "next_mid_delta_vs_mid": -0.048890740665568755,
+          "next_mid_mae": 0.740798743808655,
+          "pnl": -9.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 7
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 1.6933610274655853,
+          "estimator": "rolling_mid",
+          "final_position": -6,
+          "horizon_5_mid_mae": 1.9206830236183132,
+          "maker_share": 0.0029914529914529917,
+          "next_mid_delta_vs_mid": 0.9552065132404002,
+          "next_mid_mae": 1.744895997714624,
+          "pnl": 1167.0,
+          "samples": 20000,
+          "steps_near_limit": 1341,
+          "trade_count": 400
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.5360233333333609,
+          "estimator": "weighted_mid",
+          "final_position": 6,
+          "horizon_5_mid_mae": 1.1872118029507461,
+          "maker_share": 0.056818181818181816,
+          "next_mid_delta_vs_mid": 0.025172925312949457,
+          "next_mid_mae": 0.8148624097871732,
+          "pnl": 276.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 16
+        },
+        {
+          "coverage": 1.0,
+          "current_mid_mae": 0.34549735218555827,
+          "estimator": "depth_mid",
+          "final_position": 5,
+          "horizon_5_mid_mae": 1.0975200401874796,
+          "maker_share": 0.044444444444444446,
+          "next_mid_delta_vs_mid": -0.1373358261733445,
+          "next_mid_mae": 0.6523536583008792,
+          "pnl": -256.0,
+          "samples": 20000,
+          "steps_near_limit": 0,
+          "trade_count": 27
+        }
+      ],
+      "live_method": "weighted_mid",
+      "product": "TOMATOES"
+    }
+  ],
+  "run_label": "phase3_causal_anchor"
+}

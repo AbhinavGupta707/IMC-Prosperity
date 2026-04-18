@@ -1,0 +1,11 @@
+cell_id,notes,ash_flat,ash_amp3x,ash_narrow_spread,ash_thin_book,ash_anchor_shift,ash_one_sided_heavy,day_0_real,worst_pnl,best_pnl
+F1_C_h1_alt,"Shipped C_h1_alt (wall_mid, m=1.5, t=0.5, skew=4)",-4445.50,15423.50,5062.50,1324.00,-4601.00,2552.00,2541.00,-4601.00,15423.50
+F2a_C1_as_g2e-06,C1 AS gamma=2e-6 (overall Phase-C winner),-4614.00,15844.50,3283.00,1088.00,-1104.00,1398.00,2943.00,-4614.00,15844.50
+F2b_D6_m25_as_continuous,D6 m=2.5 + AS-continuous flatten (gamma=5e-7),-4449.00,16247.00,4375.00,1059.00,-589.00,2114.00,3136.00,-4449.00,16247.00
+F2c_B1_weighted_mid,"B1 weighted_mid FV at shipped edges (m=1.5, t=0.5)",0.00,24067.00,6403.00,1557.00,2984.50,2680.00,3387.00,0.00,24067.00
+F2d_B2_m25_t05,"B2 m=2.5, t=0.5 at wall_mid",-4445.50,15423.50,5062.50,1324.00,-4601.00,2552.00,2546.00,-4601.00,15423.50
+F3a_D5_weighted_m25_c2,D5 empirical stack (highest local PnL on record),0.00,23489.00,6326.50,1571.50,3168.00,2709.50,3346.00,0.00,23489.00
+F3b_D7_weighted_as_g2e-6,D7 weighted_mid + AS quotes,0.00,21027.50,6280.50,1483.50,2701.00,2571.00,3336.00,0.00,21027.50
+F3c_D8_m25_cartea_b01,D8 m=2.5 + Cartea beta=0.1,-4445.50,16652.50,5061.00,1338.00,-4763.50,2607.00,2673.00,-4763.50,16652.50
+F3d_C1_as_g5e-7,C1 AS gamma=5e-7 (safer AS variant),-4488.00,16405.50,4422.00,1132.00,-959.00,2051.00,2943.00,-4488.00,16405.50
+F3e_C3_cartea_b03,C3 Cartea beta=0.3 (only C3 cell above baseline),-4459.50,17369.00,5502.00,1335.50,-4615.00,2250.00,2294.00,-4615.00,17369.00

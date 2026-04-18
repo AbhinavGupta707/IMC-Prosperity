@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-04-11T16:21:20.802116+00:00",
+  "per_product": {
+    "EMERALDS": {
+      "buy_trade_quantity": 0,
+      "cash": 0.0,
+      "final_position": 0,
+      "maker_trade_count": 0,
+      "maker_trade_quantity": 0,
+      "mark_price": 10000.0,
+      "order_count": 40000,
+      "pnl": 0.0,
+      "sell_trade_quantity": 0,
+      "steps_near_limit": 0,
+      "taker_trade_count": 0,
+      "taker_trade_quantity": 0,
+      "trade_count": 0
+    },
+    "TOMATOES": {
+      "buy_trade_quantity": 47,
+      "cash": -29466.0,
+      "final_position": 6,
+      "maker_trade_count": 5,
+      "maker_trade_quantity": 5,
+      "mark_price": 4957.0,
+      "order_count": 40011,
+      "pnl": 276.0,
+      "sell_trade_quantity": 41,
+      "steps_near_limit": 0,
+      "taker_trade_count": 11,
+      "taker_trade_quantity": 83,
+      "trade_count": 16
+    }
+  },
+  "run_label": "phase3_final_weighted_mid",
+  "steps": 20000,
+  "total_pnl": 276.0
+}

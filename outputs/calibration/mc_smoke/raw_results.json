@@ -1,0 +1,102 @@
+[
+  {
+    "seed": 20260417,
+    "n_ticks": 1000,
+    "products": [
+      "ASH_COATED_OSMIUM",
+      "INTARIAN_PEPPER_ROOT"
+    ],
+    "final_pnl": 6139.65234375,
+    "realized_alpha": 6.995996256160319,
+    "realized_r2": 0.9927351090697848,
+    "realized_downside_dev": 26.810818232492153,
+    "n_fills": {
+      "ASH_COATED_OSMIUM": 30,
+      "INTARIAN_PEPPER_ROOT": 7
+    },
+    "n_orders_rejected_limit": {
+      "ASH_COATED_OSMIUM": 0,
+      "INTARIAN_PEPPER_ROOT": 0
+    }
+  },
+  {
+    "seed": 20260418,
+    "n_ticks": 1000,
+    "products": [
+      "ASH_COATED_OSMIUM",
+      "INTARIAN_PEPPER_ROOT"
+    ],
+    "final_pnl": 6706.03515625,
+    "realized_alpha": 7.790335950636732,
+    "realized_r2": 0.9968518007535504,
+    "realized_downside_dev": 26.23950395826479,
+    "n_fills": {
+      "ASH_COATED_OSMIUM": 28,
+      "INTARIAN_PEPPER_ROOT": 6
+    },
+    "n_orders_rejected_limit": {
+      "ASH_COATED_OSMIUM": 0,
+      "INTARIAN_PEPPER_ROOT": 0
+    }
+  },
+  {
+    "seed": 20260419,
+    "n_ticks": 1000,
+    "products": [
+      "ASH_COATED_OSMIUM",
+      "INTARIAN_PEPPER_ROOT"
+    ],
+    "final_pnl": 7458.19921875,
+    "realized_alpha": 7.8345169551380485,
+    "realized_r2": 0.9983922093370842,
+    "realized_downside_dev": 26.252860005419116,
+    "n_fills": {
+      "ASH_COATED_OSMIUM": 36,
+      "INTARIAN_PEPPER_ROOT": 5
+    },
+    "n_orders_rejected_limit": {
+      "ASH_COATED_OSMIUM": 0,
+      "INTARIAN_PEPPER_ROOT": 0
+    }
+  },
+  {
+    "seed": 20260420,
+    "n_ticks": 1000,
+    "products": [
+      "ASH_COATED_OSMIUM",
+      "INTARIAN_PEPPER_ROOT"
+    ],
+    "final_pnl": 6283.703125,
+    "realized_alpha": 6.551078768899082,
+    "realized_r2": 0.9870313068808457,
+    "realized_downside_dev": 21.101236555036454,
+    "n_fills": {
+      "ASH_COATED_OSMIUM": 31,
+      "INTARIAN_PEPPER_ROOT": 6
+    },
+    "n_orders_rejected_limit": {
+      "ASH_COATED_OSMIUM": 0,
+      "INTARIAN_PEPPER_ROOT": 0
+    }
+  },
+  {
+    "seed": 20260421,
+    "n_ticks": 1000,
+    "products": [
+      "ASH_COATED_OSMIUM",
+      "INTARIAN_PEPPER_ROOT"
+    ],
+    "final_pnl": 7491.65625,
+    "realized_alpha": 8.192938079018157,
+    "realized_r2": 0.9974486984512747,
+    "realized_downside_dev": 25.692536999198424,
+    "n_fills": {
+      "ASH_COATED_OSMIUM": 35,
+      "INTARIAN_PEPPER_ROOT": 6
+    },
+    "n_orders_rejected_limit": {
+      "ASH_COATED_OSMIUM": 0,
+      "INTARIAN_PEPPER_ROOT": 0
+    }
+  }
+]

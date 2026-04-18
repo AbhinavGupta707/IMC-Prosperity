@@ -1,0 +1,44 @@
+{
+  "n_cells": 58,
+  "elapsed_sec": 273.5877480506897,
+  "best_overall_mean": 3332.3333333333335,
+  "baseline_cell": "B1_wall_mid",
+  "by_lever": {
+    "B1": {
+      "best_cell": "B1_weighted_mid",
+      "best_mean": 3332.3333333333335,
+      "worst_mean": 205.0,
+      "n": 8
+    },
+    "B2": {
+      "best_cell": "B2_m1.5_t0.5",
+      "best_mean": 2827.3333333333335,
+      "worst_mean": 2359.5,
+      "n": 16
+    },
+    "B3": {
+      "best_cell": "B3_linear_c2.0",
+      "best_mean": 3050.1666666666665,
+      "worst_mean": 1608.8333333333333,
+      "n": 13
+    },
+    "B4": {
+      "best_cell": "B4_as_continuous",
+      "best_mean": 3071.3333333333335,
+      "worst_mean": 2255.5,
+      "n": 7
+    },
+    "B5": {
+      "best_cell": "B5_constant",
+      "best_mean": 2827.3333333333335,
+      "worst_mean": 2827.3333333333335,
+      "n": 4
+    },
+    "B6": {
+      "best_cell": "B6_wall_mid_h16",
+      "best_mean": 2827.3333333333335,
+      "worst_mean": 1766.3333333333333,
+      "n": 10
+    }
+  }
+}

@@ -1,0 +1,2 @@
+cell_id,lever,notes,day_-2_pnl,day_-1_pnl,day_0_pnl,mean_pnl,min_pnl,max_pnl,std_pnl,total_maker_fills,total_taker_fills,local_total_pnl_3day,expected_official_pnl_per_day,avg_markout_1,avg_markout_5,avg_markout_20
+D6_m25_as_continuous,D6,"wall_mid + m=2.5/t=0.5 + AS-continuous flatten (gamma=5e-7, sigma=2, T=100k)",2416.00,3608.00,3136.00,3053.33,2416.00,3608.00,490.13,16,771,9160.00,2016.43,2.000,1.925,1.836

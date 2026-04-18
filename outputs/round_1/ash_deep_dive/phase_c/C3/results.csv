@@ -1,0 +1,5 @@
+cell_id,lever,notes,day_-2_pnl,day_-1_pnl,day_0_pnl,mean_pnl,min_pnl,max_pnl,std_pnl,total_maker_fills,total_taker_fills,local_total_pnl_3day,expected_official_pnl_per_day,avg_markout_1,avg_markout_5,avg_markout_20
+C3_cartea_b0.3,C3,"Cartea: beta=0.3, alpha=ewma_mid residual z-score",2372.00,3262.00,2294.00,2642.67,2294.00,3262.00,439.09,11,937,7928.00,1106.85,1.721,1.612,1.502
+C3_cartea_b0.6,C3,"Cartea: beta=0.6, alpha=ewma_mid residual z-score",1808.50,3011.00,1867.00,2228.83,1808.50,3011.00,553.59,8,1081,6686.50,670.88,1.441,1.336,1.258
+C3_cartea_b1.0,C3,"Cartea: beta=1.0, alpha=ewma_mid residual z-score",996.50,2215.00,1361.00,1524.17,996.50,2215.00,510.66,8,1382,4572.50,391.66,0.941,0.827,0.776
+C3_cartea_b1.5,C3,"Cartea: beta=1.5, alpha=ewma_mid residual z-score",210.50,973.00,622.00,601.83,210.50,973.00,311.62,15,1841,1805.50,193.41,0.435,0.349,0.305

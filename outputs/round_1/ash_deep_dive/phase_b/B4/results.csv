@@ -1,0 +1,8 @@
+cell_id,lever,notes,day_-2_pnl,day_-1_pnl,day_0_pnl,mean_pnl,min_pnl,max_pnl,std_pnl,total_maker_fills,total_taker_fills,local_total_pnl_3day,expected_official_pnl_per_day,avg_markout_1,avg_markout_5,avg_markout_20
+B4_hard_0.6,B4,hard flatten at |pos/limit| >= 0.6,2582.00,3359.00,2541.00,2827.33,2541.00,3359.00,376.32,6,768,8482.00,882.78,1.936,1.848,1.770
+B4_hard_0.7,B4,hard flatten at |pos/limit| >= 0.7,2582.00,3359.00,2541.00,2827.33,2541.00,3359.00,376.32,6,768,8482.00,882.78,1.936,1.848,1.770
+B4_hard_0.8,B4,hard flatten at |pos/limit| >= 0.8,2582.00,3359.00,2608.00,2849.67,2582.00,3359.00,360.31,6,770,8549.00,888.18,1.943,1.851,1.764
+B4_soft_k0.2,B4,"soft-target pull, k=0.2",2461.50,3150.00,2370.00,2660.50,2370.00,3150.00,348.14,6,765,7981.50,832.91,1.919,1.831,1.738
+B4_soft_k0.5,B4,"soft-target pull, k=0.5",2325.50,3064.00,2290.00,2559.83,2290.00,3064.00,356.79,9,763,7679.50,1076.03,1.879,1.789,1.677
+B4_soft_k1.0,B4,"soft-target pull, k=1.0",2264.50,2651.00,1851.00,2255.50,1851.00,2651.00,326.66,6,763,6766.50,707.38,1.821,1.705,1.616
+B4_as_continuous,B4,AS-continuous flatten (AS skew replaces hard threshold),2453.00,3623.00,3138.00,3071.33,2453.00,3623.00,479.97,8,772,9214.00,1171.88,2.002,1.930,1.839
