@@ -1,0 +1,17 @@
+{
+  "phase": "l",
+  "n_cells": 7,
+  "elapsed_sec": 37.30148410797119,
+  "best_overall_mean": 3535.1666666666665,
+  "best_overall_exp_off": 6641.456939906353,
+  "by_lever": {
+    "L": {
+      "best_cell_by_mean": "L4_K2_4lvl_tight",
+      "best_mean": 3535.1666666666665,
+      "best_cell_by_exp_off": "L4_K2_4lvl_tight",
+      "best_exp_off": 6641.456939906353,
+      "worst_mean": 3459.3333333333335,
+      "n": 7
+    }
+  }
+}

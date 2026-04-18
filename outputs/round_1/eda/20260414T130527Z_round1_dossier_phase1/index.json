@@ -1,0 +1,17 @@
+{
+  "data_dir": "data/raw/round_1",
+  "generated_at": "2026-04-14T13:05:34.913013+00:00",
+  "label": "round1_dossier_phase1",
+  "products": [
+    {
+      "bytes": 28626,
+      "path": "outputs/round_1/eda/20260414T130527Z_round1_dossier_phase1/ash_coated_osmium_eda.json",
+      "product": "ASH_COATED_OSMIUM"
+    },
+    {
+      "bytes": 26983,
+      "path": "outputs/round_1/eda/20260414T130527Z_round1_dossier_phase1/intarian_pepper_root_eda.json",
+      "product": "INTARIAN_PEPPER_ROOT"
+    }
+  ]
+}

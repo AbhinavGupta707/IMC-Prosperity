@@ -1,0 +1,22 @@
+Fair value comparison report: phase5_stage1
+generated_at: 2026-04-11T18:53:09.405522+00:00
+
+[EMERALDS] live_method=anchor
+estimator      cov%  mae_now   mae_n1     d_n1   mae_n5        pnl  trades    mk%  near
+---------------------------------------------------------------------------------------
+mid           100.0    0.000    0.254   +0.000    0.256       0.00       0    n/a     0
+rolling_mid   100.0    0.207    0.213   -0.042    0.213       0.00       0    n/a     0
+weighted_mid  100.0    0.168    0.251   -0.003    0.252       0.00       0    n/a     0
+ewma_mid      100.0    0.173    0.248   -0.007    0.249       0.00       0    n/a     0
+---------------------------------------------------------------------------------------
+delta_n1 compares estimator next-step MAE against the current-mid baseline (0.254)
+
+[TOMATOES] live_method=weighted_mid
+estimator      cov%  mae_now   mae_n1     d_n1   mae_n5        pnl  trades    mk%  near
+---------------------------------------------------------------------------------------
+mid           100.0    0.000    0.790   +0.000    1.231      -9.00       7  100.0     0
+rolling_mid   100.0    1.693    1.745   +0.955    1.921    1167.00     400    0.3  1341
+weighted_mid  100.0    0.536    0.815   +0.025    1.187     276.00      16    5.7     0
+ewma_mid      100.0    0.579    0.828   +0.038    1.189     273.00      34    2.3     0
+---------------------------------------------------------------------------------------
+delta_n1 compares estimator next-step MAE against the current-mid baseline (0.790)

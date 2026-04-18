@@ -1,0 +1,17 @@
+{
+  "phase": "i",
+  "n_cells": 14,
+  "elapsed_sec": 91.98603105545044,
+  "best_overall_mean": 3666.0,
+  "best_overall_exp_off": 9834.302802772374,
+  "by_lever": {
+    "I": {
+      "best_cell_by_mean": "I2a_ladder_4lvl",
+      "best_mean": 3666.0,
+      "best_cell_by_exp_off": "I2a_ladder_4lvl",
+      "best_exp_off": 9834.302802772374,
+      "worst_mean": -0.5,
+      "n": 14
+    }
+  }
+}

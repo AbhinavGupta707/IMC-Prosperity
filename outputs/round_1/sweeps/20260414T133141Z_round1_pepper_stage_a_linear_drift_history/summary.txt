@@ -1,0 +1,24 @@
+Parameter sweep: INTARIAN_PEPPER_ROOT
+run_label: round1_pepper_stage_a_linear_drift_history
+fair_value_method: linear_drift
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge    mk_1    mk_5   mk_20
+---------------------------------------------------------------------------------------------
+  1.5   1.0   n/a   n/a   16418.00     907    1.2  4872   28   +3.053   +3.46   +3.50   +3.39
+
+Top 4 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge    mk_1    mk_5   mk_20
+---------------------------------------------------------------------------------------------
+  1.5   1.0   n/a   n/a   45905.00     866    1.1  2930   34   +2.381   +3.49   +3.52   +3.43
+  1.5   1.0   n/a   n/a   30436.00     905    1.2  4162   35   +2.870   +3.47   +3.51   +3.40
+  1.5   1.0   n/a   n/a   16418.00     907    1.2  4872   28   +3.053   +3.46   +3.50   +3.39
+  1.5   1.0   n/a   n/a   12635.00     915    1.4  4607   33   +3.145   +3.46   +3.52   +3.40
+
+Average pnl by parameter value
+history_length=16: mean_pnl=45905.00, mean_trades=866.0, mean_near_limit=2930.0
+history_length=32: mean_pnl=30436.00, mean_trades=905.0, mean_near_limit=4162.0
+history_length=48: mean_pnl=16418.00, mean_trades=907.0, mean_near_limit=4872.0
+history_length=64: mean_pnl=12635.00, mean_trades=915.0, mean_near_limit=4607.0
+maker_edge=1.5: mean_pnl=26348.50, mean_trades=898.2, mean_near_limit=4142.8
+taker_edge=1.0: mean_pnl=26348.50, mean_trades=898.2, mean_near_limit=4142.8

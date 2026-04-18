@@ -1,0 +1,39 @@
+Phase 6 cross-slice plateau: EMERALDS / emeralds
+role: promotion_eligible
+run_label: phase6_emeralds
+verdict: retain
+reason: gate check(s) failed: regime
+
+slice day_-2
+  baseline params:    flatten_threshold=0.75, inventory_skew=2.0, maker_edge=2.0, taker_edge=1.0
+  baseline: pnl=0.00 trades=0 maker_share=n/a near=0 pos=0
+  in_plateau_band:    no
+  peak_pnl (post-filter): 920.0
+  distance_from_peak: +100.0%
+  rows_in_band:       32
+
+slice day_-1
+  baseline params:    flatten_threshold=0.75, inventory_skew=2.0, maker_edge=2.0, taker_edge=1.0
+  baseline: pnl=0.00 trades=0 maker_share=n/a near=0 pos=0
+  in_plateau_band:    no
+  peak_pnl (post-filter): 1200.0
+  distance_from_peak: +100.0%
+  rows_in_band:       32
+
+slice combined
+  baseline params:    flatten_threshold=0.75, inventory_skew=2.0, maker_edge=2.0, taker_edge=1.0
+  baseline: pnl=0.00 trades=0 maker_share=n/a near=0 pos=0
+  in_plateau_band:    no
+  peak_pnl (post-filter): 2144.0
+  distance_from_peak: +100.0%
+  rows_in_band:       32
+
+intersection size: 32
+medoid center: flatten_threshold=0.7, inventory_skew=2.0, maker_edge=8.0, taker_edge=1.0
+  pnl=2144.00 trades=202 maker_share=100.0% near=0
+
+gate checks (sweep-level):
+  pnl_lift: PASS
+  inventory: PASS
+  trade_count: PASS
+  regime: FAIL

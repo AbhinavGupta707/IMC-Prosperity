@@ -1,0 +1,31 @@
+Parameter sweep: TOMATOES
+run_label: optim_tomatoes_fv_sweep_wall_mid
+fair_value_method: wall_mid
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge
+---------------------------------------------------------------------
+  1.0   1.0   n/a   n/a    1296.00     263    0.2     0   -2   +1.195
+
+Top 10 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge
+---------------------------------------------------------------------
+  1.0   0.5   n/a   n/a    1499.00     404    0.1     0   -1   +0.952
+  2.0   0.5   n/a   n/a    1444.00     406    0.1     0   -2   +0.950
+  0.5   1.0   n/a   n/a    1419.00     262    0.3     0    3   +1.206
+  1.5   0.5   n/a   n/a    1380.00     408    0.1     0   -1   +0.953
+  1.0   1.0   n/a   n/a    1296.00     263    0.2     0   -2   +1.195
+  0.5   0.5   n/a   n/a    1295.00     407    0.1     0   -2   +0.965
+  2.0   1.0   n/a   n/a    1288.00     257    0.1     0    3   +1.190
+  1.5   1.0   n/a   n/a    1238.00     269    0.1     0   -4   +1.185
+  0.5   1.5   n/a   n/a     480.00     128    0.7     0   -1   +1.434
+  2.0   1.5   n/a   n/a     465.00     128    0.2     0    5   +1.395
+
+Average pnl by parameter value
+maker_edge=0.5: mean_pnl=1064.67, mean_trades=265.7, mean_near_limit=0.0
+maker_edge=1.0: mean_pnl=1072.33, mean_trades=265.7, mean_near_limit=0.0
+maker_edge=1.5: mean_pnl=995.67, mean_trades=270.3, mean_near_limit=0.0
+maker_edge=2.0: mean_pnl=1065.67, mean_trades=263.7, mean_near_limit=0.0
+taker_edge=0.5: mean_pnl=1404.50, mean_trades=406.2, mean_near_limit=0.0
+taker_edge=1.0: mean_pnl=1310.25, mean_trades=262.8, mean_near_limit=0.0
+taker_edge=1.5: mean_pnl=434.00, mean_trades=130.0, mean_near_limit=0.0

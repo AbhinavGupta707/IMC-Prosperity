@@ -1,0 +1,41 @@
+{
+  "phase": "c",
+  "n_cells": 23,
+  "elapsed_sec": 110.98373794555664,
+  "best_overall_mean": 2999.0,
+  "best_overall_exp_off": 2244.272465292447,
+  "by_lever": {
+    "C1": {
+      "best_cell_by_mean": "C1_as_g1e-07",
+      "best_mean": 2999.0,
+      "best_cell_by_exp_off": "C1_as_g2e-06",
+      "best_exp_off": 2244.272465292447,
+      "worst_mean": 2936.6666666666665,
+      "n": 3
+    },
+    "C2": {
+      "best_cell_by_mean": "C2_gueant_g1e-07",
+      "best_mean": 2999.0,
+      "best_cell_by_exp_off": "C2_gueant_g1e-07",
+      "best_exp_off": 1804.1553362276045,
+      "worst_mean": 2999.0,
+      "n": 3
+    },
+    "C3": {
+      "best_cell_by_mean": "C3_cartea_b0.3",
+      "best_mean": 2642.6666666666665,
+      "best_cell_by_exp_off": "C3_cartea_b0.3",
+      "best_exp_off": 1106.852114344038,
+      "worst_mean": 601.8333333333334,
+      "n": 4
+    },
+    "C5": {
+      "best_cell_by_mean": "C5_tau500_a1.0",
+      "best_mean": 994.5,
+      "best_cell_by_exp_off": "C5_tau500_a0.3",
+      "best_exp_off": 626.9239416898761,
+      "worst_mean": 7.0,
+      "n": 13
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "aggregates": [
+    {
+      "mean_pnl": 28245.5,
+      "mean_steps_near_limit": 3854.5,
+      "mean_trade_count": 883.5,
+      "parameter": "maker_edge",
+      "value": 1.0
+    },
+    {
+      "mean_pnl": 27333.5,
+      "mean_steps_near_limit": 4249.5,
+      "mean_trade_count": 901,
+      "parameter": "maker_edge",
+      "value": 1.5
+    },
+    {
+      "mean_pnl": 17084.0,
+      "mean_steps_near_limit": 4686.5,
+      "mean_trade_count": 901,
+      "parameter": "taker_edge",
+      "value": 1.0
+    },
+    {
+      "mean_pnl": 38495.0,
+      "mean_steps_near_limit": 3417.5,
+      "mean_trade_count": 883.5,
+      "parameter": "taker_edge",
+      "value": 1.5
+    }
+  ],
+  "baseline": {
+    "avg_entry_edge": 3.0526183180682844,
+    "avg_markout_1": 3.4601845889675897,
+    "avg_markout_20": 3.3942906203047865,
+    "avg_markout_5": 3.5037561708521143,
+    "final_position": 28,
+    "maker_share": 0.012489592006661115,
+    "params": {
+      "maker_edge": 1.5,
+      "taker_edge": 1.0
+    },
+    "pnl": 16418.0,
+    "steps_near_limit": 4872,
+    "trade_count": 907
+  },
+  "fair_value_method": "linear_drift",
+  "generated_at": "2026-04-14T13:30:41.283256+00:00",
+  "product": "INTARIAN_PEPPER_ROOT",
+  "rows": [
+    {
+      "avg_entry_edge": 3.05213851590107,
+      "avg_markout_1": 3.453989703989704,
+      "avg_markout_20": 3.4025096525096523,
+      "avg_markout_5": 3.499249249249249,
+      "final_position": 31,
+      "maker_share": 0.007067137809187279,
+      "params": {
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 17750.0,
+      "steps_near_limit": 4501,
+      "trade_count": 895
+    },
+    {
+      "avg_entry_edge": 3.0569100042034583,
+      "avg_markout_1": 3.4615968756780213,
+      "avg_markout_20": 3.395096550227815,
+      "avg_markout_5": 3.4960945975265783,
+      "final_position": 34,
+      "maker_share": 0.003572929802437999,
+      "params": {
+        "maker_edge": 1.0,
+        "taker_edge": 1.5
+      },
+      "pnl": 38741.0,
+      "steps_near_limit": 3208,
+      "trade_count": 872
+    },
+    {
+      "avg_entry_edge": 3.0526183180682844,
+      "avg_markout_1": 3.4601845889675897,
+      "avg_markout_20": 3.3942906203047865,
+      "avg_markout_5": 3.5037561708521143,
+      "final_position": 28,
+      "maker_share": 0.012489592006661115,
+      "params": {
+        "maker_edge": 1.5,
+        "taker_edge": 1.0
+      },
+      "pnl": 16418.0,
+      "steps_near_limit": 4872,
+      "trade_count": 907
+    },
+    {
+      "avg_entry_edge": 3.060090834902708,
+      "avg_markout_1": 3.4680552557737965,
+      "avg_markout_20": 3.3985538527951653,
+      "avg_markout_5": 3.5111159076192533,
+      "final_position": 35,
+      "maker_share": 0.011927181418706842,
+      "params": {
+        "maker_edge": 1.5,
+        "taker_edge": 1.5
+      },
+      "pnl": 38249.0,
+      "steps_near_limit": 3627,
+      "trade_count": 895
+    }
+  ],
+  "run_label": "round1_pepper_stage_a_linear_drift"
+}

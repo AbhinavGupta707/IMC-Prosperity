@@ -1,0 +1,5 @@
+cell_id,lever,notes,day_-2_pnl,day_-1_pnl,day_0_pnl,mean_pnl,min_pnl,max_pnl,std_pnl,total_maker_fills,total_taker_fills,local_total_pnl_3day,expected_official_pnl_per_day,avg_markout_1,avg_markout_5,avg_markout_20
+D5_weighted_m25_skew2,D5,Empirical stack: weighted_mid FV + m=2.5/t=0.5 + linear skew c=2,3174.00,3817.00,3346.00,3445.67,3174.00,3817.00,271.80,5,701,10337.00,1011.96,1.984,1.902,1.864
+D6_m25_as_continuous,D6,"wall_mid + m=2.5/t=0.5 + AS-continuous flatten (gamma=5e-7, sigma=2, T=100k)",2416.00,3608.00,3136.00,3053.33,2416.00,3608.00,490.13,16,771,9160.00,2016.43,2.000,1.925,1.836
+D7_weighted_as_g2e-6,D7,weighted_mid FV + AS quote formula (gamma=2e-6),2757.00,3740.00,3336.00,3277.67,2757.00,3740.00,403.42,10,705,9833.00,1588.98,1.932,1.851,1.835
+D8_m25_cartea_b0.1,D8,wall_mid + m=2.5/t=0.5 + ultra-mild Cartea beta=0.1 on ewma_mid residual,2570.50,3338.00,2673.00,2860.50,2570.50,3338.00,340.23,16,812,8581.50,1809.37,1.936,1.827,1.738

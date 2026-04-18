@@ -1,0 +1,40 @@
+Parameter sweep: EMERALDS
+run_label: phase6_emeralds_emeralds_day_-2
+fair_value_method: anchor
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos
+------------------------------------------------------------
+  2.0   1.0   2.0  0.75       0.00       0    n/a     0    0
+
+Top 10 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos
+------------------------------------------------------------
+  8.0   1.0   1.5  0.65     920.00      86  100.0     0   -1
+  8.0   1.0   1.5   0.7     920.00      86  100.0     0   -1
+  8.0   1.0   1.5  0.75     920.00      86  100.0     0   -1
+  8.0   1.0   1.5   0.8     920.00      86  100.0     0   -1
+  8.0   1.0   2.0  0.65     920.00      86  100.0     0   -1
+  8.0   1.0   2.0   0.7     920.00      86  100.0     0   -1
+  8.0   1.0   2.0  0.75     920.00      86  100.0     0   -1
+  8.0   1.0   2.0   0.8     920.00      86  100.0     0   -1
+  8.0   1.0   2.5  0.65     920.00      86  100.0     0   -1
+  8.0   1.0   2.5   0.7     920.00      86  100.0     0   -1
+
+Average pnl by parameter value
+maker_edge=1.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+maker_edge=2.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+maker_edge=3.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+maker_edge=4.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+maker_edge=6.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+maker_edge=8.0: mean_pnl=920.00, mean_trades=86.0, mean_near_limit=0.0
+taker_edge=1.0: mean_pnl=153.33, mean_trades=14.3, mean_near_limit=0.0
+taker_edge=2.0: mean_pnl=153.33, mean_trades=14.3, mean_near_limit=0.0
+inventory_skew=1.5: mean_pnl=153.33, mean_trades=14.3, mean_near_limit=0.0
+inventory_skew=2.0: mean_pnl=153.33, mean_trades=14.3, mean_near_limit=0.0
+inventory_skew=2.5: mean_pnl=153.33, mean_trades=14.3, mean_near_limit=0.0
+inventory_skew=3.0: mean_pnl=153.33, mean_trades=14.3, mean_near_limit=0.0
+flatten_threshold=0.65: mean_pnl=153.33, mean_trades=14.3, mean_near_limit=0.0
+flatten_threshold=0.7: mean_pnl=153.33, mean_trades=14.3, mean_near_limit=0.0
+flatten_threshold=0.75: mean_pnl=153.33, mean_trades=14.3, mean_near_limit=0.0
+flatten_threshold=0.8: mean_pnl=153.33, mean_trades=14.3, mean_near_limit=0.0

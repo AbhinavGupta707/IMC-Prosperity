@@ -1,0 +1,17 @@
+{
+  "phase": "g",
+  "n_cells": 6,
+  "elapsed_sec": 28.97499394416809,
+  "best_overall_mean": 3494.6666666666665,
+  "best_overall_exp_off": 1597.7196613473288,
+  "by_lever": {
+    "G": {
+      "best_cell_by_mean": "G5_weighted_m25_c1",
+      "best_mean": 3494.6666666666665,
+      "best_cell_by_exp_off": "G1_wall_m25_c2",
+      "best_exp_off": 1597.7196613473288,
+      "worst_mean": 3058.3333333333335,
+      "n": 6
+    }
+  }
+}

@@ -1,0 +1,35 @@
+Parameter sweep: TOMATOES
+run_label: tomatoes_depth_mid
+fair_value_method: weighted_mid
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos
+------------------------------------------------------------
+  1.0   1.0   3.0   0.7     276.00      16    5.7     0    6
+
+Top 10 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos
+------------------------------------------------------------
+  1.0   1.0   3.0  0.65     276.00      16    5.7     0    6
+  1.0   1.0   3.0   0.7     276.00      16    5.7     0    6
+  1.0   1.0   3.0  0.75     276.00      16    5.7     0    6
+  3.0   1.0   3.0  0.65     105.00      16    0.0     0    0
+  3.0   1.0   3.0   0.7     105.00      16    0.0     0    0
+  3.0   1.0   3.0  0.75     105.00      16    0.0     0    0
+  1.0   1.0   2.0  0.65      62.00      14    5.3     0    2
+  1.0   1.0   2.0   0.7      62.00      14    5.3     0    2
+  1.0   1.0   2.0  0.75      62.00      14    5.3     0    2
+  1.0   2.0   2.0  0.65      43.00       4  100.0     0   -2
+
+Average pnl by parameter value
+maker_edge=1.0: mean_pnl=84.17, mean_trades=8.3, mean_near_limit=0.0
+maker_edge=2.0: mean_pnl=13.67, mean_trades=7.5, mean_near_limit=0.0
+maker_edge=3.0: mean_pnl=2.00, mean_trades=4.2, mean_near_limit=0.0
+taker_edge=1.0: mean_pnl=46.56, mean_trades=11.0, mean_near_limit=0.0
+taker_edge=2.0: mean_pnl=20.00, mean_trades=2.3, mean_near_limit=0.0
+inventory_skew=2.0: mean_pnl=17.17, mean_trades=6.0, mean_near_limit=0.0
+inventory_skew=2.5: mean_pnl=7.50, mean_trades=5.3, mean_near_limit=0.0
+inventory_skew=3.0: mean_pnl=75.17, mean_trades=8.7, mean_near_limit=0.0
+flatten_threshold=0.65: mean_pnl=33.28, mean_trades=6.7, mean_near_limit=0.0
+flatten_threshold=0.7: mean_pnl=33.28, mean_trades=6.7, mean_near_limit=0.0
+flatten_threshold=0.75: mean_pnl=33.28, mean_trades=6.7, mean_near_limit=0.0

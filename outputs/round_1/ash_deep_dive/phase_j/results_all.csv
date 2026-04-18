@@ -1,0 +1,10 @@
+cell_id,lever,notes,day_-2_pnl,day_-1_pnl,day_0_pnl,mean_pnl,min_pnl,max_pnl,std_pnl,total_maker_fills,total_taker_fills,local_total_pnl_3day,expected_official_pnl_per_day,avg_markout_1,avg_markout_5,avg_markout_20
+J1_weighted_4111,J,4-level ladder with inner weight 4 (57%/14%/14%/14%),3324.50,3964.00,3470.00,3586.17,3324.50,3964.00,273.69,44,705,10758.50,6181.56,2.036,1.961,1.936
+J2_weighted_311,J,3-level ladder with inner weight 3 (60%/20%/20%),3420.00,3950.00,3590.00,3653.33,3420.00,3950.00,220.96,61,703,10960.00,8430.86,2.075,2.002,1.967
+J3_spread_gated,J,4-level with outer levels only when spread>=16,3376.00,3876.00,3642.00,3631.33,3376.00,3876.00,204.26,61,700,10894.00,8411.73,2.084,2.008,1.967
+J4_inv_asym,J,4-level with outer only on unwinding side (by inventory),3218.50,3890.00,3512.00,3540.17,3218.50,3890.00,274.86,32,703,10620.50,4612.05,2.024,1.953,1.917
+J5_tight_weighted,J,tight 3-level (2.5/4/6) with inner weight 2 (50%/25%/25%),3251.00,3839.00,3440.00,3510.00,3251.00,3839.00,245.10,27,703,10530.00,3936.26,2.014,1.929,1.908
+J6_ultra_inner,J,4-level with inner weight 6 (67%/11%/11%/11%),3287.00,3808.00,3563.00,3552.67,3287.00,3808.00,212.82,33,698,10658.00,4786.29,2.026,1.943,1.920
+J7_gated_weighted,J,4-level weighted 3/1/1/1 + spread-gated outer,3276.00,3832.00,3636.00,3581.33,3276.00,3832.00,230.25,37,701,10744.00,5319.76,2.030,1.942,1.930
+J_f3a_control,J,F3a-equivalent (single level) — sanity control,3174.00,3817.00,3346.00,3445.67,3174.00,3817.00,271.80,5,701,10337.00,1011.96,1.984,1.902,1.864
+J8_I2a_replay,J,I2a replay (equal weights) — reference point,3408.00,3898.00,3692.00,3666.00,3408.00,3898.00,200.88,72,699,10998.00,9834.30,2.110,2.030,1.985

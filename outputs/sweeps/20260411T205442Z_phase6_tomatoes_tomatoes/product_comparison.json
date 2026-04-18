@@ -1,0 +1,13 @@
+{
+  "considered": [
+    "weighted_mid",
+    "rolling_mid"
+  ],
+  "excluded": [
+    "ewma_mid_alpha_020"
+  ],
+  "product": "TOMATOES",
+  "reason": "no eligible sub-sweep reached promotion_candidate",
+  "verdict": "retain",
+  "winner": null
+}

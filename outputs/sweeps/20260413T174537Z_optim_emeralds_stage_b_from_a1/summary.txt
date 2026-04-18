@@ -1,0 +1,32 @@
+Parameter sweep: EMERALDS
+run_label: optim_emeralds_stage_b_from_a1
+fair_value_method: anchor
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge
+---------------------------------------------------------------------
+  n/a   n/a   8.0  0.75       0.00       0    n/a     0    0      n/a
+
+Top 10 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge
+---------------------------------------------------------------------
+  n/a   n/a   4.0  0.65       0.00       0    n/a     0    0      n/a
+  n/a   n/a   6.0  0.65       0.00       0    n/a     0    0      n/a
+  n/a   n/a   8.0  0.65       0.00       0    n/a     0    0      n/a
+  n/a   n/a  10.0  0.65       0.00       0    n/a     0    0      n/a
+  n/a   n/a   4.0   0.7       0.00       0    n/a     0    0      n/a
+  n/a   n/a   6.0   0.7       0.00       0    n/a     0    0      n/a
+  n/a   n/a   8.0   0.7       0.00       0    n/a     0    0      n/a
+  n/a   n/a  10.0   0.7       0.00       0    n/a     0    0      n/a
+  n/a   n/a   4.0  0.75       0.00       0    n/a     0    0      n/a
+  n/a   n/a   6.0  0.75       0.00       0    n/a     0    0      n/a
+
+Average pnl by parameter value
+flatten_threshold=0.65: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+flatten_threshold=0.7: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+flatten_threshold=0.75: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+flatten_threshold=0.8: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+inventory_skew=4.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+inventory_skew=6.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+inventory_skew=8.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0
+inventory_skew=10.0: mean_pnl=0.00, mean_trades=0.0, mean_near_limit=0.0

@@ -1,0 +1,37 @@
+Parameter sweep: TOMATOES
+run_label: phase6_tomatoes_rolling_mid_day_-1
+fair_value_method: weighted_mid
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos
+------------------------------------------------------------
+  1.0   1.0   3.0   n/a     -56.00      12    4.3     0    7
+
+Top 10 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos
+------------------------------------------------------------
+  1.0   2.0   2.0   n/a     601.00     103    0.8   147    8
+  2.0   2.0   2.0   n/a     586.00      60    0.8   314   11
+  1.0   2.0   3.5   n/a     560.00     129    0.4   271    0
+  2.0   2.0   3.5   n/a     546.00     103    1.5    65    3
+  2.0   2.0   3.0   n/a     544.00     146    1.0   557    1
+  1.0   1.0   2.0   n/a     534.00     147    0.2   510    6
+  2.0   2.0   3.0   n/a     518.00     103    0.6   111    5
+  2.0   2.0   2.5   n/a     511.00     103    0.5   213    6
+  1.0   1.0   3.5   n/a     500.00     153    0.3   204    2
+  2.0   2.0   2.0   n/a     497.00      99    0.5   363    7
+
+Average pnl by parameter value
+fair_value_method=rolling_mid: mean_pnl=376.73, mean_trades=149.8, mean_near_limit=632.3
+history_length=16: mean_pnl=388.31, mean_trades=103.6, mean_near_limit=285.6
+history_length=32: mean_pnl=402.12, mean_trades=146.4, mean_near_limit=443.0
+history_length=48: mean_pnl=346.12, mean_trades=167.9, mean_near_limit=720.3
+history_length=64: mean_pnl=370.38, mean_trades=181.1, mean_near_limit=1080.3
+maker_edge=1.0: mean_pnl=357.09, mean_trades=148.4, mean_near_limit=626.2
+maker_edge=2.0: mean_pnl=396.38, mean_trades=151.1, mean_near_limit=638.4
+taker_edge=1.0: mean_pnl=311.47, mean_trades=189.8, mean_near_limit=814.1
+taker_edge=2.0: mean_pnl=442.00, mean_trades=109.7, mean_near_limit=450.5
+inventory_skew=2.0: mean_pnl=419.12, mean_trades=149.2, mean_near_limit=870.9
+inventory_skew=2.5: mean_pnl=343.06, mean_trades=148.4, mean_near_limit=680.9
+inventory_skew=3.0: mean_pnl=379.06, mean_trades=151.9, mean_near_limit=568.7
+inventory_skew=3.5: mean_pnl=365.69, mean_trades=149.4, mean_near_limit=408.7

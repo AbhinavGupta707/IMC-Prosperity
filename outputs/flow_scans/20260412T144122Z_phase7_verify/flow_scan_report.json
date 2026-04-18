@@ -1,0 +1,635 @@
+{
+  "flagged_steps": [
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 13600
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "EMERALDS",
+      "timestamp": 22800
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 43200
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 133800
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 165500
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 175800
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 184800
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "EMERALDS",
+      "timestamp": 209300
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 243000
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 263500
+    },
+    {
+      "flags": "near_local_high|near_local_low",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "EMERALDS",
+      "timestamp": 277700
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 413900
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 417900
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 540000
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 540700
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 591600
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 610200
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 616700
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 626200
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 673800
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 674200
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 675500
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 701300
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 735200
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 808900
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 814600
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 896700
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 900000
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 24600
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 54400
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 66100
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 86000
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 94000
+    },
+    {
+      "flags": "near_local_high|near_local_low",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "EMERALDS",
+      "timestamp": 101600
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 110200
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 141700
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "EMERALDS",
+      "timestamp": 170100
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 187600
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 203600
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 231600
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 269700
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 274300
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 301000
+    },
+    {
+      "flags": "near_local_high|near_local_low",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "EMERALDS",
+      "timestamp": 335500
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 353600
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 368300
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "EMERALDS",
+      "timestamp": 398500
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 402200
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 404900
+    },
+    {
+      "flags": "near_local_high|near_local_low",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "EMERALDS",
+      "timestamp": 415900
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 446900
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 495700
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 532400
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 613800
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 630500
+    },
+    {
+      "flags": "near_local_high|near_local_low",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "EMERALDS",
+      "timestamp": 643400
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 655000
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 655500
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 690700
+    },
+    {
+      "flags": "near_local_high|near_local_low",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "EMERALDS",
+      "timestamp": 738100
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 768500
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 779100
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 807500
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 847600
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 868100
+    },
+    {
+      "flags": "near_local_low",
+      "flow_score": 0.0,
+      "near_high": false,
+      "near_low": true,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 886900
+    },
+    {
+      "flags": "near_local_high",
+      "flow_score": 0.0,
+      "near_high": true,
+      "near_low": false,
+      "net_flow": 0,
+      "product": "TOMATOES",
+      "timestamp": 914300
+    }
+  ],
+  "generated_at": "2026-04-12T14:41:22.454651+00:00",
+  "per_product": {
+    "EMERALDS": {
+      "flag_histogram": {
+        "near_local_high": 8,
+        "near_local_low": 8
+      },
+      "flagged_step_count": 10,
+      "min_flow_score": 0.0,
+      "near_high_count": 8,
+      "near_low_count": 8,
+      "peak_flow_score": 0.0,
+      "steps_scanned": 20000
+    },
+    "TOMATOES": {
+      "flag_histogram": {
+        "near_local_high": 31,
+        "near_local_low": 26
+      },
+      "flagged_step_count": 57,
+      "min_flow_score": 0.0,
+      "near_high_count": 31,
+      "near_low_count": 26,
+      "peak_flow_score": 0.0,
+      "steps_scanned": 20000
+    }
+  },
+  "run_label": "phase7_verify"
+}

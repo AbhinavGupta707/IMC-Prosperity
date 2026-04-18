@@ -1,0 +1,91 @@
+{
+  "artifacts": {
+    "charts_dir": "charts",
+    "notes_md": "notes.md",
+    "series_json": "series.json",
+    "summary_json": "summary.json",
+    "summary_text": "summary.txt",
+    "trades_json": "trades.json"
+  },
+  "charts_rendered": true,
+  "data_files": [
+    "data/raw/tutorial_round_1/prices_round_0_day_-1.csv",
+    "data/raw/tutorial_round_1/prices_round_0_day_-2.csv",
+    "data/raw/tutorial_round_1/trades_round_0_day_-1.csv",
+    "data/raw/tutorial_round_1/trades_round_0_day_-2.csv"
+  ],
+  "engine_config": {
+    "diagnostics_verbosity": 1,
+    "max_trader_data_chars": 50000,
+    "products": {
+      "EMERALDS": {
+        "anchor_price": 10000.0,
+        "ewma_alpha": null,
+        "fair_value_fallbacks": [
+          "microprice",
+          "mid"
+        ],
+        "fair_value_method": "anchor",
+        "flatten_threshold": 0.75,
+        "history_length": 32,
+        "inventory_skew": 2.0,
+        "maker_edge": 2.0,
+        "max_aggressive_size": 10,
+        "position_limit": 20,
+        "quote_size": 5,
+        "strategy_name": "market_making",
+        "taker_edge": 1.0,
+        "tick_size": 1
+      },
+      "TOMATOES": {
+        "anchor_price": null,
+        "ewma_alpha": null,
+        "fair_value_fallbacks": [
+          "mid",
+          "microprice"
+        ],
+        "fair_value_method": "weighted_mid",
+        "flatten_threshold": 0.7,
+        "history_length": 48,
+        "inventory_skew": 3.0,
+        "maker_edge": 1.0,
+        "max_aggressive_size": 8,
+        "position_limit": 20,
+        "quote_size": 4,
+        "strategy_name": "market_making",
+        "taker_edge": 1.0,
+        "tick_size": 1
+      }
+    },
+    "state_version": 1
+  },
+  "estimators_per_product": {
+    "EMERALDS": {
+      "fallbacks": [
+        "microprice",
+        "mid"
+      ],
+      "primary": "anchor",
+      "primary_known": true
+    },
+    "TOMATOES": {
+      "fallbacks": [
+        "mid",
+        "microprice"
+      ],
+      "primary": "weighted_mid",
+      "primary_known": true
+    }
+  },
+  "generated_at": "2026-04-12T17:28:56.789812+00:00",
+  "git_commit": "d48ec48",
+  "git_dirty": true,
+  "markout_horizons": [
+    1,
+    5,
+    20
+  ],
+  "python_version": "3.14.3",
+  "run_id": "20260412T172856Z_tutorial_round_1",
+  "run_label": "tutorial_round_1"
+}

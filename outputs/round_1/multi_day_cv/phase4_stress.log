@@ -1,0 +1,8 @@
+[stress] 4 candidates x 7 scenarios = 28 sims
+candidate                 real_d-2    real_d-1     real_d0        flat    reversed    high_vol     stepped
+buy_hold_80                 +79543      +79192      +79319        -457      -80450      +79697        -457
+V3_nearhold                 +79549      +79204      +79391        -451      -80431      +86838        -451
+P2_top_hybrid               +79558      +79205      +79391        -451      -80431      +86638        -441
+V_defensive_floor70         +79549      +79204      +79391        -451      -80431      +86734        -451
+
+[done] 50.0s total

@@ -1,0 +1,2 @@
+cell_id,lever,notes,day_-2_pnl,day_-1_pnl,day_0_pnl,mean_pnl,min_pnl,max_pnl,std_pnl,total_maker_fills,total_taker_fills,local_total_pnl_3day,expected_official_pnl_per_day,avg_markout_1,avg_markout_5,avg_markout_20
+D8_m25_cartea_b0.1,D8,wall_mid + m=2.5/t=0.5 + ultra-mild Cartea beta=0.1 on ewma_mid residual,2570.50,3338.00,2673.00,2860.50,2570.50,3338.00,340.23,16,812,8581.50,1809.37,1.936,1.827,1.738

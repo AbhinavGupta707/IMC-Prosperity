@@ -1,0 +1,22 @@
+Parameter sweep: INTARIAN_PEPPER_ROOT
+run_label: round1_pepper_stage_a_ewma_mid
+fair_value_method: ewma_mid
+
+Baseline
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge    mk_1    mk_5   mk_20
+---------------------------------------------------------------------------------------------
+  1.5   1.0   n/a   n/a   28459.00     848    1.1   687   28   +2.048   +3.50   +3.55   +3.41
+
+Top 4 configs
+maker taker  skew  flat        pnl  trades    mk%  near  pos     edge    mk_1    mk_5   mk_20
+---------------------------------------------------------------------------------------------
+  1.0   1.0   n/a   n/a   29066.00     829    0.3   568   35   +2.037   +3.50   +3.54   +3.41
+  1.5   1.0   n/a   n/a   28459.00     848    1.1   687   28   +2.048   +3.50   +3.55   +3.41
+  1.5   1.5   n/a   n/a   26144.00     722    0.7    28   24   +2.131   +3.57   +3.55   +3.45
+  1.0   1.5   n/a   n/a   26019.00     709    0.3    28   22   +2.133   +3.56   +3.55   +3.46
+
+Average pnl by parameter value
+maker_edge=1.0: mean_pnl=27542.50, mean_trades=769.0, mean_near_limit=298.0
+maker_edge=1.5: mean_pnl=27301.50, mean_trades=785.0, mean_near_limit=357.5
+taker_edge=1.0: mean_pnl=28762.50, mean_trades=838.5, mean_near_limit=627.5
+taker_edge=1.5: mean_pnl=26081.50, mean_trades=715.5, mean_near_limit=28.0

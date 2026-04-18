@@ -1,0 +1,9 @@
+cell_id,lever,notes,day_-2_pnl,day_-1_pnl,day_0_pnl,mean_pnl,min_pnl,max_pnl,std_pnl,total_maker_fills,total_taker_fills,local_total_pnl_3day,expected_official_pnl_per_day,avg_markout_1,avg_markout_5,avg_markout_20
+B1_wall_mid,B1,"FV primary = wall_mid (fallbacks = ('mid', 'microprice'))",2582.00,3359.00,2541.00,2827.33,2541.00,3359.00,376.32,6,768,8482.00,882.78,1.936,1.848,1.770
+B1_microprice,B1,"FV primary = microprice (fallbacks = ('wall_mid', 'mid'))",189.00,170.00,256.00,205.00,170.00,256.00,36.89,12,118,615.00,543.81,0.028,0.016,-0.309
+B1_ewma_mid,B1,"FV primary = ewma_mid (fallbacks = ('wall_mid', 'mid'))",1798.50,1761.00,1802.00,1787.17,1761.00,1802.00,18.56,10,369,5361.50,1479.78,2.120,1.988,1.923
+B1_depth_mid,B1,"FV primary = depth_mid (fallbacks = ('wall_mid', 'mid'))",1918.50,2719.00,1874.00,2170.50,1874.00,2719.00,388.27,11,566,6511.50,1357.33,1.995,2.016,1.822
+B1_hybrid_wall_micro,B1,"FV primary = hybrid_wall_micro (fallbacks = ('wall_mid', 'mid'))",174.50,599.00,-50.00,241.17,-50.00,599.00,269.11,14,229,723.50,408.15,1.974,2.013,1.763
+B1_filtered_wall_mid,B1,"FV primary = filtered_wall_mid (fallbacks = ('mid', 'microprice'))",2582.00,3359.00,2541.00,2827.33,2541.00,3359.00,376.32,6,768,8482.00,882.78,1.936,1.848,1.770
+B1_weighted_mid,B1,"FV primary = weighted_mid (fallbacks = ('wall_mid', 'mid'))",2914.00,3696.00,3387.00,3332.33,2914.00,3696.00,321.58,14,713,9997.00,2101.70,1.914,1.842,1.794
+B1_rolling_mid,B1,"FV primary = rolling_mid (fallbacks = ('wall_mid', 'mid'))",2736.50,3494.00,3076.00,3102.17,2736.50,3494.00,309.80,8,738,9306.50,1223.79,1.810,1.811,1.715

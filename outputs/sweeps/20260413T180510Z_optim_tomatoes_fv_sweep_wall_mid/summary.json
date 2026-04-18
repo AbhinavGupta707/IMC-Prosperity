@@ -1,0 +1,215 @@
+{
+  "aggregates": [
+    {
+      "mean_pnl": 1064.6666666666667,
+      "mean_steps_near_limit": 0,
+      "mean_trade_count": 265.6666666666667,
+      "parameter": "maker_edge",
+      "value": 0.5
+    },
+    {
+      "mean_pnl": 1072.3333333333333,
+      "mean_steps_near_limit": 0,
+      "mean_trade_count": 265.6666666666667,
+      "parameter": "maker_edge",
+      "value": 1.0
+    },
+    {
+      "mean_pnl": 995.6666666666666,
+      "mean_steps_near_limit": 0,
+      "mean_trade_count": 270.3333333333333,
+      "parameter": "maker_edge",
+      "value": 1.5
+    },
+    {
+      "mean_pnl": 1065.6666666666667,
+      "mean_steps_near_limit": 0,
+      "mean_trade_count": 263.6666666666667,
+      "parameter": "maker_edge",
+      "value": 2.0
+    },
+    {
+      "mean_pnl": 1404.5,
+      "mean_steps_near_limit": 0,
+      "mean_trade_count": 406.25,
+      "parameter": "taker_edge",
+      "value": 0.5
+    },
+    {
+      "mean_pnl": 1310.25,
+      "mean_steps_near_limit": 0,
+      "mean_trade_count": 262.75,
+      "parameter": "taker_edge",
+      "value": 1.0
+    },
+    {
+      "mean_pnl": 434.0,
+      "mean_steps_near_limit": 0,
+      "mean_trade_count": 130,
+      "parameter": "taker_edge",
+      "value": 1.5
+    }
+  ],
+  "baseline": {
+    "avg_entry_edge": 1.1947983014861996,
+    "final_position": -2,
+    "maker_share": 0.0021231422505307855,
+    "params": {
+      "maker_edge": 1.0,
+      "taker_edge": 1.0
+    },
+    "pnl": 1296.0,
+    "steps_near_limit": 0,
+    "trade_count": 263
+  },
+  "fair_value_method": "wall_mid",
+  "generated_at": "2026-04-13T18:05:10.895586+00:00",
+  "product": "TOMATOES",
+  "rows": [
+    {
+      "avg_entry_edge": 0.9645756457564576,
+      "final_position": -2,
+      "maker_share": 0.001107011070110701,
+      "params": {
+        "maker_edge": 0.5,
+        "taker_edge": 0.5
+      },
+      "pnl": 1295.0,
+      "steps_near_limit": 0,
+      "trade_count": 407
+    },
+    {
+      "avg_entry_edge": 1.205945366898768,
+      "final_position": 3,
+      "maker_share": 0.0032137118371719335,
+      "params": {
+        "maker_edge": 0.5,
+        "taker_edge": 1.0
+      },
+      "pnl": 1419.0,
+      "steps_near_limit": 0,
+      "trade_count": 262
+    },
+    {
+      "avg_entry_edge": 1.4339622641509433,
+      "final_position": -1,
+      "maker_share": 0.006659267480577136,
+      "params": {
+        "maker_edge": 0.5,
+        "taker_edge": 1.5
+      },
+      "pnl": 480.0,
+      "steps_near_limit": 0,
+      "trade_count": 128
+    },
+    {
+      "avg_entry_edge": 0.9517495395948434,
+      "final_position": -1,
+      "maker_share": 0.0007366482504604051,
+      "params": {
+        "maker_edge": 1.0,
+        "taker_edge": 0.5
+      },
+      "pnl": 1499.0,
+      "steps_near_limit": 0,
+      "trade_count": 404
+    },
+    {
+      "avg_entry_edge": 1.1947983014861996,
+      "final_position": -2,
+      "maker_share": 0.0021231422505307855,
+      "params": {
+        "maker_edge": 1.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1296.0,
+      "steps_near_limit": 0,
+      "trade_count": 263
+    },
+    {
+      "avg_entry_edge": 1.3879216539717083,
+      "final_position": -1,
+      "maker_share": 0.006528835690968444,
+      "params": {
+        "maker_edge": 1.0,
+        "taker_edge": 1.5
+      },
+      "pnl": 422.0,
+      "steps_near_limit": 0,
+      "trade_count": 130
+    },
+    {
+      "avg_entry_edge": 0.9525467204104068,
+      "final_position": -1,
+      "maker_share": 0.0014657383657017222,
+      "params": {
+        "maker_edge": 1.5,
+        "taker_edge": 0.5
+      },
+      "pnl": 1380.0,
+      "steps_near_limit": 0,
+      "trade_count": 408
+    },
+    {
+      "avg_entry_edge": 1.1849173553719008,
+      "final_position": -4,
+      "maker_share": 0.0005165289256198347,
+      "params": {
+        "maker_edge": 1.5,
+        "taker_edge": 1.0
+      },
+      "pnl": 1238.0,
+      "steps_near_limit": 0,
+      "trade_count": 269
+    },
+    {
+      "avg_entry_edge": 1.4009287925696594,
+      "final_position": 5,
+      "maker_share": 0.0041279669762641896,
+      "params": {
+        "maker_edge": 1.5,
+        "taker_edge": 1.5
+      },
+      "pnl": 369.0,
+      "steps_near_limit": 0,
+      "trade_count": 134
+    },
+    {
+      "avg_entry_edge": 0.9501100513573001,
+      "final_position": -2,
+      "maker_share": 0.001467351430667645,
+      "params": {
+        "maker_edge": 2.0,
+        "taker_edge": 0.5
+      },
+      "pnl": 1444.0,
+      "steps_near_limit": 0,
+      "trade_count": 406
+    },
+    {
+      "avg_entry_edge": 1.1896272285251215,
+      "final_position": 3,
+      "maker_share": 0.0010804970286331713,
+      "params": {
+        "maker_edge": 2.0,
+        "taker_edge": 1.0
+      },
+      "pnl": 1288.0,
+      "steps_near_limit": 0,
+      "trade_count": 257
+    },
+    {
+      "avg_entry_edge": 1.3947927736450585,
+      "final_position": 5,
+      "maker_share": 0.0021253985122210413,
+      "params": {
+        "maker_edge": 2.0,
+        "taker_edge": 1.5
+      },
+      "pnl": 465.0,
+      "steps_near_limit": 0,
+      "trade_count": 128
+    }
+  ],
+  "run_label": "optim_tomatoes_fv_sweep_wall_mid"
+}

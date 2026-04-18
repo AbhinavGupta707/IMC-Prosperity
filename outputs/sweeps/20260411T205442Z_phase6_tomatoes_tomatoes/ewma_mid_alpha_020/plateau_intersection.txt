@@ -1,0 +1,31 @@
+Phase 6 cross-slice plateau: TOMATOES / ewma_mid_alpha_020
+role: diagnostic
+run_label: phase6_tomatoes
+verdict: diagnostic
+reason: sub-sweep is diagnostic-only (no promotion)
+
+slice day_-2
+  baseline params:    ewma_alpha=None, fair_value_method=weighted_mid, history_length=48, inventory_skew=3.0, maker_edge=1.0, taker_edge=1.0
+  baseline: pnl=225.00 trades=6 maker_share=6.2% near=0 pos=2
+  in_plateau_band:    no
+  peak_pnl (post-filter): 937.5
+  distance_from_peak: +76.0%
+  rows_in_band:       8
+
+slice day_-1
+  baseline params:    ewma_alpha=None, fair_value_method=weighted_mid, history_length=48, inventory_skew=3.0, maker_edge=1.0, taker_edge=1.0
+  baseline: pnl=-56.00 trades=12 maker_share=4.3% near=0 pos=7
+  in_plateau_band:    no
+  peak_pnl (post-filter): 632.0
+  distance_from_peak: +108.9%
+  rows_in_band:       3
+
+slice combined
+  baseline params:    ewma_alpha=None, fair_value_method=weighted_mid, history_length=48, inventory_skew=3.0, maker_edge=1.0, taker_edge=1.0
+  baseline: pnl=276.00 trades=16 maker_share=5.7% near=0 pos=6
+  in_plateau_band:    no
+  peak_pnl (post-filter): 1301.0
+  distance_from_peak: +78.8%
+  rows_in_band:       3
+
+intersection size: 0
