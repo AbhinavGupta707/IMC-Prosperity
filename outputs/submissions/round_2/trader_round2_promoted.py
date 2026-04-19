@@ -344,7 +344,7 @@ def round1_alt_engine_config() -> EngineConfig:
     return _round1_engine_with(ASH_COATED_OSMIUM=dict(fair_value_method='wall_mid', fair_value_fallbacks=('mid', 'microprice'), maker_edge=1.5, taker_edge=0.5, inventory_skew=4.0, flatten_threshold=0.7, history_length=48), INTARIAN_PEPPER_ROOT=dict(fair_value_method='linear_drift', fair_value_fallbacks=('depth_mid', 'hybrid_wall_micro', 'mid'), maker_edge=1.0, taker_edge=2.0, inventory_skew=1.0, flatten_threshold=0.9, history_length=32))
 
 def round2_v5micro_wide113_engine_config() -> EngineConfig:
-    return _round1_engine_with(ASH_COATED_OSMIUM=dict(strategy_name='ash_ladder', fair_value_method='weighted_mid', fair_value_fallbacks=('wall_mid', 'mid'), maker_edge=2.5, taker_edge=0.5, flatten_threshold=0.7, flush_history_on_day_rollover=False), INTARIAN_PEPPER_ROOT=dict(strategy_name='pepper_core_long', fair_value_method='linear_drift', fair_value_fallbacks=('depth_mid', 'hybrid_wall_micro', 'mid'), taker_edge=2.0, maker_edge=1.0, quote_size=10, max_aggressive_size=20, inventory_skew=2.0, flatten_threshold=0.7, history_length=32, flush_history_on_day_rollover=True))
+    return _round1_engine_with(ASH_COATED_OSMIUM=dict(strategy_name='ash_ladder', fair_value_method='weighted_mid', fair_value_fallbacks=('wall_mid', 'mid'), maker_edge=3.0, taker_edge=0.5, flatten_threshold=0.7, flush_history_on_day_rollover=False), INTARIAN_PEPPER_ROOT=dict(strategy_name='pepper_core_long', fair_value_method='linear_drift', fair_value_fallbacks=('depth_mid', 'hybrid_wall_micro', 'mid'), taker_edge=2.0, maker_edge=1.0, quote_size=10, max_aggressive_size=20, inventory_skew=2.0, flatten_threshold=0.7, history_length=32, flush_history_on_day_rollover=True))
 
 class DecisionLogger:
 
@@ -1464,6 +1464,7 @@ def evaluate_kill_switches(*, params: CoreLongParams, snapshot_timestamp: int, c
                 memory_counters[_KS_STEP_PAUSE_LEFT] = step_left - 1
     memory_values[_KSV_LAST_MID] = float(current_mid)
     return KillSwitchDecision(buy_paused=buy_paused, all_paused=all_paused, reasons=tuple(reasons))
+V5_MICRO_PARAMS: CoreLongParams = CoreLongParams(base_long=80, add_thresh=3.0, trim_thresh=8.0, add_gain=5.0, trim_gain=2.0, floor=0, ceiling=80, step=8, exec_style='taker', hybrid_threshold=2.0, maker_edge_offset=0.0, open_seed_size=65, open_window=500, open_no_short=True, open_take_mode='level1_only', guard_window=32, guard_negative_slope=0.01, guard_r2_min=0.0, guard_target=0, micro_residual_threshold=3.0, micro_imbalance_threshold=0.3, micro_add_size=2, micro_trim_size=2)
 
 def compute_target_position(residual: float, *, base_long: int, add_thresh: float, trim_thresh: float, add_gain: float, trim_gain: float, floor: int, ceiling: int) -> int:
     if residual < -add_thresh:

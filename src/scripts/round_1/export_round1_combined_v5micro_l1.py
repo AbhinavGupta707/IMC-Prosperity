@@ -32,33 +32,7 @@ from src.scripts.round_1._pepper_deep_bundle import (
     PepperInline,
     build_bundle,
 )
-from src.strategies.pepper_core_long import CoreLongParams
-
-_V5_MICRO_PARAMS = CoreLongParams(
-    base_long=80,
-    add_thresh=3.0,
-    trim_thresh=8.0,
-    add_gain=5.0,
-    trim_gain=2.0,
-    floor=0,
-    ceiling=80,
-    step=8,
-    exec_style="taker",
-    hybrid_threshold=2.0,
-    maker_edge_offset=0.0,
-    open_seed_size=65,
-    open_window=500,
-    open_no_short=True,
-    open_take_mode="level1_only",
-    guard_window=32,
-    guard_negative_slope=0.01,
-    guard_r2_min=0.0,
-    guard_target=0,
-    micro_residual_threshold=3.0,
-    micro_imbalance_threshold=0.30,
-    micro_add_size=2,
-    micro_trim_size=2,
-)
+from src.strategies.pepper_core_long import V5_MICRO_PARAMS
 
 _ASH_INLINE = PepperInline(
     strategy_module_path="src/strategies/ash_ladder.py",
@@ -79,7 +53,7 @@ _PEPPER_INLINE = PepperInline(
     strategy_class_name="PepperCoreLongStrategy",
     params_class_name="CoreLongParams",
     new_strategy_name="pepper_core_long",
-    params_dict=asdict(_V5_MICRO_PARAMS),
+    params_dict=asdict(V5_MICRO_PARAMS),
 )
 
 _SPEC = PepperBundleSpec(

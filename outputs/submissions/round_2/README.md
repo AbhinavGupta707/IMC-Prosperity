@@ -82,12 +82,13 @@ Mixture EV = +7 683 XIRECs; floor EV = +7 588 XIRECs. Cost is
 
 | Field | Value |
 |---|---|
-| Built at | 2026-04-19 (batch E) |
-| Source commit | `fe4f93f` (batch D2 head) |
-| Bundle size | 83 536 bytes (68% of validator hard cap) |
-| Validator | `0 errors, 0 warnings` (batch-A bumped budgets) |
-| Bundle SHA256 (`--bid 2300`) | `19994f5fc0c81f6e3ead0d4cfc308a0cfe7e97cf3e434681d6b4a6200de7968c` |
-| Smoke test | `Trader().bid()` returns 2300 ✅; `Trader.run()` produces well-formed orders for both products ✅ |
+| Built at | 2026-04-19 (batch E + post-review fixes F1/F2/F3/F4/F5/F6) |
+| Source commit | `4bd826e` + post-review fixes |
+| Bundle size | 84 017 bytes (68% of validator hard cap) |
+| Validator | `0 errors, 0 warnings` |
+| Bundle SHA256 (`--bid 2300`) | `a4a17c8e66e00dde6f67fb7ef970a54f8d3a402d5f90348fee7e18d37540325c` |
+| Smoke test | `Trader().bid()` returns 2300 ✅; `Trader.run()` produces well-formed orders for both products ✅; full pytest suite 733/733 ✅; integration test `tests/test_round2_export_e2e.py` covers the full export→exec→bid()/run() pipeline ✅ |
+| Banner redaction | Strategy parameter dump removed from upload banner (F6) — competitors cannot grep ladder edges / weights / kill-switch thresholds from the uploaded file. |
 
 ## Reproducing the bundle
 

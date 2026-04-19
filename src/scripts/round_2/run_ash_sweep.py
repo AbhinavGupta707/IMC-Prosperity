@@ -36,30 +36,25 @@ from __future__ import annotations
 import argparse
 import json
 import statistics
-from dataclasses import asdict, dataclass, replace
-from itertools import product
+from dataclasses import dataclass
 from pathlib import Path
 
-from src.backtest.metrics import ProductResult, SimulationResult
 from src.backtest.replay_engine import ReplayEngine
 from src.backtest.simulator import BacktestSimulator
-from src.core.config import EngineConfig, ProductConfig, round1_h1_engine_config
-from src.scripts.round_2.run_baseline import (
+from src.scripts.round_2._runtime import (
     ASH,
     L1_ASH_LADDER_PARAMS,
     PEPPER,
+    REPO_ROOT,
     V5_MICRO_PEPPER_PARAMS,
-    _baseline_engine,
-    _per_day_pnl,
-    _PerProductStrategy,
-    _wrap_trader_with_v5micro_l1,
+    baseline_engine,
+    load_round_2_replay,
+    per_day_pnl,
+    wrap_trader_with_v5micro_l1,
 )
-from src.strategies.ash_ladder import AshLadderStrategy, LadderParams
-from src.strategies.pepper_core_long import PepperCoreLongStrategy
+from src.strategies.ash_ladder import LadderParams
 from src.trader import Trader
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-DATA_DIR = REPO_ROOT / "data" / "raw" / "round_2"
 OUT_DIR = REPO_ROOT / "outputs" / "round_2"
 
 
@@ -131,26 +126,18 @@ class CandidateResult:
     ash_per_day_sigma: float
 
 
-def _wrap_trader(trader: Trader, ash_params: LadderParams) -> None:
-    fve = trader.fair_value_engine
-    sig = trader.signal_engine
-    ash = AshLadderStrategy(fve, sig, ash_params)
-    core_long = PepperCoreLongStrategy(fve, sig, V5_MICRO_PEPPER_PARAMS)
-    trader.strategies["market_making"] = _PerProductStrategy(
-        {ASH: ash, PEPPER: core_long}
-    )
-
-
 def _run_candidate(
     label: str, params: LadderParams, replay: ReplayEngine
 ) -> CandidateResult:
-    config = _baseline_engine(flush_pepper=False)
+    config = baseline_engine(flush_pepper=False)
     trader = Trader(config=config)
-    _wrap_trader(trader, params)
+    wrap_trader_with_v5micro_l1(
+        trader, pepper_params=V5_MICRO_PEPPER_PARAMS, ash_params=params
+    )
     result = BacktestSimulator(trader=trader).run(replay)
     ash = result.per_product.get(ASH)
     pep = result.per_product.get(PEPPER)
-    ash_per_day = _per_day_pnl(result, ASH)
+    ash_per_day = per_day_pnl(result, ASH)
     sigma = (
         statistics.stdev(ash_per_day.values()) if len(ash_per_day) >= 2 else 0.0
     )
@@ -286,23 +273,6 @@ def _serialise_winner(winner: CandidateResult, out_path: Path) -> None:
 # --------------------------------------------------------------- main
 
 
-def _load_replay() -> ReplayEngine:
-    price_files = [
-        DATA_DIR / "prices_round_2_day_-1.csv",
-        DATA_DIR / "prices_round_2_day_0.csv",
-        DATA_DIR / "prices_round_2_day_1.csv",
-    ]
-    trade_files = [
-        DATA_DIR / "trades_round_2_day_-1.csv",
-        DATA_DIR / "trades_round_2_day_0.csv",
-        DATA_DIR / "trades_round_2_day_1.csv",
-    ]
-    return ReplayEngine.from_files(
-        price_paths=[str(p) for p in price_files],
-        trade_paths=[str(p) for p in trade_files],
-    )
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
@@ -315,7 +285,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    replay = _load_replay()
+    replay = load_round_2_replay()
     print(f"[loaded] {len(replay.steps)} steps")
 
     candidates = _candidate_params()

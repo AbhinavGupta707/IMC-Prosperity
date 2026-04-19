@@ -724,12 +724,28 @@ def round2_v5micro_wide113_engine_config() -> EngineConfig:
     wraps the factory call with `with_bid_value(...)` to embed the
     Round-2 MAF auction bid (recommended 2 300 per batch D3).
     """
+    # NOTE on the ProductConfig fields below:
+    # The shipped Round-2 bundle inlines `AshLadderStrategy` and
+    # `PepperCoreLongStrategy` and registers them in STRATEGY_REGISTRY
+    # at bundle tail. Once that swap happens, the strategies use
+    # CoreLongParams / LadderParams (not ProductConfig.maker_edge,
+    # taker_edge, quote_size, etc.) for their pricing. The fields
+    # set here are STUBS that satisfy ProductConfig validation and
+    # cover the unlikely "construct factory without bundler" path —
+    # they MUST mirror the actual ladder / core-long params so a
+    # direct construction does not silently disagree with the shipped
+    # bundle. The values below match the wide_w113 ladder's inner
+    # edge (3.0) and the v5_micro PEPPER core (taker_edge=2.0,
+    # maker_edge=1.0, quote_size=10, max_aggressive_size=20). Any
+    # change to the actual strategy params MUST be mirrored here.
     return _round1_engine_with(
         ASH_COATED_OSMIUM=dict(
             strategy_name="ash_ladder",
             fair_value_method="weighted_mid",
             fair_value_fallbacks=("wall_mid", "mid"),
-            maker_edge=2.5,  # outer ladder edge in wide config
+            # Mirror wide_w113 ladder: inner edge = 3.0 (was a stale
+            # 2.5 copy of the L1 inner edge until batch-E review).
+            maker_edge=3.0,
             taker_edge=0.5,
             flatten_threshold=0.7,
             flush_history_on_day_rollover=False,

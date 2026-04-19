@@ -25,161 +25,26 @@ from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from pathlib import Path
 
 from src.backtest.metrics import ProductResult, SimulationResult
 from src.backtest.replay_engine import ReplayEngine
 from src.backtest.simulator import BacktestSimulator
-from src.core.config import (
-    EngineConfig,
-    ProductConfig,
-    round1_h1_engine_config,
-)
-from src.strategies.ash_ladder import AshLadderStrategy, LadderParams
-from src.strategies.base import BaseStrategy, StrategyContext
-from src.strategies.pepper_core_long import (
-    CoreLongParams,
-    PepperCoreLongStrategy,
+from src.scripts.round_2._runtime import (
+    ASH,
+    L1_ASH_LADDER_PARAMS,
+    PEPPER,
+    REPO_ROOT,
+    V5_MICRO_PEPPER_PARAMS,
+    baseline_engine,
+    load_round_2_replay,
+    per_day_pnl,
+    wrap_trader_with_v5micro_l1,
 )
 from src.trader import Trader
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-DATA_DIR = REPO_ROOT / "data" / "raw" / "round_2"
 OUT_DIR = REPO_ROOT / "outputs" / "round_2"
-
-ASH = "ASH_COATED_OSMIUM"
-PEPPER = "INTARIAN_PEPPER_ROOT"
-
-# v5_micro PEPPER CoreLongParams — copied verbatim from
-# src/scripts/round_1/export_round1_pepper_v5_micro.py SPEC. Kill
-# switches deliberately left at defaults (all 0 = disabled).
-# L1 ASH LadderParams — copied verbatim from
-# src/scripts/round_1/export_round1_combined_v5micro_l1.py (the
-# winning Round-1 ASH leg). edges 2.5 / 3.5 / 5.0, weight tilt 3:1:1.
-L1_ASH_LADDER_PARAMS = LadderParams(
-    edges=(2.5, 3.5, 5.0),
-    size_mults=(1.0, 1.5, 2.0),
-    skew_coef=2.0,
-    flatten_threshold=0.7,
-    weights=(3, 1, 1),
-)
-
-V5_MICRO_PEPPER_PARAMS = CoreLongParams(
-    base_long=80,
-    add_thresh=3.0,
-    trim_thresh=8.0,
-    add_gain=5.0,
-    trim_gain=2.0,
-    floor=0,
-    ceiling=80,
-    step=8,
-    exec_style="taker",
-    hybrid_threshold=2.0,
-    maker_edge_offset=0.0,
-    open_seed_size=65,
-    open_window=500,
-    open_no_short=True,
-    open_take_mode="level1_only",
-    guard_window=32,
-    guard_negative_slope=0.01,
-    guard_r2_min=0.0,
-    guard_target=0,
-    micro_residual_threshold=3.0,
-    micro_imbalance_threshold=0.30,
-    micro_add_size=2,
-    micro_trim_size=2,
-)
-
-
-# --------------------------------------------------------------- runtime wiring
-
-
-class _PerProductStrategy(BaseStrategy):
-    """Route each product to its own configured strategy instance.
-
-    Identical surface to ``outputs/round_1/pepper_corelong/run_search.py``
-    so the two research runners stay interchangeable.
-    """
-
-    def __init__(self, by_product: dict[str, BaseStrategy]) -> None:
-        self.by_product = by_product
-        self._default = next(iter(by_product.values()))
-
-    def generate_intent(self, context: StrategyContext):  # type: ignore[override]
-        strategy = self.by_product.get(context.product, self._default)
-        return strategy.generate_intent(context)
-
-
-def _wrap_trader_with_v5micro_l1(
-    trader: Trader,
-    *,
-    pepper_params: CoreLongParams,
-    ash_params: LadderParams,
-) -> None:
-    """Replace the shipped market_making strategy with v5micro_l1 wiring.
-
-    ASH → AshLadderStrategy(L1 params), PEPPER → PepperCoreLongStrategy
-    (v5_micro params). Mirrors the strategy stack inlined by
-    ``export_round1_combined_v5micro_l1.py``.
-    """
-    fve = trader.fair_value_engine
-    sig = trader.signal_engine
-    ash = AshLadderStrategy(fve, sig, ash_params)
-    core_long = PepperCoreLongStrategy(fve, sig, pepper_params)
-    trader.strategies["market_making"] = _PerProductStrategy(
-        {ASH: ash, PEPPER: core_long}
-    )
-
-
-# --------------------------------------------------------------- engine config
-
-
-def _baseline_engine(*, flush_pepper: bool) -> EngineConfig:
-    """Round-2 baseline mirroring combined_v5micro_l1.
-
-    Both ProductConfigs are *stubs*: the actual strategies are swapped
-    in at runtime via ``_wrap_trader_with_v5micro_l1`` (ASH ladder +
-    PEPPER core-long). We use H1 as the engine base because every
-    Round-1 winning factory shares the same surface; we then patch:
-
-    - ASH: weighted_mid FV (matches v5micro_l1's ASH FV), maker_edge
-      = 2.5 (matches L1 outer edge), taker_edge = 0.5.
-    - PEPPER: keep linear_drift FV with the wider quote/aggressive
-      size that the strategy's `step` rate-limit needs to be the
-      binding constraint.
-
-    ``flush_pepper`` toggles the new R2 day-rollover flush on the
-    PEPPER product only — measures the warm-up gain in isolation.
-    ASH does not need it (anchored product, mid history is benign
-    across days).
-    """
-    base = round1_h1_engine_config()
-    products = dict(base.products)
-    pep = products[PEPPER]
-    products[PEPPER] = replace(
-        pep,
-        max_aggressive_size=20,
-        quote_size=10,
-        flush_history_on_day_rollover=flush_pepper,
-    )
-    ash_pc = products[ASH]
-    products[ASH] = replace(
-        ash_pc,
-        fair_value_method="weighted_mid",
-        fair_value_fallbacks=("wall_mid", "mid"),
-        maker_edge=2.5,
-        taker_edge=0.5,
-        flatten_threshold=0.7,
-    )
-    return EngineConfig(
-        state_version=base.state_version,
-        max_trader_data_chars=base.max_trader_data_chars,
-        diagnostics_verbosity=base.diagnostics_verbosity,
-        products=products,
-        scanner_config=base.scanner_config,
-        residual_config=base.residual_config,
-    )
 
 
 # --------------------------------------------------------------- run + summary
@@ -206,9 +71,9 @@ def _run_variant(
     flush_pepper: bool,
     replay: ReplayEngine,
 ) -> tuple[VariantSummary, SimulationResult]:
-    config = _baseline_engine(flush_pepper=flush_pepper)
+    config = baseline_engine(flush_pepper=flush_pepper)
     trader = Trader(config=config)
-    _wrap_trader_with_v5micro_l1(
+    wrap_trader_with_v5micro_l1(
         trader,
         pepper_params=V5_MICRO_PEPPER_PARAMS,
         ash_params=L1_ASH_LADDER_PARAMS,
@@ -217,7 +82,7 @@ def _run_variant(
 
     pep = result.per_product.get(PEPPER, _empty_product_result(PEPPER))
     ash = result.per_product.get(ASH, _empty_product_result(ASH))
-    per_day = _per_day_pnl(result, PEPPER)
+    per_day = per_day_pnl(result, PEPPER)
 
     return (
         VariantSummary(
@@ -254,31 +119,6 @@ def _empty_product_result(product: str) -> ProductResult:
         sell_trade_quantity=0,
         steps_near_limit=0,
     )
-
-
-def _per_day_pnl(result: SimulationResult, product: str) -> dict[int, float]:
-    """Per-day **contribution** PnL for ``product`` (not cumulative).
-
-    The PnL series is cumulative across the stitched replay. To
-    recover per-day PnL we grab the last (= cumulative end-of-day)
-    value for each day, then diff in calendar order.
-    """
-    series = result.pnl_series.get(product, ())
-    keys = result.pnl_keys.get(product, ())
-    if not series or not keys or len(series) != len(keys):
-        return {}
-    end_of_day: dict[int, float] = {}
-    for (day, _ts), (_seq_ts, pnl) in zip(keys, series, strict=True):
-        if day is None:
-            continue
-        end_of_day[day] = pnl  # last write wins → end-of-day cumulative
-    days_sorted = sorted(end_of_day)
-    out: dict[int, float] = {}
-    prev = 0.0
-    for d in days_sorted:
-        out[d] = end_of_day[d] - prev
-        prev = end_of_day[d]
-    return out
 
 
 # --------------------------------------------------------------- markdown report
@@ -389,23 +229,6 @@ def _render_report(variants: list[VariantSummary]) -> str:
 # --------------------------------------------------------------- main
 
 
-def _load_replay() -> ReplayEngine:
-    price_files = [
-        DATA_DIR / "prices_round_2_day_-1.csv",
-        DATA_DIR / "prices_round_2_day_0.csv",
-        DATA_DIR / "prices_round_2_day_1.csv",
-    ]
-    trade_files = [
-        DATA_DIR / "trades_round_2_day_-1.csv",
-        DATA_DIR / "trades_round_2_day_0.csv",
-        DATA_DIR / "trades_round_2_day_1.csv",
-    ]
-    return ReplayEngine.from_files(
-        price_paths=[str(p) for p in price_files],
-        trade_paths=[str(p) for p in trade_files],
-    )
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
@@ -413,7 +236,7 @@ def main(argv: list[str] | None = None) -> int:
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    replay = _load_replay()
+    replay = load_round_2_replay()
     print(f"[loaded] {len(replay.steps)} steps")
 
     variants: list[VariantSummary] = []

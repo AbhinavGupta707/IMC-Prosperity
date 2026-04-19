@@ -110,20 +110,46 @@ def _format_product_summary(config: EngineConfig) -> str:
     return "\n".join(lines)
 
 
-def _build_banner(spec: PepperBundleSpec, config: EngineConfig, commit: str) -> str:
+def _build_banner(
+    spec: PepperBundleSpec,
+    config: EngineConfig,
+    commit: str,
+    *,
+    redact_params: bool = False,
+) -> str:
+    """Build the upload banner.
+
+    When ``redact_params`` is True, the banner omits the per-product
+    parameter dump and the inlined-strategy params dicts. The bundle
+    itself still contains the parameters at runtime — this only
+    redacts the **comment** so a competitor reading the uploaded file
+    cannot grep the strategy edges/weights/thresholds without
+    decompiling the actual class definitions. Default False preserves
+    the Round-1 banner shape for historical bundle reproducibility.
+    """
+    if redact_params:
+        body = (
+            f"# Built     : {datetime.now(UTC).isoformat()} (commit {commit})\n"
+            "# (Embedded parameters intentionally redacted from the banner;\n"
+            "#  see the inlined strategy classes below for the actual values.)\n"
+        )
+    else:
+        body = (
+            f"# Built   : {datetime.now(UTC).isoformat()} (commit {commit})\n"
+            "# Embedded product configs:\n"
+            f"{_format_product_summary(config)}\n"
+            f"# ASH strategy: {spec.ash_inline.strategy_class_name} (research-only, inlined)\n"
+            f"# ASH params: {spec.ash_inline.params_dict}\n"
+            f"# PEPPER strategy: {spec.pepper_inline.strategy_class_name} (research-only, inlined)\n"
+            f"# PEPPER params: {spec.pepper_inline.params_dict}\n"
+        )
     return (
         "# " + "=" * 72 + "\n"
         f"# ROUND-1 UPLOAD VARIANT: {spec.variant}\n"
         f"# Label   : {spec.label}\n"
         f"# Purpose : {spec.purpose}\n"
         f"# Factory : src.core.config.{spec.factory_name}\n"
-        f"# Built   : {datetime.now(UTC).isoformat()} (commit {commit})\n"
-        "# Embedded product configs:\n"
-        f"{_format_product_summary(config)}\n"
-        f"# ASH strategy: {spec.ash_inline.strategy_class_name} (research-only, inlined)\n"
-        f"# ASH params: {spec.ash_inline.params_dict}\n"
-        f"# PEPPER strategy: {spec.pepper_inline.strategy_class_name} (research-only, inlined)\n"
-        f"# PEPPER params: {spec.pepper_inline.params_dict}\n"
+        f"{body}"
         "# " + "=" * 72 + "\n"
     )
 
@@ -340,8 +366,15 @@ def _minify(source: str, banner_sentinel: str) -> str:
 # ----------------------------------------------------------------- main API
 
 
-def build_bundle(spec: PepperBundleSpec) -> tuple[str, EngineConfig]:
-    """Assemble the bundle source for one PEPPER candidate."""
+def build_bundle(
+    spec: PepperBundleSpec, *, redact_params: bool = False
+) -> tuple[str, EngineConfig]:
+    """Assemble the bundle source for one PEPPER candidate.
+
+    ``redact_params`` strips strategy parameter values from the
+    upload banner (see ``_build_banner`` for details). Default False
+    preserves Round-1 banner shape; Round-2 export passes True.
+    """
     options = ExportOptions(datamodel_mode="platform")
     bundle = build_submission_source(options)
     source = _patch_default_config_call(bundle.source, spec.factory_name)
@@ -358,7 +391,9 @@ def build_bundle(spec: PepperBundleSpec) -> tuple[str, EngineConfig]:
     finally:
         _config.KNOWN_STRATEGY_NAMES = original_known
 
-    banner = _build_banner(spec, config, _git_commit())
+    banner = _build_banner(
+        spec, config, _git_commit(), redact_params=redact_params
+    )
     source = _insert_banner(source, banner)
 
     # Inline BOTH research strategy modules.

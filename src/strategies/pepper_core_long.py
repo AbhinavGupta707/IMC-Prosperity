@@ -635,6 +635,45 @@ def evaluate_kill_switches(
     return KillSwitchDecision(buy_paused=buy_paused, all_paused=all_paused, reasons=tuple(reasons))
 
 
+# --------------------------------------------------------------- canonical preset
+
+
+# Single source of truth for the v5_micro PEPPER preset. All Round-1
+# and Round-2 export bundles, research runners, and tests that need
+# this preset MUST import from here rather than redefining it
+# in-place. Drift between copies caused (and was caught at) batch-E
+# review; do not re-introduce parallel definitions.
+#
+# Provenance: best official Round-1 PEPPER score (+7,315 standalone /
+# +79,599 in v5micro_l1 combined). Validated on R2 in batch C
+# (+79.3-80.2k per day, σ ≈ 370).
+V5_MICRO_PARAMS: CoreLongParams = CoreLongParams(
+    base_long=80,
+    add_thresh=3.0,
+    trim_thresh=8.0,
+    add_gain=5.0,
+    trim_gain=2.0,
+    floor=0,
+    ceiling=80,
+    step=8,
+    exec_style="taker",
+    hybrid_threshold=2.0,
+    maker_edge_offset=0.0,
+    open_seed_size=65,
+    open_window=500,
+    open_no_short=True,
+    open_take_mode="level1_only",
+    guard_window=32,
+    guard_negative_slope=0.01,
+    guard_r2_min=0.0,
+    guard_target=0,
+    micro_residual_threshold=3.0,
+    micro_imbalance_threshold=0.30,
+    micro_add_size=2,
+    micro_trim_size=2,
+)
+
+
 def compute_target_position(
     residual: float,
     *,

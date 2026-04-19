@@ -30,41 +30,15 @@ from src.scripts.round_1._pepper_deep_bundle import (
     PepperInline,
     build_bundle,
 )
-from src.strategies.pepper_core_long import CoreLongParams
+from src.strategies.pepper_core_long import V5_MICRO_PARAMS
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUT_DIR = REPO_ROOT / "outputs" / "submissions" / "round_2"
 
-# v5_micro PEPPER CoreLongParams — copied verbatim from
-# src/scripts/round_1/export_round1_combined_v5micro_l1.py (the R1
-# winning leg). Kill switches NOT enabled — batch D2 confirmed
-# they are redundant with the strategy's own guard machinery on
-# this stack.
-_V5_MICRO_PARAMS = CoreLongParams(
-    base_long=80,
-    add_thresh=3.0,
-    trim_thresh=8.0,
-    add_gain=5.0,
-    trim_gain=2.0,
-    floor=0,
-    ceiling=80,
-    step=8,
-    exec_style="taker",
-    hybrid_threshold=2.0,
-    maker_edge_offset=0.0,
-    open_seed_size=65,
-    open_window=500,
-    open_no_short=True,
-    open_take_mode="level1_only",
-    guard_window=32,
-    guard_negative_slope=0.01,
-    guard_r2_min=0.0,
-    guard_target=0,
-    micro_residual_threshold=3.0,
-    micro_imbalance_threshold=0.30,
-    micro_add_size=2,
-    micro_trim_size=2,
-)
+# PEPPER leg uses the canonical v5_micro CoreLongParams (defined in
+# src/strategies/pepper_core_long.py). Kill switches NOT enabled —
+# batch D2 confirmed they are redundant with the strategy's own
+# guard machinery on this stack.
 
 # Wide-w113 ASH ladder — batch-D1 sweep winner. Edges (3, 5, 8),
 # outer-heavy weights (1, 1, 3), skew_coef=1.0, flatten=0.7.
@@ -90,7 +64,7 @@ _PEPPER_INLINE = PepperInline(
     strategy_class_name="PepperCoreLongStrategy",
     params_class_name="CoreLongParams",
     new_strategy_name="pepper_core_long",
-    params_dict=asdict(_V5_MICRO_PARAMS),
+    params_dict=asdict(V5_MICRO_PARAMS),
 )
 
 
@@ -187,21 +161,41 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     args = parser.parse_args(argv)
-
-    spec = _spec(args.bid)
-    source, _ = build_bundle(spec)
-    source = _wrap_factory_call_with_bid(source, spec.factory_name, args.bid)
-    compressed = _ast_compress(source)
-
-    args.out_dir.mkdir(parents=True, exist_ok=True)
-    output_path = args.out_dir / f"trader_{spec.variant}.py"
-    output_path.write_text(compressed, encoding="utf-8")
+    output_path = export_variant_to_path(out_dir=args.out_dir, bid_value=args.bid)
     size_kb = output_path.stat().st_size / 1024
+    try:
+        rel = output_path.relative_to(REPO_ROOT)
+    except ValueError:  # out_dir lives outside the repo (e.g. a tmp dir in tests)
+        rel = output_path
     print(
-        f"[{spec.variant}] wrote {output_path.relative_to(REPO_ROOT)} "
+        f"[{_spec(args.bid).variant}] wrote {rel} "
         f"({size_kb:.1f} KB, bid={args.bid})"
     )
     return 0
+
+
+def export_variant_to_path(*, out_dir: Path, bid_value: int = 0) -> Path:
+    """Export the Round-2 promoted bundle to ``out_dir`` and return the path.
+
+    Public API used by both the CLI ``main`` entry point and the
+    end-to-end integration test in ``tests/test_round2_export_e2e.py``.
+
+    The bundler always passes ``redact_params=True`` so the upload
+    banner does not publish our exact strategy parameters — the
+    actual values are still in the inlined strategy classes below
+    the banner, so trading behaviour is unchanged.
+    """
+    if bid_value < 0:
+        raise ValueError(f"bid_value must be >= 0 (got {bid_value})")
+    spec = _spec(bid_value)
+    source, _ = build_bundle(spec, redact_params=True)
+    source = _wrap_factory_call_with_bid(source, spec.factory_name, bid_value)
+    compressed = _ast_compress(source)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output_path = out_dir / f"trader_{spec.variant}.py"
+    output_path.write_text(compressed, encoding="utf-8")
+    return output_path
 
 
 if __name__ == "__main__":

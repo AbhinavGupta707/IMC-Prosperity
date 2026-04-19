@@ -45,21 +45,20 @@ from pathlib import Path
 
 from src.backtest.replay_engine import ReplayEngine, ReplayStep
 from src.backtest.simulator import BacktestSimulator
-from src.scripts.round_2.run_baseline import (
+from src.scripts.round_2._runtime import (
     ASH,
     L1_ASH_LADDER_PARAMS,
     PEPPER,
+    REPO_ROOT,
     V5_MICRO_PEPPER_PARAMS,
-    _baseline_engine,
-    _per_day_pnl,
-    _PerProductStrategy,
+    baseline_engine,
+    load_round_2_replay,
+    per_day_pnl,
+    wrap_trader_with_v5micro_l1,
 )
-from src.strategies.ash_ladder import AshLadderStrategy
-from src.strategies.pepper_core_long import CoreLongParams, PepperCoreLongStrategy
+from src.strategies.pepper_core_long import CoreLongParams
 from src.trader import Trader
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-DATA_DIR = REPO_ROOT / "data" / "raw" / "round_2"
 OUT_DIR = REPO_ROOT / "outputs" / "round_2"
 
 
@@ -232,20 +231,14 @@ class Cell:
     pep_per_day: dict[int, float] = field(default_factory=dict)
 
 
-def _wrap_trader(trader: Trader, pepper_params: CoreLongParams) -> None:
-    fve = trader.fair_value_engine
-    sig = trader.signal_engine
-    ash = AshLadderStrategy(fve, sig, L1_ASH_LADDER_PARAMS)
-    core_long = PepperCoreLongStrategy(fve, sig, pepper_params)
-    trader.strategies["market_making"] = _PerProductStrategy(
-        {ASH: ash, PEPPER: core_long}
-    )
-
-
 def _run_cell(tape_name: str, kill_name: str, replay: ReplayEngine) -> Cell:
-    config = _baseline_engine(flush_pepper=False)
+    config = baseline_engine(flush_pepper=False)
     trader = Trader(config=config)
-    _wrap_trader(trader, KILL_CONFIGS[kill_name])
+    wrap_trader_with_v5micro_l1(
+        trader,
+        pepper_params=KILL_CONFIGS[kill_name],
+        ash_params=L1_ASH_LADDER_PARAMS,
+    )
     result = BacktestSimulator(trader=trader).run(replay)
     pep = result.per_product.get(PEPPER)
     ash = result.per_product.get(ASH)
@@ -255,7 +248,7 @@ def _run_cell(tape_name: str, kill_name: str, replay: ReplayEngine) -> Cell:
         total_pnl=result.total_pnl,
         pep_pnl=pep.pnl if pep else 0.0,
         ash_pnl=ash.pnl if ash else 0.0,
-        pep_per_day=_per_day_pnl(result, PEPPER),
+        pep_per_day=per_day_pnl(result, PEPPER),
     )
 
 
@@ -400,30 +393,13 @@ def _render_report(cells: list[Cell]) -> str:
 # --------------------------------------------------------------- main
 
 
-def _load_replay() -> ReplayEngine:
-    price_files = [
-        DATA_DIR / "prices_round_2_day_-1.csv",
-        DATA_DIR / "prices_round_2_day_0.csv",
-        DATA_DIR / "prices_round_2_day_1.csv",
-    ]
-    trade_files = [
-        DATA_DIR / "trades_round_2_day_-1.csv",
-        DATA_DIR / "trades_round_2_day_0.csv",
-        DATA_DIR / "trades_round_2_day_1.csv",
-    ]
-    return ReplayEngine.from_files(
-        price_paths=[str(p) for p in price_files],
-        trade_paths=[str(p) for p in trade_files],
-    )
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out-dir", type=Path, default=OUT_DIR)
     args = parser.parse_args(argv)
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    base_replay = _load_replay()
+    base_replay = load_round_2_replay()
     print(f"[loaded] {len(base_replay.steps)} steps")
 
     cells: list[Cell] = []
