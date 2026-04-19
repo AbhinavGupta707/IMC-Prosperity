@@ -391,28 +391,56 @@ def _summarise_recommendation(
     test. This is more conservative than mixture-EV-max but addresses
     the IMC tip about consensus fragility.
     """
-    central = grid_blocks[10_000]
+    # Use v=3000 as central value (empirically derived from official
+    # test data: ASH ~+1.8k uplift + PEPPER ~+0.5-1k uplift on opening
+    # accumulation — PEPPER pins long the rest of the day so extra
+    # ask access is wasted). v=10k would only be correct if PEPPER's
+    # +80 limit didn't bind, which the test data shows it does.
+    central = grid_blocks[3_000]
     robust = max(central, key=lambda e: e.floor_ev)
     ev_max = max(central, key=lambda e: e.mixture_ev)
+    upside_giveup = max(0.0, ev_max.mixture_ev - robust.mixture_ev)
+    upside_pct = (
+        upside_giveup / ev_max.mixture_ev if ev_max.mixture_ev > 0 else 0.0
+    )
     return (
-        "## Final recommendation\n\n"
-        f"**Bid `{robust.bid}` XIRECs.**\n\n"
-        f"This is the floor-EV-maximising choice under v=10 000 with the\n"
-        f"default mixture weights ({', '.join(f'{k}={mixture[k]:.0%}' for k in mixture)}).\n"
-        "Properties:\n\n"
-        f"- Mixture EV: +{robust.mixture_ev:.0f} (vs the EV-max bid `{ev_max.bid}`'s "
-        f"+{ev_max.mixture_ev:.0f}; we give up ~{ev_max.mixture_ev - robust.mixture_ev:.0f} "
-        f"of upside, ~{(1 - robust.mixture_ev/ev_max.mixture_ev):.0%}, in exchange for floor protection).\n"
-        f"- Worst-case (aggressive opponents) EV: +{robust.floor_ev:.0f}, vs the EV-max bid's worst-case +{min(ev_max.ev_per_prior.values()):.0f}.\n"
-        f"- Cluster-collapse resilience: bid `{robust.bid}` > cluster value (1000) → "
-        "median shift cannot push our bid below it. The EV-max bid 400 collapses\n"
-        "  to ~50% win probability if 30% of teams cluster at 1000 XIRECs.\n"
-        "- Cost ceiling: 2 300 XIRECs is ~2.6 % of expected R2 algo PnL (~+90k).\n"
-        "  Even if v turns out to be at the pessimistic 6k, this bid still has\n"
-        "  positive EV under every prior.\n\n"
-        "Confidence: **medium**. The opponent priors are subjective. Re-run\n"
-        "this script with adjusted mixture weights to test alternative\n"
-        "consensus assumptions.\n"
+        "## Final recommendation (revised after official-test data)\n\n"
+        f"**Bid `{ev_max.bid}` XIRECs.**\n\n"
+        "### Why the v estimate dropped from 10k → 3k\n\n"
+        "Original v=10 000 assumed PEPPER's +80 position limit would\n"
+        "rarely bind, so extra +25% access on PEPPER lifts it +8-12%.\n"
+        "Official-test data refutes that: PEPPER pins at +80 ~99% of\n"
+        "the run (open_no_short=True, base_long=80, ceiling=80, taker\n"
+        "execution → fills the long fast and holds). Extra ask access\n"
+        "past the limit is unconsumed. The ONLY PEPPER moments where\n"
+        "extra book volume helps are the first ~500 ticks of opening\n"
+        "accumulation — a tiny sliver of PnL.\n\n"
+        "Empirical decomposition (16 official test runs):\n"
+        "- ASH PnL ≈ +720/test → +7.2k scored. 25% uplift = +1.8k.\n"
+        "- PEPPER PnL ≈ +7100/test → +71k scored. 1-2% opening-phase\n"
+        "  uplift = +0.7-1.4k.\n"
+        "- **v_central ≈ 3 000 XIRECs** (range 2-4k).\n\n"
+        "### Decision at v = 3 000\n\n"
+        f"- **EV-maximising bid (mixture-weighted):** `{ev_max.bid}` → EV +{ev_max.mixture_ev:.0f}.\n"
+        f"- **Robust (max floor-EV):** `{robust.bid}` → floor EV +{robust.floor_ev:.0f},\n"
+        f"  mixture EV +{robust.mixture_ev:.0f}. Floor-protection costs\n"
+        f"  ~{upside_giveup:.0f} XIRECs ({upside_pct:.0%} of mixture EV).\n"
+        f"- **Bid 0:** EV = 0 (guaranteed loss — ties go to losers).\n"
+        f"- **Old recommendation (bid 2300):** at v=3 000 this has EV\n"
+        "  ≈ (3000 - 2300) × 0.987 = +700, well below the EV-max bid.\n"
+        "  The old number was based on an over-stated v.\n\n"
+        "### Why not bid 0?\n\n"
+        "Bid 0 collapses to bid 0 vs every prior — all three priors\n"
+        "have at least 15% of opponents bidding 0, so you tie at the\n"
+        "bottom and lose (ties → losses per the wiki). EV is exactly\n"
+        "zero. Even at v=2 000, a small bid (200-400) captures the\n"
+        "naive-heavy quintile and yields +800-1500 XIRECs of EV.\n\n"
+        f"Recommendation: **bid `{ev_max.bid}`** as the EV-max under v≈3k. If\n"
+        "you want floor-EV protection and trust the data less, escalate\n"
+        f"to `{robust.bid}` (gives up ~{upside_pct:.0%} of mixture EV for\n"
+        "consensus-collapse resilience).\n\n"
+        "Confidence: **medium-high** on v (anchored to actual test\n"
+        "data); **medium** on opponent priors (subjective).\n"
     )
 
 
@@ -474,7 +502,12 @@ def main(argv: list[str] | None = None) -> int:
 
     blocks: dict[int, str] = {}
     evals_by_v: dict[int, list[BidEvaluation]] = {}
-    for v in (6_000, 10_000, 15_000):
+    # v values: lower band (2k-4k) reflects the empirically-derived
+    # private value AFTER seeing the official-test data (PEPPER is
+    # pinned long → extra ask access is unconsumed → most of v comes
+    # from ASH's symmetric +25% uplift). 6k/10k/15k retained for
+    # sensitivity vs the original assumption.
+    for v in (2_000, 3_000, 4_000, 6_000, 10_000):
         print(f"[v={v}] running grid + cluster stress...")
         text, evals = _run_full_evaluation(v, mixture, rng)
         blocks[v] = text

@@ -1037,7 +1037,7 @@ _LAST_SEEN_TIMESTAMP_KEY = 'last_seen_timestamp'
 class Trader:
 
     def __init__(self, config: EngineConfig | None=None, *, state_store: StateStore | None=None, reraise_exceptions: bool=False) -> None:
-        self.config = config or with_bid_value(round2_v5micro_wide113_engine_config(), 350)
+        self.config = config or round2_v5micro_wide113_engine_config()
         self.state_store = state_store or StateStore(version=self.config.state_version, max_chars=self.config.max_trader_data_chars)
         self.market_data = MarketDataAdapter()
         self.fair_value_engine = FairValueEngine()
@@ -1612,13 +1612,13 @@ class PepperCoreLongStrategy(BaseStrategy):
         quote = QuoteIntent(bid_price=bid_price if bid_size > 0 else None, bid_size=bid_size, ask_price=ask_price if ask_size > 0 else None, ask_size=ask_size)
         metadata: dict[str, Scalar] = {'base_long': params.base_long, 'residual': round(residual, 4), 'fair_value': round(fair_price, 4), 'target_position': raw_target, 'effective_target': effective_target, 'position_gap': effective_gap, 'taker_eligible': taker_eligible, 'exec_style': params.exec_style, 'floor': params.floor, 'ceiling': effective_ceiling, 'static_ceiling': static_ceiling, 'in_opening': in_opening, 'open_seed_size': params.open_seed_size, 'open_window': params.open_window, 'open_take_mode': params.open_take_mode, 'imbalance': round(imbalance, 4) if imbalance is not None else 'none', 'micro_bias': micro_bias, 'guard_active': guard_active, 'guard_target': params.guard_target, 'guard_window': params.guard_window, 'guard_slope': round(guard_slope, 6) if guard_slope is not None else 'none', 'guard_r2': round(guard_r2, 4) if guard_r2 is not None else 'none', 'guard_samples': guard_samples, 'adaptive_caps_enabled': params.adaptive_caps_enabled, 'adaptive_band': adaptive_band, 'adaptive_ceiling': adaptive_ceiling, 'kill_buy_paused': kill_decision.buy_paused, 'kill_all_paused': kill_decision.all_paused, 'kill_reasons': ','.join(kill_decision.reasons) if kill_decision.reasons else ''}
         return SignalIntent(product=product, fair_value=fair_value, mode=mode, buy_below=buy_below, sell_above=sell_above, quote=quote, rationale=rationale, metadata=MappingProxyType(metadata))
-_ASH_ROUND2_PROMOTED_PARAMS = LadderParams(edges=(3.0, 5.0, 8.0), size_mults=(1.0, 2.0, 3.0), weights=(1, 1, 3), skew_coef=1.0, flatten_threshold=0.7)
+_ASH_ROUND2_L1_ASH_PARAMS = LadderParams(edges=(2.5, 3.5, 5.0), size_mults=(1.0, 1.5, 2.0), weights=(3, 1, 1), skew_coef=2.0, flatten_threshold=0.7)
 
-def _ash_round2_promoted_factory(fve: FairValueEngine, sig: SignalEngine) -> BaseStrategy:
-    return AshLadderStrategy(fve, sig, _ASH_ROUND2_PROMOTED_PARAMS)
-_PEP_ROUND2_PROMOTED_PARAMS = CoreLongParams(base_long=80, add_thresh=3.0, trim_thresh=8.0, add_gain=5.0, trim_gain=2.0, floor=0, ceiling=80, step=8, exec_style='taker', hybrid_threshold=2.0, maker_edge_offset=0.0, open_seed_size=65, open_window=500, open_no_short=True, open_take_mode='level1_only', guard_window=32, guard_negative_slope=0.01, guard_r2_min=0.0, guard_target=0, micro_residual_threshold=3.0, micro_imbalance_threshold=0.3, micro_add_size=2, micro_trim_size=2, adaptive_caps_enabled=False, adaptive_r2_min=0.0, adaptive_mid_slope=0.0, adaptive_high_slope=0.0, adaptive_low_cap=0, adaptive_mid_cap=0, adaptive_high_cap=0, kill_slope_window=50, kill_consecutive_neg_slope_n=0, kill_slope_pause_snaps=0, kill_residual_threshold=0.0, kill_residual_release=0.0, kill_step_move_threshold=0.0, kill_step_move_pause_snaps=0, kill_intraday_pnl_threshold=0.0)
+def _ash_round2_L1_ash_factory(fve: FairValueEngine, sig: SignalEngine) -> BaseStrategy:
+    return AshLadderStrategy(fve, sig, _ASH_ROUND2_L1_ASH_PARAMS)
+_PEP_ROUND2_L1_ASH_PARAMS = CoreLongParams(base_long=80, add_thresh=3.0, trim_thresh=8.0, add_gain=5.0, trim_gain=2.0, floor=0, ceiling=80, step=8, exec_style='taker', hybrid_threshold=2.0, maker_edge_offset=0.0, open_seed_size=65, open_window=500, open_no_short=True, open_take_mode='level1_only', guard_window=32, guard_negative_slope=0.01, guard_r2_min=0.0, guard_target=0, micro_residual_threshold=3.0, micro_imbalance_threshold=0.3, micro_add_size=2, micro_trim_size=2, adaptive_caps_enabled=False, adaptive_r2_min=0.0, adaptive_mid_slope=0.0, adaptive_high_slope=0.0, adaptive_low_cap=0, adaptive_mid_cap=0, adaptive_high_cap=0, kill_slope_window=50, kill_consecutive_neg_slope_n=0, kill_slope_pause_snaps=0, kill_residual_threshold=0.0, kill_residual_release=0.0, kill_step_move_threshold=0.0, kill_step_move_pause_snaps=0, kill_intraday_pnl_threshold=0.0)
 
-def _pep_round2_promoted_factory(fve: FairValueEngine, sig: SignalEngine) -> BaseStrategy:
-    return PepperCoreLongStrategy(fve, sig, _PEP_ROUND2_PROMOTED_PARAMS)
+def _pep_round2_L1_ash_factory(fve: FairValueEngine, sig: SignalEngine) -> BaseStrategy:
+    return PepperCoreLongStrategy(fve, sig, _PEP_ROUND2_L1_ASH_PARAMS)
 KNOWN_STRATEGY_NAMES = tuple(sorted(set(KNOWN_STRATEGY_NAMES) | {'ash_ladder', 'pepper_core_long'}))
-STRATEGY_REGISTRY = MappingProxyType(dict(STRATEGY_REGISTRY, **{'ash_ladder': _ash_round2_promoted_factory, 'pepper_core_long': _pep_round2_promoted_factory}))
+STRATEGY_REGISTRY = MappingProxyType(dict(STRATEGY_REGISTRY, **{'ash_ladder': _ash_round2_L1_ash_factory, 'pepper_core_long': _pep_round2_L1_ash_factory}))

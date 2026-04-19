@@ -69,14 +69,43 @@ across 6 independent day realisations (3 R1 + 3 R2).
 | `--bid` value | Use |
 |---:|---|
 | `0` (default) | Local development, paper testing — abstain from auction. |
-| **`2300`** | **Recommended for final upload** (per batch-D3 hierarchical opponent model). |
+| **`350`** | **Recommended for final upload** (revised after seeing official-test data). |
 
-Bid 2 300 is the **floor-EV-maximising** choice across all three
-opponent priors (naive / balanced / aggressive) and is robust to
-the consensus-collapse stress (cluster of teams at bid 1000).
-Mixture EV = +7 683 XIRECs; floor EV = +7 588 XIRECs. Cost is
-~2.6% of expected R2 algo PnL (+~90k official). Full analysis:
-[`outputs/round_2/maf_bid_decision.md`](../../round_2/maf_bid_decision.md).
+#### Revised bid: `350` (was `2300`)
+
+The original D3 model assumed `v ≈ 10 000` (private value of winning
+the +25% access bonus). After running 16 official tests across 4
+variants we have actual PnL data, and the original `v` baked in a
+generous PEPPER uplift assumption that the data refutes.
+
+**Why v dropped from 10 000 → 3 000:**
+- PEPPER pins at +80 for ~99% of the run (open_no_short=True,
+  base_long=80, ceiling=80, taker exec → fills the long fast and
+  holds). Extra ask access past the position limit is unconsumed.
+  PEPPER uplift from extra access ≈ +0.7-1.4k (opening accumulation
+  only), not +6-10k.
+- ASH benefits symmetrically: 25% extra book volume ≈ +25% × +7.2k
+  scored ASH PnL = +1.8k.
+- **v_central ≈ 3 000 XIRECs** (range 2-4k).
+
+**Decision at v = 3 000 (full grid: `outputs/round_2/maf_bid_decision.md`):**
+- EV-max bid: **`350`** → mixture EV +2 220 XIRECs (P_win 84%).
+- Floor-EV-max bid: `1800` → floor EV +957 XIRECs (gives up ~25%
+  mixture EV for consensus-collapse protection).
+- Bid `2300` (old recommendation): EV ≈ +691 XIRECs at v=3k —
+  positive but ~3× worse than bid 350.
+- Bid `0`: EV = 0 (guaranteed loss; ties go to losers per the wiki).
+
+**Why not bid 0?** Every prior has at least 15-50% of opponents
+bidding 0 — you tie at the bottom and lose. Even at the pessimistic
+v=2 000, bid 350 yields +1 382 EV vs +0 for bid 0.
+
+**Why 350 over 1800?** 350 captures the naive-heavy quintile (~50%
+of opponents bid 0; 30% bid in [10, 100]) for cheap. The robust bid
+1800 only matters under the aggressive-prior tail (~15% probability)
+and the consensus-collapse stress, both of which are speculative —
+and we'd rather expose +200 of dead-cost in the worst case than pay
++1 450 of certain cost across all scenarios.
 
 ## Build provenance
 
@@ -86,15 +115,16 @@ Mixture EV = +7 683 XIRECs; floor EV = +7 588 XIRECs. Cost is
 | Source commit | `4bd826e` + post-review fixes |
 | Bundle size | 84 017 bytes (68% of validator hard cap) |
 | Validator | `0 errors, 0 warnings` |
-| Bundle SHA256 (`--bid 2300`) | `a4a17c8e66e00dde6f67fb7ef970a54f8d3a402d5f90348fee7e18d37540325c` |
-| Smoke test | `Trader().bid()` returns 2300 ✅; `Trader.run()` produces well-formed orders for both products ✅; full pytest suite 733/733 ✅; integration test `tests/test_round2_export_e2e.py` covers the full export→exec→bid()/run() pipeline ✅ |
+| Bundle SHA256 (`--bid 350`) | `885d9cec6eeda3c06f3a88ffd55ac3f150b8180ffbe4cc8da8f51fbeba3a2218` |
+| Bundle SHA256 (`--bid 2300`, deprecated) | `a4a17c8e66e00dde6f67fb7ef970a54f8d3a402d5f90348fee7e18d37540325c` |
+| Smoke test | `Trader().bid()` returns 350 ✅; `Trader.run()` produces well-formed orders for both products ✅; pytest `tests/test_round2_export_e2e.py` 19/19 ✅; full pytest suite 733/733 ✅ |
 | Banner redaction | Strategy parameter dump removed from upload banner (F6) — competitors cannot grep ladder edges / weights / kill-switch thresholds from the uploaded file. |
 
 ## Reproducing the bundle
 
 ```bash
-# Final upload bundle (with MAF bid):
-PYTHONPATH=. .venv/bin/python -m src.scripts.round_2.export_round2_submission --bid 2300
+# Final upload bundle (revised MAF bid):
+PYTHONPATH=. .venv/bin/python -m src.scripts.round_2.export_round2_submission --bid 350
 
 # Local development bundle (no MAF bid):
 PYTHONPATH=. .venv/bin/python -m src.scripts.round_2.export_round2_submission

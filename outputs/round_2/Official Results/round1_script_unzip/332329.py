@@ -5,7 +5,6 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Literal
-import dataclasses
 import json
 from typing import Protocol
 import warnings
@@ -221,7 +220,6 @@ class ProductConfig:
     early_short_cap: int | None = None
     early_short_skew_mult: float = 1.0
     early_short_flatten: float | None = None
-    flush_history_on_day_rollover: bool = False
 
     def __post_init__(self) -> None:
         pass
@@ -234,16 +232,12 @@ class EngineConfig:
     products: dict[str, ProductConfig] = field(default_factory=dict)
     scanner_config: ScannerConfig = field(default_factory=ScannerConfig)
     residual_config: ResidualConfig = field(default_factory=ResidualConfig)
-    bid_value: int = 0
 
     def __post_init__(self) -> None:
         pass
 
     def product_config(self, product: str) -> ProductConfig | None:
         return self.products.get(product)
-
-def with_bid_value(config: EngineConfig, bid_value: int) -> EngineConfig:
-    return dataclasses.replace(config, bid_value=bid_value)
 
 def default_engine_config() -> EngineConfig:
     return EngineConfig(products={'EMERALDS': ProductConfig(position_limit=80, strategy_name='market_making', fair_value_method='anchor', fair_value_fallbacks=('microprice', 'mid'), anchor_price=10000.0, taker_edge=1.0, maker_edge=2.0, quote_size=5, max_aggressive_size=10, inventory_skew=8.0, flatten_threshold=0.75, history_length=32), 'TOMATOES': ProductConfig(position_limit=80, strategy_name='market_making', fair_value_method='wall_mid', fair_value_fallbacks=('mid', 'microprice'), taker_edge=1.0, maker_edge=1.0, quote_size=4, max_aggressive_size=8, inventory_skew=12.0, flatten_threshold=0.7, history_length=48), 'ASH_COATED_OSMIUM': ProductConfig(position_limit=80, strategy_name='market_making', fair_value_method='wall_mid', fair_value_fallbacks=('mid', 'microprice'), anchor_price=10000.0, taker_edge=1.0, maker_edge=1.0, quote_size=5, max_aggressive_size=10, inventory_skew=4.0, flatten_threshold=0.7, history_length=48), 'INTARIAN_PEPPER_ROOT': ProductConfig(position_limit=80, strategy_name='market_making', fair_value_method='linear_drift', fair_value_fallbacks=('depth_mid', 'hybrid_wall_micro', 'mid'), taker_edge=1.0, maker_edge=1.5, quote_size=4, max_aggressive_size=8, inventory_skew=2.0, flatten_threshold=0.8, history_length=48)})
@@ -337,14 +331,8 @@ def round1_ash_deep_l6_engine_config() -> EngineConfig:
 def round1_combined_v5micro_l1_engine_config() -> EngineConfig:
     return _round1_engine_with(ASH_COATED_OSMIUM=dict(strategy_name='ash_ladder', fair_value_method='weighted_mid', fair_value_fallbacks=('wall_mid', 'mid'), maker_edge=2.5, taker_edge=0.5, flatten_threshold=0.7), INTARIAN_PEPPER_ROOT=dict(strategy_name='pepper_core_long', fair_value_method='linear_drift', fair_value_fallbacks=('depth_mid', 'hybrid_wall_micro', 'mid'), taker_edge=2.0, maker_edge=1.0, quote_size=10, max_aggressive_size=20, inventory_skew=2.0, flatten_threshold=0.7, history_length=32))
 
-def round1_combined_v6_engine_config() -> EngineConfig:
-    return _round1_engine_with(ASH_COATED_OSMIUM=dict(strategy_name='ash_ladder', fair_value_method='weighted_mid', fair_value_fallbacks=('wall_mid', 'mid'), maker_edge=2.5, taker_edge=0.5, flatten_threshold=0.7), INTARIAN_PEPPER_ROOT=dict(strategy_name='pepper_v6_combined', fair_value_method='linear_drift', fair_value_fallbacks=('depth_mid', 'hybrid_wall_micro', 'mid'), taker_edge=2.0, maker_edge=1.0, quote_size=10, max_aggressive_size=20, inventory_skew=2.0, flatten_threshold=0.7, history_length=32))
-
 def round1_alt_engine_config() -> EngineConfig:
     return _round1_engine_with(ASH_COATED_OSMIUM=dict(fair_value_method='wall_mid', fair_value_fallbacks=('mid', 'microprice'), maker_edge=1.5, taker_edge=0.5, inventory_skew=4.0, flatten_threshold=0.7, history_length=48), INTARIAN_PEPPER_ROOT=dict(fair_value_method='linear_drift', fair_value_fallbacks=('depth_mid', 'hybrid_wall_micro', 'mid'), maker_edge=1.0, taker_edge=2.0, inventory_skew=1.0, flatten_threshold=0.9, history_length=32))
-
-def round2_v5micro_wide113_engine_config() -> EngineConfig:
-    return _round1_engine_with(ASH_COATED_OSMIUM=dict(strategy_name='ash_ladder', fair_value_method='weighted_mid', fair_value_fallbacks=('wall_mid', 'mid'), maker_edge=3.0, taker_edge=0.5, flatten_threshold=0.7, flush_history_on_day_rollover=False), INTARIAN_PEPPER_ROOT=dict(strategy_name='pepper_core_long', fair_value_method='linear_drift', fair_value_fallbacks=('depth_mid', 'hybrid_wall_micro', 'mid'), taker_edge=2.0, maker_edge=1.0, quote_size=10, max_aggressive_size=20, inventory_skew=2.0, flatten_threshold=0.7, history_length=32, flush_history_on_day_rollover=True))
 
 class DecisionLogger:
 
@@ -1032,12 +1020,11 @@ StrategyFactory = Callable[[FairValueEngine, SignalEngine], BaseStrategy]
 STRATEGY_REGISTRY: Mapping[str, StrategyFactory] = MappingProxyType({'market_making': MarketMakingStrategy, 'buy_and_hold': BuyAndHoldStrategy})
 __all__ = ['STRATEGY_REGISTRY', 'BaseStrategy', 'BuyAndHoldStrategy', 'MarketMakingStrategy', 'StrategyFactory']
 _LOG = logging.getLogger(__name__)
-_LAST_SEEN_TIMESTAMP_KEY = 'last_seen_timestamp'
 
 class Trader:
 
     def __init__(self, config: EngineConfig | None=None, *, state_store: StateStore | None=None, reraise_exceptions: bool=False) -> None:
-        self.config = config or with_bid_value(round2_v5micro_wide113_engine_config(), 350)
+        self.config = config or round1_combined_v5micro_l1_engine_config()
         self.state_store = state_store or StateStore(version=self.config.state_version, max_chars=self.config.max_trader_data_chars)
         self.market_data = MarketDataAdapter()
         self.fair_value_engine = FairValueEngine()
@@ -1064,7 +1051,7 @@ class Trader:
         return strategies
 
     def bid(self) -> int:
-        return self.config.bid_value
+        return 15
 
     def run(self, state: TradingState) -> tuple[dict[str, list[Order]], int, str]:
         try:
@@ -1090,11 +1077,9 @@ class Trader:
                 results[product] = []
                 continue
             memory = engine_state.for_product(product)
-            self._maybe_flush_for_day_rollover(memory=memory, snapshot=snapshot, product_config=product_config)
             legal_orders = self._step_product(product=product, snapshot=snapshot, memory=memory, product_config=product_config, strategy=strategy, timestamp=state.timestamp)
             results[product] = legal_orders
             self._update_memory(memory, snapshot, product_config.history_length)
-            memory.counters[_LAST_SEEN_TIMESTAMP_KEY] = int(snapshot.timestamp)
         trader_data = self.state_store.save(engine_state)
         conversions = 0
         return (results, conversions, trader_data)
@@ -1115,18 +1100,6 @@ class Trader:
                 event['scan_flags'] = list(flow_report.flags)
         self.logger.record(event)
         return legal_orders
-
-    @staticmethod
-    def _maybe_flush_for_day_rollover(*, memory: ProductMemory, snapshot: NormalizedSnapshot, product_config: ProductConfig) -> None:
-        if not product_config.flush_history_on_day_rollover:
-            return
-        last_seen = memory.counters.get(_LAST_SEEN_TIMESTAMP_KEY)
-        if last_seen is None:
-            return
-        if snapshot.timestamp >= last_seen:
-            return
-        memory.recent_mids.clear()
-        memory.recent_spreads.clear()
 
     @staticmethod
     def _update_memory(memory: ProductMemory, snapshot: NormalizedSnapshot, history_length: int) -> None:
@@ -1310,14 +1283,6 @@ class CoreLongParams:
     adaptive_low_cap: int = 0
     adaptive_mid_cap: int = 0
     adaptive_high_cap: int = 0
-    kill_slope_window: int = 50
-    kill_consecutive_neg_slope_n: int = 0
-    kill_slope_pause_snaps: int = 0
-    kill_residual_threshold: float = 0.0
-    kill_residual_release: float = 0.0
-    kill_step_move_threshold: float = 0.0
-    kill_step_move_pause_snaps: int = 0
-    kill_intraday_pnl_threshold: float = 0.0
 
     def __post_init__(self) -> None:
         pass
@@ -1370,101 +1335,6 @@ def _adaptive_long_cap(*, enabled: bool, static_ceiling: int, slope: float | Non
     if slope >= mid_slope:
         return (min(static_ceiling, mid_cap), 'mid')
     return (min(static_ceiling, low_cap), 'low')
-_KS_SEEN_TS_HIGH = 'kill_seen_ts_high'
-_KS_CONSEC_NEG_SLOPE = 'kill_consec_neg_slope'
-_KS_SLOPE_PAUSE_LEFT = 'kill_slope_pause_left'
-_KS_RESIDUAL_ACTIVE = 'kill_residual_active'
-_KS_STEP_PAUSE_LEFT = 'kill_step_pause_left'
-_KS_INTRADAY_HALT = 'kill_intraday_halt'
-_KSV_DAY_OPEN_MID = 'kill_day_open_mid'
-_KSV_LAST_MID = 'kill_last_mid'
-
-@dataclass(frozen=True)
-class KillSwitchDecision:
-    buy_paused: bool
-    all_paused: bool
-    reasons: tuple[str, ...]
-
-def _reset_kill_switch_day_state(memory_counters: dict[str, int], memory_values: dict[str, float]) -> None:
-    for key in (_KS_CONSEC_NEG_SLOPE, _KS_SLOPE_PAUSE_LEFT, _KS_RESIDUAL_ACTIVE, _KS_STEP_PAUSE_LEFT, _KS_INTRADAY_HALT):
-        memory_counters.pop(key, None)
-    for key in (_KSV_DAY_OPEN_MID, _KSV_LAST_MID):
-        memory_values.pop(key, None)
-
-def evaluate_kill_switches(*, params: CoreLongParams, snapshot_timestamp: int, current_mid: float | None, position: int, slope: float | None, residual: float | None, memory_counters: dict[str, int], memory_values: dict[str, float]) -> KillSwitchDecision:
-    reasons: list[str] = []
-    buy_paused = False
-    all_paused = False
-    seen_high = memory_counters.get(_KS_SEEN_TS_HIGH)
-    if seen_high is not None and snapshot_timestamp < seen_high:
-        _reset_kill_switch_day_state(memory_counters, memory_values)
-    memory_counters[_KS_SEEN_TS_HIGH] = max(int(snapshot_timestamp), int(seen_high) if seen_high is not None else 0)
-    if current_mid is None:
-        return KillSwitchDecision(False, False, tuple())
-    if _KSV_DAY_OPEN_MID not in memory_values:
-        memory_values[_KSV_DAY_OPEN_MID] = float(current_mid)
-    if memory_counters.get(_KS_INTRADAY_HALT, 0):
-        buy_paused = True
-        reasons.append('intraday_pnl_halt')
-    elif params.kill_intraday_pnl_threshold > 0:
-        day_open = memory_values.get(_KSV_DAY_OPEN_MID)
-        if day_open is not None:
-            intraday_mtm = float(position) * (float(current_mid) - float(day_open))
-            if intraday_mtm <= -float(params.kill_intraday_pnl_threshold):
-                memory_counters[_KS_INTRADAY_HALT] = 1
-                buy_paused = True
-                reasons.append('intraday_pnl_halt')
-    if params.kill_consecutive_neg_slope_n > 0:
-        pause_left = memory_counters.get(_KS_SLOPE_PAUSE_LEFT, 0)
-        if pause_left > 0:
-            buy_paused = True
-            reasons.append('slope_pause')
-            memory_counters[_KS_SLOPE_PAUSE_LEFT] = pause_left - 1
-        else:
-            consec = memory_counters.get(_KS_CONSEC_NEG_SLOPE, 0)
-            if slope is not None and slope < 0:
-                consec += 1
-            else:
-                consec = 0
-            if consec >= params.kill_consecutive_neg_slope_n:
-                memory_counters[_KS_SLOPE_PAUSE_LEFT] = max(0, int(params.kill_slope_pause_snaps) - 1)
-                memory_counters[_KS_CONSEC_NEG_SLOPE] = 0
-                buy_paused = True
-                reasons.append('slope_fire')
-            else:
-                memory_counters[_KS_CONSEC_NEG_SLOPE] = consec
-    if params.kill_residual_threshold > 0 and residual is not None:
-        active = memory_counters.get(_KS_RESIDUAL_ACTIVE, 0)
-        if active:
-            if residual >= -float(params.kill_residual_release):
-                memory_counters[_KS_RESIDUAL_ACTIVE] = 0
-            else:
-                buy_paused = True
-                reasons.append('residual_pause')
-        elif residual <= -float(params.kill_residual_threshold):
-            memory_counters[_KS_RESIDUAL_ACTIVE] = 1
-            buy_paused = True
-            reasons.append('residual_fire')
-    if params.kill_step_move_threshold > 0:
-        step_left = memory_counters.get(_KS_STEP_PAUSE_LEFT, 0)
-        last_mid = memory_values.get(_KSV_LAST_MID)
-        fired_this_snap = False
-        if last_mid is not None:
-            delta = float(current_mid) - float(last_mid)
-            if delta <= -float(params.kill_step_move_threshold):
-                step_left = max(0, int(params.kill_step_move_pause_snaps) - 1)
-                reasons.append('step_move_fire')
-                buy_paused = True
-                fired_this_snap = True
-                memory_counters[_KS_STEP_PAUSE_LEFT] = step_left
-        if not fired_this_snap:
-            if step_left > 0:
-                buy_paused = True
-                reasons.append('step_pause')
-                memory_counters[_KS_STEP_PAUSE_LEFT] = step_left - 1
-    memory_values[_KSV_LAST_MID] = float(current_mid)
-    return KillSwitchDecision(buy_paused=buy_paused, all_paused=all_paused, reasons=tuple(reasons))
-V5_MICRO_PARAMS: CoreLongParams = CoreLongParams(base_long=80, add_thresh=3.0, trim_thresh=8.0, add_gain=5.0, trim_gain=2.0, floor=0, ceiling=80, step=8, exec_style='taker', hybrid_threshold=2.0, maker_edge_offset=0.0, open_seed_size=65, open_window=500, open_no_short=True, open_take_mode='level1_only', guard_window=32, guard_negative_slope=0.01, guard_r2_min=0.0, guard_target=0, micro_residual_threshold=3.0, micro_imbalance_threshold=0.3, micro_add_size=2, micro_trim_size=2)
 
 def compute_target_position(residual: float, *, base_long: int, add_thresh: float, trim_thresh: float, add_gain: float, trim_gain: float, floor: int, ceiling: int) -> int:
     if residual < -add_thresh:
@@ -1536,12 +1406,6 @@ class PepperCoreLongStrategy(BaseStrategy):
             micro_bias = 0
         if guard_active:
             raw_target = min(raw_target, params.guard_target)
-        kill_slope = guard_slope
-        if kill_slope is None and params.kill_consecutive_neg_slope_n > 0:
-            kill_fit = _ols_fit_recent_mids(context.memory.recent_mids, snapshot.mid, window=params.kill_slope_window)
-            if kill_fit is not None:
-                kill_slope = kill_fit[0]
-        kill_decision = evaluate_kill_switches(params=params, snapshot_timestamp=snapshot.timestamp, current_mid=snapshot.mid, position=snapshot.position, slope=kill_slope, residual=residual, memory_counters=context.memory.counters, memory_values=context.memory.values)
         raw_gap = raw_target - snapshot.position
         step_clipped_gap = max(-params.step, min(params.step, raw_gap))
         effective_target = snapshot.position + step_clipped_gap
@@ -1596,29 +1460,18 @@ class PepperCoreLongStrategy(BaseStrategy):
             sell_above = None
             ask_size = 0
             ask_price = None
-        if kill_decision.all_paused:
-            buy_below = None
-            sell_above = None
-            bid_size = 0
-            ask_size = 0
-            bid_price = None
-            ask_price = None
-        elif kill_decision.buy_paused:
-            buy_below = None
-            bid_size = 0
-            bid_price = None
         mode: ExecutionMode = 'hybrid'
         rationale = 'pepper_core_long'
         quote = QuoteIntent(bid_price=bid_price if bid_size > 0 else None, bid_size=bid_size, ask_price=ask_price if ask_size > 0 else None, ask_size=ask_size)
-        metadata: dict[str, Scalar] = {'base_long': params.base_long, 'residual': round(residual, 4), 'fair_value': round(fair_price, 4), 'target_position': raw_target, 'effective_target': effective_target, 'position_gap': effective_gap, 'taker_eligible': taker_eligible, 'exec_style': params.exec_style, 'floor': params.floor, 'ceiling': effective_ceiling, 'static_ceiling': static_ceiling, 'in_opening': in_opening, 'open_seed_size': params.open_seed_size, 'open_window': params.open_window, 'open_take_mode': params.open_take_mode, 'imbalance': round(imbalance, 4) if imbalance is not None else 'none', 'micro_bias': micro_bias, 'guard_active': guard_active, 'guard_target': params.guard_target, 'guard_window': params.guard_window, 'guard_slope': round(guard_slope, 6) if guard_slope is not None else 'none', 'guard_r2': round(guard_r2, 4) if guard_r2 is not None else 'none', 'guard_samples': guard_samples, 'adaptive_caps_enabled': params.adaptive_caps_enabled, 'adaptive_band': adaptive_band, 'adaptive_ceiling': adaptive_ceiling, 'kill_buy_paused': kill_decision.buy_paused, 'kill_all_paused': kill_decision.all_paused, 'kill_reasons': ','.join(kill_decision.reasons) if kill_decision.reasons else ''}
+        metadata: dict[str, Scalar] = {'base_long': params.base_long, 'residual': round(residual, 4), 'fair_value': round(fair_price, 4), 'target_position': raw_target, 'effective_target': effective_target, 'position_gap': effective_gap, 'taker_eligible': taker_eligible, 'exec_style': params.exec_style, 'floor': params.floor, 'ceiling': effective_ceiling, 'static_ceiling': static_ceiling, 'in_opening': in_opening, 'open_seed_size': params.open_seed_size, 'open_window': params.open_window, 'open_take_mode': params.open_take_mode, 'imbalance': round(imbalance, 4) if imbalance is not None else 'none', 'micro_bias': micro_bias, 'guard_active': guard_active, 'guard_target': params.guard_target, 'guard_window': params.guard_window, 'guard_slope': round(guard_slope, 6) if guard_slope is not None else 'none', 'guard_r2': round(guard_r2, 4) if guard_r2 is not None else 'none', 'guard_samples': guard_samples, 'adaptive_caps_enabled': params.adaptive_caps_enabled, 'adaptive_band': adaptive_band, 'adaptive_ceiling': adaptive_ceiling}
         return SignalIntent(product=product, fair_value=fair_value, mode=mode, buy_below=buy_below, sell_above=sell_above, quote=quote, rationale=rationale, metadata=MappingProxyType(metadata))
-_ASH_ROUND2_PROMOTED_PARAMS = LadderParams(edges=(3.0, 5.0, 8.0), size_mults=(1.0, 2.0, 3.0), weights=(1, 1, 3), skew_coef=1.0, flatten_threshold=0.7)
+_ASH_COMBINED_V5MICRO_L1_PARAMS = LadderParams(edges=(2.5, 3.5, 5.0), size_mults=(1.0, 1.5, 2.0), skew_coef=2.0, flatten_threshold=0.7, weights=(3, 1, 1))
 
-def _ash_round2_promoted_factory(fve: FairValueEngine, sig: SignalEngine) -> BaseStrategy:
-    return AshLadderStrategy(fve, sig, _ASH_ROUND2_PROMOTED_PARAMS)
-_PEP_ROUND2_PROMOTED_PARAMS = CoreLongParams(base_long=80, add_thresh=3.0, trim_thresh=8.0, add_gain=5.0, trim_gain=2.0, floor=0, ceiling=80, step=8, exec_style='taker', hybrid_threshold=2.0, maker_edge_offset=0.0, open_seed_size=65, open_window=500, open_no_short=True, open_take_mode='level1_only', guard_window=32, guard_negative_slope=0.01, guard_r2_min=0.0, guard_target=0, micro_residual_threshold=3.0, micro_imbalance_threshold=0.3, micro_add_size=2, micro_trim_size=2, adaptive_caps_enabled=False, adaptive_r2_min=0.0, adaptive_mid_slope=0.0, adaptive_high_slope=0.0, adaptive_low_cap=0, adaptive_mid_cap=0, adaptive_high_cap=0, kill_slope_window=50, kill_consecutive_neg_slope_n=0, kill_slope_pause_snaps=0, kill_residual_threshold=0.0, kill_residual_release=0.0, kill_step_move_threshold=0.0, kill_step_move_pause_snaps=0, kill_intraday_pnl_threshold=0.0)
+def _ash_combined_v5micro_l1_factory(fve: FairValueEngine, sig: SignalEngine) -> BaseStrategy:
+    return AshLadderStrategy(fve, sig, _ASH_COMBINED_V5MICRO_L1_PARAMS)
+_PEP_COMBINED_V5MICRO_L1_PARAMS = CoreLongParams(base_long=80, add_thresh=3.0, trim_thresh=8.0, add_gain=5.0, trim_gain=2.0, floor=0, ceiling=80, step=8, exec_style='taker', hybrid_threshold=2.0, maker_edge_offset=0.0, open_seed_size=65, open_window=500, open_no_short=True, open_take_mode='level1_only', guard_window=32, guard_negative_slope=0.01, guard_r2_min=0.0, guard_target=0, micro_residual_threshold=3.0, micro_imbalance_threshold=0.3, micro_add_size=2, micro_trim_size=2, adaptive_caps_enabled=False, adaptive_r2_min=0.0, adaptive_mid_slope=0.0, adaptive_high_slope=0.0, adaptive_low_cap=0, adaptive_mid_cap=0, adaptive_high_cap=0)
 
-def _pep_round2_promoted_factory(fve: FairValueEngine, sig: SignalEngine) -> BaseStrategy:
-    return PepperCoreLongStrategy(fve, sig, _PEP_ROUND2_PROMOTED_PARAMS)
+def _pep_combined_v5micro_l1_factory(fve: FairValueEngine, sig: SignalEngine) -> BaseStrategy:
+    return PepperCoreLongStrategy(fve, sig, _PEP_COMBINED_V5MICRO_L1_PARAMS)
 KNOWN_STRATEGY_NAMES = tuple(sorted(set(KNOWN_STRATEGY_NAMES) | {'ash_ladder', 'pepper_core_long'}))
-STRATEGY_REGISTRY = MappingProxyType(dict(STRATEGY_REGISTRY, **{'ash_ladder': _ash_round2_promoted_factory, 'pepper_core_long': _pep_round2_promoted_factory}))
+STRATEGY_REGISTRY = MappingProxyType(dict(STRATEGY_REGISTRY, **{'ash_ladder': _ash_combined_v5micro_l1_factory, 'pepper_core_long': _pep_combined_v5micro_l1_factory}))
