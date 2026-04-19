@@ -298,7 +298,14 @@ def test_step_move_kill_ignores_small_moves() -> None:
 
 
 @pytest.mark.unit
-def test_intraday_pnl_halts_all_sides_and_is_sticky() -> None:
+def test_intraday_pnl_halts_buys_only_and_is_sticky() -> None:
+    """Intraday-PnL kill is BUY-SIDE ONLY per the batch-D2 design fix.
+
+    Halting both sides would block the natural guard-driven sell-down
+    of a losing long position (D2 adverse-tape sweep proved it *hurts*
+    PnL on slope-flip and prolonged-down scenarios). The kill must
+    pause new BUYS while leaving the strategy free to sell.
+    """
     p = CoreLongParams(kill_intraday_pnl_threshold=2_500.0)
     counters: dict[str, int] = {}
     values: dict[str, float] = {}
@@ -308,7 +315,7 @@ def test_intraday_pnl_halts_all_sides_and_is_sticky() -> None:
     d = _fire(
         p, current_mid=12_000.0, position=80, memory_counters=counters, memory_values=values
     )
-    assert not d.all_paused
+    assert not d.all_paused and not d.buy_paused
     d = _fire(
         p,
         snapshot_timestamp=100,
@@ -317,9 +324,9 @@ def test_intraday_pnl_halts_all_sides_and_is_sticky() -> None:
         memory_counters=counters,
         memory_values=values,
     )
-    assert not d.all_paused
+    assert not d.all_paused and not d.buy_paused
 
-    # -50 off open → MTM = -4_000 ≤ -2_500 → halt
+    # -50 off open → MTM = -4_000 ≤ -2_500 → BUY halt (not both sides)
     d = _fire(
         p,
         snapshot_timestamp=200,
@@ -328,9 +335,12 @@ def test_intraday_pnl_halts_all_sides_and_is_sticky() -> None:
         memory_counters=counters,
         memory_values=values,
     )
-    assert d.all_paused and "intraday_pnl_halt" in d.reasons
+    assert not d.all_paused, "intraday PnL kill must NOT halt both sides"
+    assert d.buy_paused, "intraday PnL kill must halt buys"
+    assert "intraday_pnl_halt" in d.reasons
 
-    # Stickiness: even if price recovers, we stay halted for the rest of the day
+    # Stickiness: even if price recovers, buy-halt persists for the rest of the day.
+    # Sells remain permitted throughout so the guard can drain inventory.
     d = _fire(
         p,
         snapshot_timestamp=300,
@@ -339,7 +349,8 @@ def test_intraday_pnl_halts_all_sides_and_is_sticky() -> None:
         memory_counters=counters,
         memory_values=values,
     )
-    assert d.all_paused
+    assert not d.all_paused
+    assert d.buy_paused
 
 
 @pytest.mark.unit
@@ -348,7 +359,7 @@ def test_intraday_pnl_halt_resets_on_day_rollover() -> None:
     counters: dict[str, int] = {}
     values: dict[str, float] = {}
 
-    # Day 1: trigger halt
+    # Day 1: trigger halt (buy-side only per batch-D2 design)
     _fire(p, current_mid=12_000.0, position=80, memory_counters=counters, memory_values=values)
     d = _fire(
         p,
@@ -358,7 +369,8 @@ def test_intraday_pnl_halt_resets_on_day_rollover() -> None:
         memory_counters=counters,
         memory_values=values,
     )
-    assert d.all_paused
+    assert d.buy_paused
+    assert not d.all_paused  # buy-side only per batch-D2 design
 
     # Day 2: timestamp resets to 0 → rollover detected → halt cleared
     d = _fire(
@@ -369,7 +381,7 @@ def test_intraday_pnl_halt_resets_on_day_rollover() -> None:
         memory_counters=counters,
         memory_values=values,
     )
-    assert not d.all_paused
+    assert not d.buy_paused
     assert counters.get("kill_intraday_halt", 0) == 0
     # New day_open_mid should anchor to day 2's first mid
     assert values["kill_day_open_mid"] == 13_000.0

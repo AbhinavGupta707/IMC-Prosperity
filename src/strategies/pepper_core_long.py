@@ -543,19 +543,28 @@ def evaluate_kill_switches(
     if _KSV_DAY_OPEN_MID not in memory_values:
         memory_values[_KSV_DAY_OPEN_MID] = float(current_mid)
 
-    # --- Signal #4: sticky intraday PnL halt ---
+    # --- Signal #4: sticky intraday PnL halt (buy-side only) ---
+    # D2 sweep showed that halting BOTH sides on catastrophic PnL
+    # *hurts* a long-biased strategy: it blocks the natural
+    # guard-driven sell-down and pins us in the losing position.
+    # Intraday halt therefore pauses BUYS only — the existing
+    # ``guard_negative_slope`` machinery is free to drain inventory
+    # on the sell side, which is exactly what we want when PnL is
+    # bleeding.
     if memory_counters.get(_KS_INTRADAY_HALT, 0):
-        # Already halted for the day.
-        return KillSwitchDecision(False, True, ("intraday_pnl_halt",))
-    if params.kill_intraday_pnl_threshold > 0:
+        # Already halted for the day → set buy_paused and fall through
+        # to update last_mid / residual tracking. No early return so
+        # the rest of the evaluator (which updates state) still runs.
+        buy_paused = True
+        reasons.append("intraday_pnl_halt")
+    elif params.kill_intraday_pnl_threshold > 0:
         day_open = memory_values.get(_KSV_DAY_OPEN_MID)
         if day_open is not None:
             intraday_mtm = float(position) * (float(current_mid) - float(day_open))
             if intraday_mtm <= -float(params.kill_intraday_pnl_threshold):
                 memory_counters[_KS_INTRADAY_HALT] = 1
-                return KillSwitchDecision(
-                    False, True, ("intraday_pnl_halt",)
-                )
+                buy_paused = True
+                reasons.append("intraday_pnl_halt")
 
     # --- Signal #1: rolling-slope consecutive-negative counter ---
     if params.kill_consecutive_neg_slope_n > 0:
