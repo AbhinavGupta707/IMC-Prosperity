@@ -21,7 +21,7 @@ from __future__ import annotations
 import argparse
 import ast
 import re
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 
 from src.core.config import round2_v5micro_wide113_engine_config
@@ -30,7 +30,25 @@ from src.scripts.round_1._pepper_deep_bundle import (
     PepperInline,
     build_bundle,
 )
-from src.strategies.pepper_core_long import V5_MICRO_PARAMS
+from src.strategies.pepper_core_long import V5_MICRO_PARAMS, CoreLongParams
+
+# Batch-B kill-switch thresholds. Disabled in the default bundle
+# (D2 sweep showed the v5_micro guard already covers tail protection
+# on observed tape). The `--killswitches` flag turns them on for the
+# safety-first / defense-in-depth shipping mode — buys an explicit
+# circuit breaker against unseen adverse tape at ~140 XIRECs cost in
+# observed mean PnL (within 1σ).
+_BATCH_B_KILLS_PARAMS: CoreLongParams = replace(
+    V5_MICRO_PARAMS,
+    kill_slope_window=50,
+    kill_consecutive_neg_slope_n=20,
+    kill_slope_pause_snaps=50,
+    kill_residual_threshold=35.0,
+    kill_residual_release=15.0,
+    kill_step_move_threshold=40.0,
+    kill_step_move_pause_snaps=10,
+    kill_intraday_pnl_threshold=2_500.0,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUT_DIR = REPO_ROOT / "outputs" / "submissions" / "round_2"
@@ -59,33 +77,45 @@ _ASH_INLINE = PepperInline(
     params_dict=_WIDE_W113_ASH_PARAMS,
 )
 
-_PEPPER_INLINE = PepperInline(
-    strategy_module_path="src/strategies/pepper_core_long.py",
-    strategy_class_name="PepperCoreLongStrategy",
-    params_class_name="CoreLongParams",
-    new_strategy_name="pepper_core_long",
-    params_dict=asdict(V5_MICRO_PARAMS),
-)
+def _pepper_inline(*, killswitches: bool) -> PepperInline:
+    params = _BATCH_B_KILLS_PARAMS if killswitches else V5_MICRO_PARAMS
+    return PepperInline(
+        strategy_module_path="src/strategies/pepper_core_long.py",
+        strategy_class_name="PepperCoreLongStrategy",
+        params_class_name="CoreLongParams",
+        new_strategy_name="pepper_core_long",
+        params_dict=asdict(params),
+    )
 
 
-def _spec(bid_value: int) -> PepperBundleSpec:
+def _spec(bid_value: int, *, killswitches: bool) -> PepperBundleSpec:
     """Build a bundle spec parameterised on the embedded MAF bid."""
     bid_phrase = (
         f"; MAF bid = {bid_value} XIRECs (Round-2 only)" if bid_value else ""
     )
+    kill_phrase = (
+        " + batch-B kill switches ENABLED (defense-in-depth)"
+        if killswitches
+        else ""
+    )
+    variant = "round2_promoted_safe" if killswitches else "round2_promoted"
     return PepperBundleSpec(
-        variant="round2_promoted",
+        variant=variant,
         factory_name="round2_v5micro_wide113_engine_config",
         factory=round2_v5micro_wide113_engine_config,
-        label="Round-2 promoted: v5_micro PEPPER + wide-w113 ASH ladder",
+        label=(
+            f"Round-2 {'safe' if killswitches else 'promoted'}: "
+            "v5_micro PEPPER + wide-w113 ASH ladder"
+            + (" + kill switches" if killswitches else "")
+        ),
         purpose=(
             "Final Round-2 submission. v5_micro PEPPER (R1 winner; +80k/day "
             "deterministic annuity validated on R2 in batch C) + wide-w113 "
             "ASH ladder (batch-D1 sweep winner, +20% over L1 baseline on R2)"
-            f"{bid_phrase}."
+            f"{kill_phrase}{bid_phrase}."
         ),
         ash_inline=_ASH_INLINE,
-        pepper_inline=_PEPPER_INLINE,
+        pepper_inline=_pepper_inline(killswitches=killswitches),
     )
 
 
@@ -157,25 +187,44 @@ def main(argv: list[str] | None = None) -> int:
         default=0,
         help=(
             "Round-2 MAF bid (XIRECs). 0 abstains from the auction. "
-            "Recommended: 2300 (per batch D3 hierarchical opponent model)."
+            "Recommended: 350-500 (EV-max under v≈3k empirically derived "
+            "from official-test data)."
+        ),
+    )
+    parser.add_argument(
+        "--killswitches",
+        action="store_true",
+        help=(
+            "Enable batch-B kill switches on PEPPER (defense-in-depth). "
+            "Lowest σ + highest min observed across R2 official tests; "
+            "trades ~140 XIRECs of mean PnL for an explicit circuit "
+            "breaker against unseen adverse tape. Bundle name becomes "
+            "trader_round2_promoted_safe.py."
         ),
     )
     args = parser.parse_args(argv)
-    output_path = export_variant_to_path(out_dir=args.out_dir, bid_value=args.bid)
+    output_path = export_variant_to_path(
+        out_dir=args.out_dir,
+        bid_value=args.bid,
+        killswitches=args.killswitches,
+    )
     size_kb = output_path.stat().st_size / 1024
     try:
         rel = output_path.relative_to(REPO_ROOT)
     except ValueError:  # out_dir lives outside the repo (e.g. a tmp dir in tests)
         rel = output_path
+    spec = _spec(args.bid, killswitches=args.killswitches)
     print(
-        f"[{_spec(args.bid).variant}] wrote {rel} "
-        f"({size_kb:.1f} KB, bid={args.bid})"
+        f"[{spec.variant}] wrote {rel} "
+        f"({size_kb:.1f} KB, bid={args.bid}, killswitches={args.killswitches})"
     )
     return 0
 
 
-def export_variant_to_path(*, out_dir: Path, bid_value: int = 0) -> Path:
-    """Export the Round-2 promoted bundle to ``out_dir`` and return the path.
+def export_variant_to_path(
+    *, out_dir: Path, bid_value: int = 0, killswitches: bool = False
+) -> Path:
+    """Export the Round-2 bundle to ``out_dir`` and return the path.
 
     Public API used by both the CLI ``main`` entry point and the
     end-to-end integration test in ``tests/test_round2_export_e2e.py``.
@@ -184,10 +233,15 @@ def export_variant_to_path(*, out_dir: Path, bid_value: int = 0) -> Path:
     banner does not publish our exact strategy parameters — the
     actual values are still in the inlined strategy classes below
     the banner, so trading behaviour is unchanged.
+
+    Set ``killswitches=True`` to ship the safety variant (batch-B
+    kills enabled on PEPPER); otherwise the default v5_micro params
+    are used. Output filename includes ``_safe`` suffix when
+    killswitches are enabled to avoid clobbering the default bundle.
     """
     if bid_value < 0:
         raise ValueError(f"bid_value must be >= 0 (got {bid_value})")
-    spec = _spec(bid_value)
+    spec = _spec(bid_value, killswitches=killswitches)
     source, _ = build_bundle(spec, redact_params=True)
     source = _wrap_factory_call_with_bid(source, spec.factory_name, bid_value)
     compressed = _ast_compress(source)
