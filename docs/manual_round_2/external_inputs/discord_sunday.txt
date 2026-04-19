@@ -1,0 +1,1936 @@
+
+KaptainKool — 8:22 AM
+I think you can figure out optimal research and scale for each percent.
+wxrlp — 8:22 AM
+that's assuming a normal distribution so it's not actually optimal unless you guarantee it's goingn to be normal
+KaptainKool — 8:22 AM
+This is very assumption-heavy.
+wxrlp — 8:22 AM
+right?
+Sbmxz1143 — 8:22 AM
+yeah but not speed thats what he's sayin
+KaptainKool — 8:23 AM
+I think so.
+ [Ыʦet], 
+wxrlp — 8:23 AM
+have faith in yourself
+KaptainKool — 8:23 AM
+That's true, that's true.
+I just figured out a value using some assumptions.
+Sbmxz1143 — 8:23 AM
+yeah 
+we humans can say fuc it we ball
+wxrlp — 8:23 AM
+Oh wait my bad by "research" I assumed you were "researching" what speed values other people do
+Astro💫 [Ыʦet],  — 8:23 AM
+all trades driven by faith
+april <- NOT A GUY — 8:23 AM
+I mean yeah but that’s far from optimal
+KaptainKool — 8:24 AM
+😂😂
+It's alright.
+wxrlp — 8:24 AM
+minimising risk can indeed be optimal depending on their goal
+Sbmxz1143 — 8:24 AM
+speed tbh i cant understand how to get at optimal research and scale can be done by taking speed as constant so i will try those first
+siwach7 — 8:24 AM
+Go with 27% and you should get ~0.4-0.6 multiplier
+april <- NOT A GUY — 8:24 AM
+Certainly not optimal for the vast majority of competitors, then
+april <- NOT A GUY — 8:25 AM
+You can do this computationally
+Sbmxz1143 — 8:25 AM
+??????????
+Legend_AJU — 8:25 AM
+I am afraid that some teams which performs bad in r1  and had no hope entering in r2, will give extreme irrational weight in speed
+wxrlp — 8:25 AM
+I’d say quite a few people are close enough to 200k that they can afford to just minimize loss on manual and get a bare minimum algo
+siwach7 — 8:26 AM
+Obviously and also teams that performed very good will also give irrational weight
+wxrlp — 8:26 AM
+random number generator
+Astro💫 [Ыʦet],  — 8:26 AM
+yh but if there is a guy with 100 speed then 0.9 speed is removed from the eq na ?
+ [Ыʦet], 
+siwach7 — 8:26 AM
+Yes
+Sbmxz1143 — 8:26 AM
+oh fuc i get it now what you saying
+Sbmxz1143 — 8:27 AM
+hints????
+Astro💫 [Ыʦet],  — 8:27 AM
+so there ia no use of makeing speed >50%
+april <- NOT A GUY — 8:27 AM
+7% ish of participants are within the point where getting min manual guarantees qualifying
+KaptainKool — 8:27 AM
+Right-most column is speed investment, then it's research investment, then scale investment, and left-most is researchscale (using the functions given in the Wiki). I guess 25-26% speed investment has to be safest because the associated researchscale edge is over 50k, which means that even if you get like a 0.1 multiplier, you'll still be profitable.
+Image
+ [Ыʦet], 
+siwach7 — 8:27 AM
+I dont think it will give any good results
+KaptainKool — 8:28 AM
+But that's just gonna be minimalistic profit in the worst case, so probably not optimal lol.
+siwach7 — 8:28 AM
+How are you calculating the speed mult?
+Astro💫 [Ыʦet],  — 8:28 AM
+fr
+Astro💫 [Ыʦet],  — 8:29 AM
+after the net trade
+ [Ыʦet], 
+siwach7 — 8:29 AM
+No i meant when he is calculating all possible cases
+~27% is near optimial soln
+Astro💫 [Ыʦet],  — 8:30 AM
+true but again human interactions matters
+ [Ыʦet], 
+siwach7 — 8:30 AM
+Its after accounting them
+KaptainKool — 8:30 AM
+Image
+siwach7 — 8:30 AM
+24-28 is the best speed
+KaptainKool — 8:30 AM
+This is normally distributed.
+siwach7 — 8:31 AM
+Who said its gonna be normally distributed?
+KaptainKool — 8:31 AM
+I've assumed.
+wxrlp — 8:31 AM
+I’m assuming that the majority of people have an algorithm that’s able to return even a few thousand
+Astro💫 [Ыʦet],  — 8:32 AM
+above 50 is a near death situation
+Astro💫 [Ыʦet],  — 8:32 AM
+fr
+KaptainKool — 8:32 AM
+I feel like it's gonna be skewed to the left, so the optimal % might have an even higher change of getting a higher speed multiplier.
+ [Ыʦet], 
+siwach7 — 8:32 AM
+True
+magnusop — 8:32 AM
+is the 50k xirecs we get for the manual trading challenge out of our round 1 returns?
+Arnav Gupta — 8:32 AM
+If I got 186K right now, can I just take a deterministic 17K+ with Research/Scale and then get to qualifiers?
+Astro💫 [Ыʦet],  — 8:32 AM
+nope
+ [Ыʦet], 
+KaptainKool — 8:32 AM
+Yes, it is. I figured that out afterwards 💀
+The research*scale are pretty low.
+siwach7 — 8:32 AM
+You can have 24k that way
+ [Ыʦet], 
+magnusop — 8:32 AM
+is this for my question?
+Astro💫 [Ыʦet],  — 8:32 AM
+same here realised after talking to siwach7
+Astro💫 [Ыʦet],  — 8:33 AM
+na
+Arnav Gupta — 8:33 AM
+Yeah I was thinking just do that and call it a day for R2 and take off until the 24th...
+KaptainKool — 8:33 AM
+I am probably not gonna participate in algorithmic trading and just get the 24k PnL. I'm at 187k right now, so I just need 13k more to qualify.
+siwach7 — 8:33 AM
+People will not go over 50 becuase thats too much invested in speed and the pnl goes down most will be below 35
+Tsushi_roll [ODDS],  — 8:33 AM
+just so that i'm undetstanding this right
+ [Ыʦet], 
+magnusop — 8:33 AM
+wait so the 50k we get for the manual challenge is from our round 1 tally?
+ace [snek],  — 8:33 AM
+hint: its not gonna be a normal distribution
+ [snek], 
+KaptainKool — 8:33 AM
+Yes, I know 😭😭
+Punchbot — 8:34 AM
+Is it realistic to get 101k PNL from round 2💀
+💥ʀʊɖʀǟ💥 — 8:34 AM
+what is optimal soln to be safee?
+KaptainKool — 8:34 AM
+I've mentioned that it's an assumption.
+april <- NOT A GUY — 8:34 AM
+@Tomas on this note. the only people in the pool for speed are ones whove submitted correct? there isnt a default value theyll be assumed to play?
+
+
+Astro💫 [Ыʦet],  — 8:47 AM
+yh 
+sl4yerseb — 8:47 AM
+If no one else bids at anything else yeah
+Nimbacosta — 8:47 AM
+ok
+so basically the number of people who bid at a paticular value is not important but the no of distinct value matter ? am i correct
+Lachy-Dauth — 8:52 AM
+What is everyone planning to do for this rounds manual 
+ace [snek],  — 8:52 AM
+100bspeed
+Mr. Nobody [HoNR],  — 8:55 AM
+Bid 0. Take the guaranteed 24k
+sl4yerseb — 8:56 AM
+Bid 100. Take the guaranteed -50k
+ [HoNR], 
+Lachy-Dauth — 8:59 AM
+Are you allowed to bid 0 for everything and take the 50k
+sl4yerseb — 8:59 AM
+If you bid 0 for everything that equals to 0
+PnL = (Research × Scale × Speed) − Budget_Used
+magnusop — 8:59 AM
+no, your pnl is researchXscaleXspeed - budget used
+sampling_wor — 9:07 AM
+hello in the manual can we allocate less than 100% to all the three investments in total and hence our effective manual pnl would be product of three - that total investment instead of 50k
+
+though in a lot of cases it doesn't help not utilizing the whole if we are trading indeed
+sampling_wor — 9:08 AM
+or practically speaking 80-100 basically
+ [HoNR], 
+sampling_wor — 9:09 AM
+so then it becomes a bi-modal distribution then
+afaik this is the worst case scenario for most non-trivial strategies?(who are putting speed neither too low nor too high and ambitous abt pnl s),isn't it
+and all of this pnl under performs 23-77-0's 24k benchmark
+Astro💫 [Ыʦet],  — 9:11 AM
+yh play safe
+sampling_wor — 9:14 AM
+but the question is can we allocate less than 50k across three sectors,which does not help in speed 0 scenario but maybe somewhere else it might help?
+Monk — 9:20 AM
+Assume every data point is bidded guys and then bash it
+Mutaal Paiyan [F1],  — 9:21 AM
+you are allowed to invest less than 50k
+Nimbacosta — 9:22 AM
+how many people do you guys think would actually submit any answers for manual
+Monk — 9:23 AM
+4500 ppl are above 62k in r1 pnl
+I assume everyone dubmits
+Submits
+sampling_wor — 9:23 AM
+which one you think is more realistic
+(react 2 for D2 for example,don't reply and spam ffs) 
+
+Monk — 9:23 AM
+The probab that any data point is unmarked if random is considered is 2.4*10 power-18
+But it's not random,obv some bias is there
+Even then probab for that is very less
+ace [snek],  — 9:24 AM
+11
+Monk — 9:24 AM
+Just bash the optimal product fit for linear and submitt
+april <- NOT A GUY — 9:24 AM
+no 👍
+Monk — 9:25 AM
+Guaranteed 110k
+Profit
+JasonC2111 — 9:26 AM
+Manual trading challenge: “Invest & Expand”
+You are expanding your outpost into a true market making firm with a budget of 50 000 XIRECs. You need to allocate this budget across three pillars:
+
+Research
+Scale
+Speed
+
+You choose percentages for each pillar between 0–100%. Total allocation cannot exceed 100%. Your final PnL (Profit and Loss) score is:
+
+<aside>
+ℹ️
+
+PnL = (Research × Scale × Speed) − Budget_Used
+
+</aside>
+
+The pillars
+Research determines how strong your trading edge is. It grows logarithmically from 0 (for 0 invested) to 200 000  (for 100 invested). The exact formula is research(x) = 200_000 * np.log(1 + x) / np.log(1 + 100). Here, np.log is a python function from NumPy package for natural logarithm.
+
+Scale determines how broadly you deploy your strategy across markets. It grows linearly from 0 (for 0 invested) to 7 (for 100 invested).
+
+Speed determines how often you win the trades you target. It is rank-based across all players:
+
+Highest speed investment receives a 0.9 multiplier.
+Lowest receives 0.1.
+Everyone in between is scaled linearly by rank, equal investments share the same rank.
+For example, if people invested 70, 70, 70, 50, 40, 40, 30, they get the following ranks: 1, 1, 1, 4, 5, 5, 7. First three players get 0.9 for hit rate multiplier, last player gets 0.1, and everybody in between gets linearly scaled between top and bottom rank. Another example, if you have three players investing 95, 20, 10, their ranks are 1, 2, 3, and their hit rates are 0.9, 0.5, 0.1.
+
+Your Research, Scale, and Speed outcomes are multiplied together to form your gross PnL, after which the used part of your budget is deducted.
+
+Every decision you make reflects a real trade-off faced by modern market makers: capital is finite, competition is relentless, and edge alone is never enough. Good luck!
+mobilecow2 — 9:26 AM
+It won’t be this high, 7 is the most likely
+JasonC2111 — 9:26 AM
+How do you decide the speed if 10 people submit 100%?
+Olipet24 — 9:26 AM
+how much harder will the next rounds be? will the comparable to rounds 3,4,5 from previous years?
+BOBBERT — 9:26 AM
+Bruh I ain’t reading all that
+Tribes — 9:27 AM
+just link the wiki instead 😭
+JasonC2111 — 9:27 AM
+
+Mutaal Paiyan [F1],  — 9:30 AM
+i dont understand, mind explaining?
+ [F1], 
+sampling_wor — 9:32 AM
+alpha leak
+siwach7 — 9:32 AM
+None of these becuase the speed multiplier is a floating point number with full precision
+Monk — 9:32 AM
+Assume 0 to 100 lies on a with initial 0.1 and final 0.9
+Calculate the function and differentiate the product
+Can't say more direct gng
+Cohle [POLY],  — 9:33 AM
+one 100% is enough xD why 10 ?
+Astro💫 [Ыʦet],  — 9:34 AM
+but still you are not taking the social into accountability !
+ [POLY], 
+Astro💫 [Ыʦet],  — 9:34 AM
+fr
+ [Ыʦet], 
+Monk — 9:34 AM
+Wdym
+Mind explaining more
+siwach7 — 9:34 AM
+The speed multiplier is based on rank
+Monk — 9:35 AM
+Yes?
+Max rank can be 101
+siwach7 — 9:35 AM
+Also its not going to be 0.1 or 0.5 it gonna be more like 0.104 or smth 
+Monk — 9:35 AM
+Ok son
+Do whatever
+Astro💫 [Ыʦet],  — 9:37 AM
+yh and its relative
+sl4yerseb — 9:37 AM
+Join them
+This is the way
+Monk — 9:38 AM
+I litr told u an almost deterministic Alpha,read my words again and use it
+blackhearted_jshw — 9:39 AM
+@Synthia_Admin Would like to clarify if I joined a team: (1) Is the manual trader PnL separated from the team / calculated by each team member? and (2) did each member can submit their individual manual trading round answer? If so, how is the overall PnL calculated for the team?
+siwach7 — 9:39 AM
+Well you do you
+Monk — 9:39 AM
+Give me ur stuff bro,I wanna smoke some of em
+siwach7 — 9:39 AM
+Also wtf do you mean by deterministic alpha
+Smile — 9:41 AM
+Deterministic
+sampling_wor — 9:42 AM
+it assumes uniform linear distribution however,dunno humans behave so perfectly
+Monk — 9:42 AM
+4500 humans above 25th percentile
+U do the math
+Imagine a data point which noone takes
+How unlucky it must be
+Can't imagine that much lack of luck
+Hence my hypothesis
+sampling_wor — 9:43 AM
+fair enough
+but you might be leaking some alpha,in the explanation. You can remove them if you want
+Smile — 9:44 AM
+Exactly
+Monk — 9:44 AM
+Oh this round doesn't contribute to the final leaderboard,so i thought it's fine
+Should I remove then
+sampling_wor — 9:45 AM
+your alpha,your choice
+Monk — 9:45 AM
+Ok then
+Idc
+Tsushi_roll [ODDS],  — 9:46 AM
+bros gonna run monte carlo
+blackhearted_jshw — 9:47 AM
+its a psyops so I think leaving it out is the point anyways
+Monk — 9:47 AM
+And I also think anyone with common sense will think of this alpha,so it doesn't really matter
+ [ODDS], 
+sampling_wor — 9:48 AM
+no monte carlo assumes ergodicity,which ain't something I understand whether it holds or not.Folks just monte carlo all the time idk y lol
+Astro💫 [Ыʦet],  — 9:53 AM
+how many active teams are there ?
+Dew — 9:56 AM
+Monte Carlo is great for algo not for manual.
+Mr. Nobody [HoNR],  — 9:56 AM
+Image
+ [HoNR], 
+Mr. Nobody [HoNR],  — 9:56 AM
+@Astro💫 6151 active teams
+ [HoNR], 
+Astro💫 [Ыʦet],  — 9:57 AM
+But thats from the backtest Website
+ahh kk
+ [Ыʦet], 
+Mr. Nobody [HoNR],  — 9:57 AM
+It is the official data from IMC
+I just scraped it then published it to the website. Just so you could dig deeper
+Like if you want to see per region stats you can check it there
+Astro💫 [Ыʦet],  — 9:58 AM
+hmm
+Mr. Nobody [HoNR],  — 9:58 AM
+Image
+rev — 9:58 AM
+on how many time stamps final submission runs on imc prosperity site
+Keyur [MATH],  — 9:59 AM
+😭
+Mr. Nobody [HoNR],  — 9:59 AM
+You can also filter by overall, algo, or manual
+There are people registered in Antarctica BTW lol
+Image
+we43 — 9:59 AM
+good work bro @Mr. Nobody ,as long as u are not reverse engineering the log
+Mr. Nobody [HoNR],  — 10:00 AM
+No I don't, do not worry
+rev — 10:00 AM
+on how many time stamps final submission runs on imc prosperity site
+Mr. Nobody [HoNR],  — 10:00 AM
+1M timestamps or 10k ticks/timesteps 
+Astro💫 [Ыʦet],  — 10:00 AM
+Total Teams
+4,803
+In algo round 5k ish
+ [HoNR], 
+rev — 10:01 AM
+and the tests data of day are also runniing on 10k ticks ? ( each day)
+Mr. Nobody [HoNR],  — 10:01 AM
+Current portal submission = 1k ticks or 100k timestamps
+Test/Score run = 10k ticks or 1M timstamps and only 1 day (day +2 in this case) 
+IMC GOD — 10:02 AM
+45 / 15 / 40 is the answer
+SirRiceBurger — 10:02 AM
+will manual r1-2 count toward best manual trader?
+barakuda5250 — 10:02 AM
+45 research?
+That's super inefficient
+IMC GOD — 10:03 AM
+figure that out
+what do you think would scale up faster research  / scale?
+
+
+
+
+
+
+
+IMC GOD — 11:11 AM
+its gonna be 0 after this
+Olipet24 — 11:12 AM
+bro lets tell everyone in manual trading channel to go 45 15 40
+and then we put 41 speed
+dw, i put @ silent tag
+ThatObiGuy — 11:12 AM
+doesn't necessarily mean you'll out preform them tho
+IMC GOD — 11:13 AM
+ok
+Olipet24 — 11:14 AM
+yo
+everyon do 45 15 40
+ocaou [MATH],  — 11:14 AM
+is this reliable?
+ThatObiGuy — 11:14 AM
+I don't know sir
+ [MATH], 
+Olipet24 — 11:14 AM
+completely unreliable
+ThatObiGuy — 11:14 AM
+porbably best to be skeptical
+Olipet24 — 11:15 AM
+dont be skeptical
+ocaou [MATH],  — 11:15 AM
+do we affect each others trades in manual?
+IMC GOD — 11:15 AM
+yes
+ThatObiGuy — 11:15 AM
+that's the mechanic!
+IMC GOD — 11:15 AM
+I'm gonna touch your pnl
+siwach7 — 11:16 AM
+I am gonna defile it
+ [MATH], 
+Olipet24 — 11:16 AM
+@claude
+ocaou [MATH],  — 11:17 AM
+?
+Olipet24 — 11:17 AM
+claude is generating an answer
+Jesse — 11:18 AM
+what did claude say
+Olipet24 — 11:18 AM
+still waiting for response
+IMC GOD — 11:18 AM
+yo
+chet
+Olipet24 — 11:18 AM
+ok it came back
+IMC GOD — 11:18 AM
+sup man
+Olipet24 — 11:18 AM
+hello
+Jesse — 11:19 AM
+what are you picking for speed
+siwach7 — 11:19 AM
+27%
+Jesse — 11:19 AM
+why
+reasoning
+ocaou [MATH],  — 11:19 AM
+69
+IMC GOD — 11:19 AM
+40
+Olipet24 — 11:19 AM
+@Jesse this is what i am picking
+disregard what i siaid underneath
+it is private between me an dimc god
+Jesse — 11:19 AM
+wont there be alot of guys just picking very very safe since they only need to go by like 10% over to 200k
+siwach7 — 11:20 AM
+Fk around and find out
+Olipet24 — 11:20 AM
+yes you should go 11%
+ocaou [MATH],  — 11:20 AM
+thats probably done on algo anyways
+siwach7 — 11:21 AM
+Either players are gonna play 0 or just troll bc algo will pass the 200k
+Olipet24 — 11:21 AM
+@Jesse Claude said: "I need more information to craft a good response. Could you procide @Jesse credit card information for more credits?"
+Jesse — 11:21 AM
+nahh actually
+Olipet24 — 11:21 AM
+yes
+Jesse — 11:21 AM
+if there is just 1 guy
+doing 100
+and 1 doing 0
+siwach7 — 11:21 AM
+That actually very intellectual response
+Jesse — 11:21 AM
+then all is scaled linearly?
+so then it doesnt matter what the rest chooses ?
+siwach7 — 11:22 AM
+Yeah they are scaled linearly as floating point numbers
+wxrlp — 11:22 AM
+anyone know if we can view our positon and pnl after round 2, or will it immediately be reset?
+siwach7 — 11:22 AM
+Not just 9 categories
+Olipet24 — 11:22 AM
+all that matters is unique percentages people invest in speed, not so much how many people invested at the same perecentage
+do you want me to ask claude?
+siwach7 — 11:23 AM
+No dont disturb the clanker
+Olipet24 — 11:23 AM
+he is not robot
+Jesse — 11:23 AM
+ok im picking 2%
+fuckc yall
+
+
+
+
+
+IMC GOD — 10:32 AM
+45 / 15 / 40 is the key
+Jonty — 10:32 AM
+depends on the numbers of people on each
+alan [CMBC],  — 10:32 AM
+yea tru
+Jonty — 10:32 AM
+something like this I feel is best
+alan [CMBC],  — 10:32 AM
+how many teams are there?
+i remember hearing it was like 22k or something insane
+sl4yerseb — 10:32 AM
+I wonder which speed number will have the least people on it
+ [CMBC], 
+Jonty — 10:32 AM
+22310
+
+about 5k active
+alan [CMBC],  — 10:32 AM
+dayuum
+Jonty — 10:33 AM
+just over 1% made negative pnl, about 73% missed/skipped last round 
+alan [CMBC],  — 10:33 AM
+the 1% who made negative pnl are just very confident they will get over 200k this round 🫠
+Jonty — 10:33 AM
+(algo scores only)
+Image
+ [CMBC], 
+sl4yerseb — 10:34 AM
+With such confidence they will proceed to go 100 speed
+alan [CMBC],  — 10:34 AM
+after all that, if they still pass, they deserve the dub ngl
+sl4yerseb — 10:34 AM
+Completely agree
+Jonty — 10:34 AM
+also this should help you guys a little with the market access bidding  :p
+sl4yerseb — 10:35 AM
+That's for this round?
+Mutaal Paiyan [F1],  — 10:35 AM
+its more than 5k active, same pnl gives same rank
+Jonty — 10:35 AM
+round 1 algorithm pnls
+alan [CMBC],  — 10:35 AM
+oh yea what did yall bid for market access
+i think i did like 2k or something
+IMC GOD — 10:35 AM
+this estimate calculated a profit of 180k in the worst case
+ [F1], 
+Jonty — 10:35 AM
+I downloaded every score individually and tacked how many got each score
+it takes into account  duplicates
+IMC GOD — 10:35 AM
+worst case is a stretch but yeah
+Mutaal Paiyan [F1],  — 10:35 AM
+i see, but in leaderboard itself there are till 5.7k rank
+Jonty — 10:35 AM
+there was a random score around 180k or so that 13 teams had, lol
+22310x0.265 is like 5900 so yeah that adds up
+closer to 6k active teams
+u right
+Mutaal Paiyan [F1],  — 10:38 AM
+whats that 0.265?
+Jonty — 10:38 AM
+5.5k got positive algorithm pnls last round
+ [F1], 
+Jonty — 10:38 AM
+my thing shows 73.47% got 0 in algorithm so 26.53% did submit algo basically
+Taberault — 10:38 AM
+I think it's partly due to people merging
+Mutaal Paiyan [F1],  — 10:39 AM
+ah
+Jonty — 10:39 AM
+didn't think of that yea
+might account for a lot of it
+Taberault — 10:39 AM
+I would assume more than half is responsible for that 
+IMC GOD — 10:41 AM
+what it do flight crew?
+FTC
+Taberault — 10:42 AM
+Cause I would say on average teams are teams of 4, so it makes 5900x4 so 23.6k if everyone first created a solo team. And I would say a pretty big number of people either created accidentally or did not have a team at the moment of joining. Even people that used wrong email address ou wanted to create a new one
+IMC GOD — 10:48 AM
+FTC
+JangYeongSil — 10:49 AM
+I am 1 man army 1386th place
+IMC GOD — 10:50 AM
+no way no one here knows FTC
+Taberault — 10:51 AM
+I believe you that's why I said teams of 4 not 5 😆 I assume teams of 1 are marginal, but perhaps a more realistic number should be 2.8-3.5
+Dr gravestone — 10:51 AM
+can someone pls explain the manual stuff, so we only have to focus on the output forecast right? rest is just some lore right?
++ how to determine forecast o the speed pillar?
+IMC GOD — 10:52 AM
+I can tell
+but tell me what comes after
+what it do flight crew, FTC
+airbournduk — 10:54 AM
+Damn so who is the 0.8 of a person
+JangYeongSil — 10:57 AM
+I still don't understand why you need a team of 4 or 5 when you have so many AI tools LOL !   'which of us 5 is the best at AI prompting '' type of situation or what?
+I guess you still need the right ideea and know what you should ask but still
+siwach7 — 10:58 AM
+You will in the following rounds🫠
+JangYeongSil — 10:58 AM
+sadly all answers for round 3 4 and 5 will be completely created on my phone so pray for me 🥀
+IMC GOD — 10:59 AM
+what it do flight crew, FTC
+pls someone reply gng
+siwach7 — 10:59 AM
+😭🙏
+IMC GOD — 10:59 AM
+🥀
+Konnichiwa — 11:00 AM
+Will there be advantage to those who clear round 1+2 with 350k points instead of 210k points?
+IMC GOD — 11:00 AM
+Enrico Berto — 11:00 AM
+who knows
+siwach7 — 11:00 AM
+Yeah mods say you will be able to brag about it to god knows who
+logic_gate [RGNT],  — 11:00 AM
+U get employed as janitor at imc
+ [RGNT], 
+ocaou [MATH],  — 11:01 AM
+Id take that
+IMC GOD — 11:01 AM
+nah bro no money no motive
+ocaou [MATH],  — 11:01 AM
+linkedin worthy
+siwach7 — 11:01 AM
+Yeah thats the point just brag about it like a hoe no benefits 
+IMC GOD — 11:01 AM
+real
+Konnichiwa — 11:01 AM
+But in terms of the competition, 201 isn't different from 390k or something right?
+IMC GOD — 11:02 AM
+nope
+Konnichiwa — 11:02 AM
+So round 3 is a fresh slatee
+Thanks
+ocaou [MATH],  — 11:02 AM
+thought it was cumulative after r5
+siwach7 — 11:02 AM
+You just wasted tokens lil bro
+Konnichiwa — 11:02 AM
+Huh what?
+logic_gate [RGNT],  — 11:02 AM
+?
+Idt anyone here gonna win anyway
+ [RGNT], 
+siwach7 — 11:03 AM
+True😭
+Konnichiwa — 11:03 AM
+wdym?
+logic_gate [RGNT],  — 11:03 AM
+Claude code is L
+siwach7 — 11:03 AM
+Ai llm tokens
+hereiamwhy — 11:04 AM
+how are ppl who do not submit manual trades this round factored into speed
+Olipet24 — 11:04 AM
+flight team stand up
+siwach7 — 11:04 AM
+Thats the neat part they arent
+Your pnl will be0
+Olipet24 — 11:05 AM
+brother is smoking the same pack as flight
+
+
+
+
+april <- NOT A GUY — 11:23 AM
+im doing 100 speed to reduce payoff for anyone doing 0
+Olipet24 — 11:23 AM
+my cousin claude is trying his best
+siwach7 — 11:23 AM
+It will be less than 0.2
+khima [WYNN],  — 11:23 AM
+whers the doc
+Jesse — 11:23 AM
+me too im already at 200k
+Olipet24 — 11:23 AM
+guys, how do I compete in round 1
+NamNam1504 — 11:23 AM
+Whats the badge you get for getting a high pnl in manual?
+khima [WYNN],  — 11:23 AM
+like the survey
+oracle — 11:24 AM
+lol
+Jesse — 11:24 AM
+so if you do 5% then 0.3 makes you the same as 20% for 0.5
+which actually when you think about it
+is very shit for the 20%
+april <- NOT A GUY — 11:24 AM
+yurp
+InviBull [OURS],  — 11:24 AM
+anyone doing 0 alredy has a fixed payoff
+ [OURS], 
+april <- NOT A GUY — 11:25 AM
+fixed minimum payoff lol
+siwach7 — 11:25 AM
+Might be the case
+april <- NOT A GUY — 11:25 AM
+it is NOT a fixed payoff
+InviBull [OURS],  — 11:25 AM
+how will they have a better payoff
+Marco Battiston — 11:25 AM
+that's not really how it works though lol
+InviBull [OURS],  — 11:25 AM
+than 24k
+Marco Battiston — 11:25 AM
+They would still make 24k
+ [OURS], 
+april <- NOT A GUY — 11:25 AM
+i suggest you do math 
+april <- NOT A GUY — 11:25 AM
+so did you miss the word reduce
+or no
+InviBull [OURS],  — 11:25 AM
+i did, huh... a 0 investment on speed will mean the last rank
+Jesse — 11:25 AM
+anybody chess not checker
+InviBull [OURS],  — 11:26 AM
+which means a 0.1 multiplier
+siwach7 — 11:26 AM
+Andrew Ng
+Marco Battiston — 11:26 AM
+payoff would be the same for them they are still at the bottom of the rank nonetheless
+InviBull [OURS],  — 11:26 AM
+yea
+april <- NOT A GUY — 11:26 AM
+twin </3
+ace [snek],  — 11:37 AM
+those who know
+siwach7 — 11:38 AM
+The puzzle still going?
+ace [snek],  — 11:38 AM
+idk
+i couldnt be bothered doing #2
+too much effort
+siwach7 — 11:38 AM
+Yeah its too much
+ace [snek],  — 11:38 AM
+i lost all motivation after leaderboard being reset
+siwach7 — 11:38 AM
+After what they did with phase 1 and phase 2
+All of its like a big regebait😔
+🥀
+Code_Berserk — 11:41 AM
+what's that puzzle?
+Temuto — 11:41 AM
+puzzle for internship offer from imc
+Code_Berserk — 11:42 AM
+crazyy
+Cosmic — 11:42 AM
+hey does anyone know whether manual leaderboard is being updated live or not? 
+Code_Berserk — 11:42 AM
+where is that available?
+Temuto — 11:43 AM
+damn
+Cosmic — 11:43 AM
+anyone?
+Temuto — 11:44 AM
+no
+Code_Berserk — 11:44 AM
+it will be updated after the round is over
+Cosmic — 11:44 AM
+ok thanks bro/sis
+Code_Berserk — 11:44 AM
+is 5 or 15 good in speed?
+siwach7 — 11:44 AM
+55
+Code_Berserk — 11:45 AM
+WHATT
+Cosmic — 11:45 AM
+was in doubt some guys are already sitting at top with crazy 87k
+Temuto — 11:46 AM
+Think nothing of it. 
+Code_Berserk — 11:48 AM
+guys let's do a poll for speed, React below from 0 to 20  @everyone
+
+0️⃣ = 0
+1️⃣ = 1
+2️⃣ = 2
+3️⃣ = 3
+4️⃣ = 4
+5️⃣ = 5
+6️⃣ = 6
+7️⃣ = 7
+8️⃣ = 8
+9️⃣ = 9
+🔟 = 10
+
+🟥 = 11
+🟧 = 12
+🟨 = 13
+🟩 = 14
+🟦 = 15
+🟪 = 16
+🟫 = 17
+⚫ = 18
+⚪ = 19
+💯 = 20
+ace [snek],  — 11:48 AM
+son
+im cryin 
+
+Cosmic — 11:49 AM
+the larger you invest in speed the smaller your base will get just end up above median with a good base and then you are gtg
+Code_Berserk — 11:51 AM
+i am aiming to increase my multipler(scale), as it drastically increases the value ...so ye
+Sak [IOI],  — 11:52 AM
+How do I confirm my order? As in, I have submitted it, but it still shows to "confirm"
+siwach7 — 11:52 AM
+It aint like that lil bro
+Code_Berserk — 11:52 AM
+T-T
+i understood it wrong lol
+aiming just 0.4 at speed
+Cosmic — 11:53 AM
+yeah but speed one is purely probability which can flip anytime so increaing multiplier is good
+
+
+
+
+Cosmic — 11:53 AM
+for re submission
+Sak [IOI],  — 11:53 AM
+Alr. Thanks
+Last round even though we had submitted, we got 0 on manual
+Not sure why
+lyonchea — 11:54 AM
+What did u submit?
+Temuto — 11:54 AM
+probably overfill
+Sak [IOI],  — 11:54 AM
+Possibly
+Oh well
+Need to push harder
+We got decent on purely algo
+Temuto — 11:54 AM
+what pnl you at?
+Code_Berserk — 11:54 AM
+aaa ye that's true ...gambling, speed is kinda luck based
+Sak [IOI],  — 11:54 AM
+95K
+All from Algo
+lyonchea — 11:55 AM
+Not bad
+ [IOI], 
+Temuto — 11:55 AM
+same we also got 0 on manual and 95k on algo lol 
+ [IOI], 
+Cosmic — 11:55 AM
+it wasnt there in the last round ig manual is for round 2 especially i maybe wrong i joined from round 2
+Code_Berserk — 11:55 AM
+bro, can u tell me please, i want to qualify T-T
+Cosmic — 11:55 AM
+yuppp
+are you guys playing as a team?
+Code_Berserk — 11:56 AM
+most people r
+siwach7 — 11:56 AM
+Whats your pnl
+ [IOI], 
+Code_Berserk — 11:56 AM
+that's crazyy
+Code_Berserk — 11:56 AM
+75k
+i am cooked ik
+siwach7 — 11:56 AM
+In round 1?
+Code_Berserk — 11:56 AM
+yep
+siwach7 — 11:57 AM
+Yeah your cooked with extra steps
+Code_Berserk — 11:57 AM
+i fked up algo
+Cosmic — 11:57 AM
+🙃individual here hha
+siwach7 — 11:57 AM
+You actually might not make it
+Code_Berserk — 11:57 AM
+that hurts
+siwach7 — 11:57 AM
+What about manual?
+Code_Berserk — 11:57 AM
+71k
+🙂
+Dew — 12:00 PM
+I shouldn't say it but u should go crazy over current manual. If u hit the right notes u will get into r3
+lyonchea — 12:00 PM
+The manual is this round have alot of potential PnL if you play it right
+Code_Berserk — 12:01 PM
+man, the speed is weird
+a luck percentile
+solavelle — 12:02 PM
+its not luck if ur the best in the world
+Dew — 12:02 PM
+See the thing is You ARE on hopes and dreams rn. Also the truth of the world is that if u want a miracle to happen u kinda need to let some space for it to happen
+alomatcha — 12:03 PM
+i think it
+Code_Berserk — 12:03 PM
+ic ic
+alomatcha — 12:03 PM
+it is basically gambling
+Code_Berserk — 12:04 PM
+ty
+ilmaaanz — 12:05 PM
+I think it is pretty certain tbf
+I might be completely wrong, but I think I have a nice heursitic for it
+sxkx10 — 12:06 PM
+what is ur heuristic
+oracle — 12:06 PM
+what is that website?
+Mitchman05 [BWUH],  — 12:07 PM
+Multiply pnl by 0.1
+sxkx10 — 12:07 PM
+lol
+ [BWUH], 
+ilmaaanz — 12:07 PM
+I mean that is a nice lower bound if you just need to qualify ahahaha
+bok — 12:08 PM
+do 100 for speed
+oracle — 12:08 PM
+this speed is annoying (so is the streamer 🙂 )
+Mitchman05 [BWUH],  — 12:09 PM
+I'm def not using this as a way to procrastinate studying for my exam on Thursday lol
+ [BWUH], 
+ilmaaanz — 12:09 PM
+"I swear it's a career opportunity mum"
+logic_gate [RGNT],  — 12:09 PM
+Did u use nash
+ [RGNT], 
+ilmaaanz — 12:10 PM
+are you assuming rational players?
+keep the mil — 12:10 PM
+guarantee top speed by doing 0 0 100
+NovaOP — 12:10 PM
+how about we all agree that we all collectively put 0 for speed?
+Mitchman05 [BWUH],  — 12:10 PM
+Oh I'm not kidding myself this is basically just a videogame to me, I'm def not going into quant
+logic_gate [RGNT],  — 12:10 PM
+I haven't done it with Nash I just have a bad guess so far
+ [RGNT], 
+ilmaaanz — 12:10 PM
+fair
+Not_PetyaX [GDev],  — 12:10 PM
+and I put different and take everything
+ [GDev], 
+ilmaaanz — 12:11 PM
+all roads lead to prisoners dilemma
+Temuto — 12:11 PM
+assuming rational players is kinda bad no? 
+logic_gate [RGNT],  — 12:11 PM
+Well assuming this is based on a real trading scenario I would assume rational players
+ [RGNT], 
+uwuplayer_ — 12:12 PM
+real trading would imply irrationallity
+logic_gate [RGNT],  — 12:12 PM
+Most of the volume will be rational in real trading
+Marnix — 12:12 PM
+assume a mix of rational and irrational
+siwach7 — 12:12 PM
+Trollers
+ [RGNT], 
+ilmaaanz — 12:12 PM
+but we are not maximizing for the same goal, you have already qualified people that just want to limit amount of people passsing the 200k barrier
+logic_gate [RGNT],  — 12:12 PM
+Yes I have taken that into consideration 
+NamNam1504 — 12:13 PM
+Yeah there's gonna be like 40 people who are just gonna go 100 because they are already above 200k
+Maybe more than that if they are confident on thier algo
+logic_gate [RGNT],  — 12:14 PM
+I don't think many ppl would go 100 speed
+ilmaaanz — 12:14 PM
+you only need one
+logic_gate [RGNT],  — 12:14 PM
+Well I don't want 0.9 
+Mitchman05 [BWUH],  — 12:14 PM
+It's linear tho, as long as they're above you it doesn't matter if they're 5 or 100 or 10,000
+ [BWUH], 
+NamNam1504 — 12:15 PM
+Yeah actually i forgot about the -budget used bit, so they probably wont
+Temuto — 12:15 PM
+what forcast are you guys gettin\
+logic_gate [RGNT],  — 12:15 PM
+Yahoo killing kirk in gulag
+RapidstormJo — 12:16 PM
+Where is this data coming from?
+oracle — 12:16 PM
+is it still possible to register for the competition?
+NamNam1504 — 12:17 PM
+cant get anything concrete because of the game theory bit
+can be anywhere between -10k till like 500k
+ [RGNT], 
+lyonchea — 12:17 PM
+No, and that's private info. I don't wanna share with everyone.
+lyonchea — 12:17 PM
+I would do that if I got more than 200k for the giggles
+lyonchea — 12:20 PM
+Prob a guestimate
+oracle — 12:20 PM
+nope this is -50000 pnl for them
+ilmaaanz — 12:22 PM
+still can make it up in algo and significantly reduce amount received by other players. fear ofc will limit this behaviour but a perfectly rational player would act like that I guess
+also you have people that are already dead lost that might just troll for the sake of it
+siwach7 — 12:23 PM
+Well i am passing phase 1 but will still troll
+sxkx10 — 12:25 PM
+is 40 speed in the top 95%/.
+Mitchman05 [BWUH],  — 12:25 PM
+Surely even if you're not doing that well you can recover and pass to phase 2
+
+
+
+Those are rookie number compared to -40m
+Mitchman05 [BWUH],  — 12:28 PM
+Damn, maybe I should go quant
+james — 12:34 PM
+wait question
+if you dont use 100% of your budget
+is the unspent budget used in your PNL calculation in anyway
+keep the mil — 12:35 PM
+yes
+siwach7 — 12:35 PM
+No dont think so
+Mitchman05 [BWUH],  — 12:36 PM
+There's no reason not to use all your budget lmao
+ [BWUH], 
+siwach7 — 12:36 PM
+True
+Cohle [POLY],  — 12:36 PM
+it's a better stratetgy than betting on 23,77,0 actually
+Mitchman05 [BWUH],  — 12:36 PM
+You get better return with 0 speed than not investing
+How so?
+Cohle [POLY],  — 12:37 PM
+the worst case with 23,77,0 is 23k 
+ [BWUH], 
+solavelle — 12:37 PM
+there is if investing more does not have positive payout
+ [POLY], 
+JangYeongSil — 12:38 PM
+It's actually 24k
+solavelle — 12:38 PM
+if investing 1 xirec doesnt payout more than 1 its not worth to invest
+ [POLY], 
+siwach7 — 12:38 PM
+Not the worst case actually a very robust choice
+Cohle [POLY],  — 12:38 PM
+mb
+Mitchman05 [BWUH],  — 12:38 PM
+Wait true I forgot
+ [POLY], 
+JangYeongSil — 12:38 PM
+23k is for like 1% speed
+Cohle [POLY],  — 12:41 PM
+in different ways a lot of strategy are a very robust choices 😂
+Word — 12:46 PM
+My guess is that there is a gold spot around 35% on speed
+Mitchman05 [BWUH],  — 12:46 PM
+Nah it's 23%
+ [BWUH], 
+Word — 12:46 PM
+So you are betting 35
+JangYeongSil — 12:46 PM
+It neither of those guys
+It's 69%
+Word — 12:46 PM
+Good to know
+Mitchman05 [BWUH],  — 12:46 PM
+;)
+Word — 12:47 PM
+Betting 36 then
+Hectillion [TTT],  — 12:47 PM
+I will be going 6,0,94
+Joachim — 12:47 PM
+No 70%
+JangYeongSil — 12:47 PM
+69420%
+Word — 12:47 PM
+But wait
+Mitchman05 [BWUH],  — 12:47 PM
+What I'm betting on is if any of my group members remember this comp exists before this round ends
+james — 12:47 PM
+i dont see how the pnl calculation involves the original budget you are given
+Hectillion [TTT],  — 12:47 PM
+I reckon the speed will be linear as not everybody will put too much thought into it
+james — 12:48 PM
+bruh wym
+ [TTT], 
+Word — 12:48 PM
+My guess is that is necessary linear
+james — 12:48 PM
+of course everyone optimising over speed
+Word — 12:48 PM
+5000 ppl can choose over 100 point
+JangYeongSil — 12:48 PM
+How things are structured if every person picks 100 99 98 and so on top 50 % means anything above 50. so 51% is the logical answer since it makes the most money because as speed goes up money goes down . it is like betting 0% on speed,  a safe thing to do and it gives you like free 90k.
+Word — 12:48 PM
+If only 10 ppl choose above 90
+JangYeongSil — 12:48 PM
+but I go 0 since it is safer
+Word — 12:49 PM
+Exactly
+Word — 12:49 PM
+You can optimise for this
+
+
+bro thought he was onto smth
+😭
+james — 12:52 PM
+how do u know owen
+Lachy-Dauth — 12:52 PM
+owen?
+james — 12:52 PM
+mutual
+Joachim — 12:52 PM
+Interesting
+solavelle — 12:52 PM
+this assumes rational players lol
+NamNam1504 — 12:53 PM
+Do the leaderboards also get reset after phase 1 ends?
+ [BWUH], 
+april <- NOT A GUY — 12:53 PM
+so 1 1 99 is optimsl
+Abad — 12:53 PM
+Isnt nash everyone betting at 0? If not why not I really want to understand
+NamNam1504 — 12:53 PM
+Or is it taken into account for the next phase
+Joachim — 12:53 PM
+Not possible
+Abad — 12:53 PM
+for speed I meant
+Lachy-Dauth — 12:53 PM
+Thats why I am confident this isn't leaking any alpha
+
+yes it is
+Joachim — 12:53 PM
+You mean (1,1,99) ?
+april <- NOT A GUY — 12:54 PM
+yes
+JangYeongSil — 12:54 PM
+For example, if people invested 70, 70, 70, 50, 40, 40, 30, they get the following ranks: 1, 1, 1, 4, 5, 5, 7.                             . It is exactly what I've said bro bruh !  just   the last one being 7 or 6 is the same thing as I said just ask an AI if you dont believe me lol it s just freaking logic
+rank 1 will be 100 rank 2 will be 99 and so on because people will use all the numbers
+just because were thousands
+solavelle — 12:54 PM
+but it certainly influences ppl
+Joachim — 12:54 PM
+May I’ve missed something
+JangYeongSil — 12:54 PM
+top 50 ranks top 50 numbers it is not that deep
+Not_PetyaX [GDev],  — 12:54 PM
+Logarithmically reweighted inverse-kurtotic bimodal pseudo-normal distribution
+Lachy-Dauth — 12:55 PM
+There are 80 nash strategies everyone picking the same number under 80 and my distribution
+solavelle — 12:55 PM
+density at that percentage also matters bro
+what if its 5000 ppl at 75 
+Mitchman05 [BWUH],  — 12:55 PM
+Number of people choosing a number changes rankings
+Lachy-Dauth — 12:55 PM
+True
+solavelle — 12:56 PM
+wanna discuss in dms?
+JangYeongSil — 12:56 PM
+no it doesnt where it says this ?  LOOK " Another example, if you have three players investing 95, 20, 10, their ranks are 1, 2, 3, and their hit rates are 0.9, 0.5, 0.1. "    Use instead the numbers 100 , 99 , 98     BRUH
+Mitchman05 [BWUH],  — 12:56 PM
+What does this mean? (genuinely curious)
+Abad — 12:57 PM
+if you have 100,100,90,80 ranks are 1,1,3,4 which not the same as 100,90,80 which would be 1,2,3
+ [BWUH], 
+JangYeongSil — 12:57 PM
+51% speed will always be in top 50%  because there are 101 total numbers . 101-51 =50 it is where it should be
+Mitchman05 [BWUH],  — 12:57 PM
+If it didn't matter the first thing you posted would have rankings 1,1,1,2,3,3,4
+Mitchman05 [BWUH],  — 12:57 PM
+Bro has never heard of a median before
+Joachim — 12:57 PM
+That’s it
+Mitchman05 [BWUH],  — 12:57 PM
+This is some masterful ragebait ngl
+JangYeongSil — 12:58 PM
+they have the same rank because they have the same value. it is exactly like in the leaderboard. you're rank 1 at manual not because you're the first but because you have exactly the same
+2nd one is  3 just because there is 2 of 1 but  it could have been named 2
+the logic is the same
+ [BWUH], 
+solavelle — 12:59 PM
+if its a psyop its a good one
+keep it cooking
+Abad — 12:59 PM
+but if you linearly interpolate from 0.1 to 0.9, you wont get the same results if its 1,2,3 or 1,1,3,4 
+the guy that bids at 90 gets a different speed multiplier in each case
+sxkx10 — 1:01 PM
+not really, if you are 3 players with bids 51%, 61%,71%, then where do u think u end up?
+abdevilliers — 1:01 PM
+so wat r we putting
+Mitchman05 [BWUH],  — 1:01 PM
+Max research
+sobón — 1:01 PM
+what PnLs are people getting on manual?
+Word — 1:02 PM
+You understood the problem, well done
+Mitchman05 [BWUH],  — 1:02 PM
+Unknown until round ends
+Abad — 1:02 PM
+I think he is assuming every number will be filled, but even then it is wrong, dstribution matters
+JangYeongSil — 1:02 PM
+I go by the premise that we're 20000 people and many will put random numbers just for the fun of it
+so all numbers will be used
+that's my theory
+thanks for being present at my ted talk
+sxkx10 — 1:03 PM
+i guess theoritcally your argument is valid for a specific case
+but in this one, there is def a skew towards 0 more
+Mitchman05 [BWUH],  — 1:03 PM
+Stop feeding the ragebait lol
+sobón — 1:03 PM
+is it possible for you screw up manual bad enough to go negative?
+sxkx10 — 1:03 PM
+yes
+Mitchman05 [BWUH],  — 1:03 PM
+Yep
+JangYeongSil — 1:03 PM
+yeah.  that's why I put 0% speed
+Mitchman05 [BWUH],  — 1:03 PM
+But if you can do basic maths
+Lax — 1:03 PM
+Can u explain why
+Mitchman05 [BWUH],  — 1:03 PM
+You shouldn't
+sampling_wor — 1:04 PM
+yes if you put 90+ speed,for safe betters 23-77-0 24k benchmark is always there
+april <- NOT A GUY — 1:04 PM
+hi
+sobón — 1:04 PM
+oh is this the method
+SirRiceBurger — 1:05 PM
+will manual r1-2 count toward best manual trader?
+JangYeongSil — 1:05 PM
+I think my AI is hallucinating or some stuff  because it says I am wrong .  Just kidding.
+Image
+Lax — 1:05 PM
+No
+Abad — 1:05 PM
+If you had 100,100,100,100,100,100,100,99,98 their hit rates would be 0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.2,0.1
+sxkx10 — 1:05 PM
+check the number of particpants, and the number of ppl who need 24k to pass through. Just with this you can know that even with high enough chance, there are a lot of ppl working on algo more than manual because they already have enough. Now, look at the previous chats in this server for 0, there is a lot more about it than other values
+abdevilliers — 1:05 PM
+so whats the best response
+Mitchman05 [BWUH],  — 1:05 PM
+lmao
+abdevilliers — 1:05 PM
+why would everyone not go with 100 then to get 0.9
+this got me thinking
+Mitchman05 [BWUH],  — 1:05 PM
+that is the question
+New — 1:06 PM
+wait if all 100 numbers are selected will the rates be 0.1 to 0.9 linearly? regardless which speed has more people
+JangYeongSil — 1:06 PM
+Yeah I just understood that I am wrong but I might be accidentally right. after round 2 if somebody put 51 and got massive profit tell me so I can brag that I was always right all along
+abdevilliers — 1:06 PM
+bet
+ez
+so we all going 0 then
+Mitchman05 [BWUH],  — 1:06 PM
+holy shit you weren't ragebaiting??????
+Lax — 1:06 PM
+But how does that guarantee that the Nash is at zero?
+I don't think there's a Nash right?
+Abad — 1:06 PM
+If you go 0 you can guarantee about 24k
+abdevilliers — 1:06 PM
+there is , but just not unique
+sxkx10 — 1:06 PM
+no i didnt mean that about a nash, i just mean 0 as more of "common consensus"
+abdevilliers — 1:06 PM
+a finite game always has a nash eq
+Lax — 1:07 PM
+Ahh I see
+
+
+
+JangYeongSil — 1:13 PM
+yep nothing here folks move along 
+Lax — 1:14 PM
+It's literally 110
+Word — 1:14 PM
+Not so simple imo 
+You also need to estinate the ratio of player who estimated this ratio then weight,
+And redo the process
+Lax — 1:14 PM
+Well yeah
+parfaitespike — 1:14 PM
+I’m sure there’s great quant out there not great at basic maths
+Word — 1:15 PM
+My guess btw is that ve EU few ppl are actually going to use nash equilibrium
+ThatKindCoder — 1:15 PM
+doesn't it just take two people bidding at 100 and 0 to make this trivial?
+Lax — 1:15 PM
+You gotta estimate people who took median , who did first order thinking second order thinking and so on
+ThatKindCoder — 1:15 PM
+not that anyone would do that
+Lax — 1:15 PM
+Thanks for giving me hope
+Hectillion [TTT],  — 1:15 PM
+youre undermestating the amount of teams wht a high leaderboard score who will just pick 100 to screw everybody else over
+ [TTT], 
+Lax — 1:15 PM
+They'd pick 80 10 10 not 100
+Word — 1:16 PM
+Imo you should also account for ppl who are betting 42, 67,69 just for the meme
+They are not going to be few
+Lax — 1:16 PM
+Lol maybe but I doubt that it would affect the rankings a lot
+If I bid like 12 let's say then they're basically equivalent
+If they bid 100 or 80 or 69
+Word — 1:17 PM
+I guess  around 500 ppl would bet reasoning this way
+Mb smth less
+Lax — 1:17 PM
+I mean yeah it's just a game of guessing the underlying distribution at the end of the day
+Word — 1:17 PM
+Ye
+Which percentage of ppl do you think is going to bet less than 10% on speed?
+Lax — 1:18 PM
+There's going to be a lot of people at 1 or 2 to try and beat zero
+With minimum amount of speed spent
+Zachary [NERD],  — 1:19 PM
+i'm almost certain that the mode will be 0.
+Word — 1:19 PM
+But like 20/25%?
+logic_gate [RGNT],  — 1:19 PM
+still
+Lax — 1:19 PM
+That's for people who are trynna play it relatively safe
+logic_gate [RGNT],  — 1:19 PM
+u can do it to learn
+abdevilliers — 1:19 PM
+ofc
+its a fun problem to work on
+Lax — 1:20 PM
+Hell yeah
+I love this kinda stuff
+Word — 1:20 PM
+Yes it is
+Astro💫 [Ыʦet],  — 1:22 PM
+but the min will be 0.1 right ?
+ [Ыʦet], 
+siwach7 — 1:22 PM
+Yeah
+Lax — 1:22 PM
+Yep
+Ujjwal — 1:34 PM
+what if i spend 0 on speed will my pnl be 0??
+Jonty — 1:35 PM
+you'll get 0.1 multiplier minimum for speed
+Cohle [POLY],  — 1:35 PM
+or 0.9 if everyone have the brilliant idea to spend 0
+NamNam1504 — 1:38 PM
+prisoners dilemma
+Srijon — 1:40 PM
+yes
+Cohle [POLY],  — 1:41 PM
+intarians dilemma actualy
+Lax — 1:43 PM
+technically we are the aliens
+Word — 1:43 PM
+How was to make survey?
+Lax — 1:44 PM
+everyones just finna lie gng
+Word — 1:44 PM
+Probably
+But let’s try
+Lax — 1:44 PM
+it would end up being a uniform distribution
+with humps at special numbers
+like 37
+or 69
+Word — 1:45 PM
+They are deactivated
+Word — 1:45 PM
+The funny part is that this is a cooperative game
+💥ʀʊɖʀǟ💥 — 1:45 PM
+How is 37 a special number
+Word — 1:45 PM
+Without incentives to lie
+quack [C:S],  — 1:45 PM
+67
+Lax — 1:46 PM
+its the most non random , random number
+NamNam1504 — 1:46 PM
+Do you guys think its gonna be a normal distribution
+Lax — 1:46 PM
+if you look at pure pnL wise maybe, but id rather have a lower pnL with a better leaderboard rank hypothetically
+NamNam1504 — 1:47 PM
+The rank wont matter because everything gets reset after round 2
+Lax — 1:47 PM
+true
+most of the people here are at 176k+ so theyre probably wanna guarentee 24k and rest for a few days by voting 0speed 23 73 
+NamNam1504 — 1:48 PM
+Do you guys think it would converge to a normal distribution?
+Lax — 1:48 PM
+trimodal normal maybe
+NamNam1504 — 1:48 PM
+With 3 peaks?
+So like 37 50 and maybe one other
+Lax — 1:49 PM
+like 5 25 80 maybe
+
+NamNam1504 — 1:49 PM
+Ohh because of the people already at or close to 200k?
+That does make a lot of sense
+Lax — 1:49 PM
+yeah
+a lot of people at 2-3 wanna capture the density at 0 
+and if you wanna be safe and all that maybe near 20
+and 80 for those who already have 200k
+siwach7 — 1:51 PM
+The key is 27%
+Lax — 1:52 PM
+thats only if everyone cooperates
+Cohle [POLY],  — 1:52 PM
+actually the rank does matter because the worst case is a coalition of teams with a 100% chance of reaching phase 2, If all these teams write every number between 58 and 100, then 0 will be ranked at most 43rd (random case inside my head)
+alomatcha — 1:53 PM
+it is actually 60 because above 75 you will have negative pnl
+ [POLY], 
+NamNam1504 — 1:53 PM
+bro that would be nuts
+siwach7 — 1:53 PM
+No its actually a good number you will easily be in top 85%ile and have more in scale
+Lax — 1:53 PM
+makes sense
+ [POLY], 
+NamNam1504 — 1:53 PM
+How on earth would they coordinate that
+Lax — 1:53 PM
+nobody is gon vote above 60 who doesnt have 200k
+alomatcha — 1:54 PM
+no it is possible for people who wanna risk it all for 0.9
+Jonty — 1:54 PM
+(not my graph, someone posted earlier)
+Image
+alomatcha — 1:55 PM
+so above 200k will go probably for something 0-20 
+the worst case they will have 0.1 and a positive pnl
+Jonty — 1:55 PM
+going over 60 limits you heavily even if you win a 0.8 to 0.9 multiplier, much further than that is just guaranteeing a low score
+Lax — 1:55 PM
+getting 95 percentile or 100 perctile both are almost 0.9 so nobodys gonna vote above 60 realistically
+Cohle [POLY],  — 1:56 PM
+idk but the pepper crisis + the coalition of 200k+ teams = game over for me 😂
+Lax — 1:56 PM
+intersting
+Jonty — 1:56 PM
+over 60 is quite unreasonable so not many will 
+ [POLY], 
+alomatcha — 1:56 PM
+what is the pepper crisis?
+ [POLY], 
+NamNam1504 — 1:56 PM
+Don't give em ideas bro 😭
+
+
+
+
+NamNam1504 — 1:57 PM
+cheers for the trimodal distribution idea though that's going on my cv
+Lax — 1:57 PM
+waiting to spend  600$ on pepper crash on polymarket , yall just wait
+khima [WYNN],  — 1:58 PM
+wheres the guy that posted the form where people respond with what theyre goanna put for manual
+Lax — 1:58 PM
+haha np
+Cohle [POLY],  — 1:58 PM
+plot twist I'm one of them 👀
+ [WYNN], 
+siwach7 — 1:58 PM
+Why you gonna do something bad to him?😭
+khima [WYNN],  — 1:59 PM
+no im tryna find it coz i missed filling it in
+im not gon do anything bad to em
+siwach7 — 1:59 PM
+Oh i thought you gonna touch him or smth😭🥀
+khima [WYNN],  — 1:59 PM
+WHERE ARE YOU GETTING THIS FROM
+siwach7 — 2:01 PM
+Well idk😭
+Because he was doing something so diabolical 😔
+khima [WYNN],  — 2:02 PM
+what did he do thats so diabolical
+Jonty — 2:03 PM
+this guy posted the form
+khima [WYNN],  — 2:03 PM
+if everyone was rational then everyone would get to round 3 without submitting anything else :(
+Jonty — 2:03 PM
+bear in mind it asks to record your email
+ [WYNN], 
+Jonty — 2:03 PM
+it's true :p
+bth — 2:04 PM
+what is this chat holy
+
+
+
+khima [WYNN],  — 2:04 PM
+i assume he hasnt shared it
+bth — 2:04 PM
+its blessing my eyes
+khima [WYNN],  — 2:04 PM
+i remember there was another bloke that sent one earlier than that
+Jonty — 2:04 PM
+someone also sent me this, idk what it's like tho https://test-self-five-ejscwzl4pr.vercel.app/
+Signal Outpost
+Signal Outpost is a browser-based scorer for Research, Scale, and Speed allocations.
+or maybe this 
+https://poll-maker.com/results5761782xa5694421-168#tab-1
+Poll Maker
+What Speed % will you be using ? - Poll Results
+42 Voted on the poll: What Speed % will you be using ? See poll results and have your say.
+Image
+siwach7 — 2:05 PM
+Why these mofos even doing ts🥀
+khima [WYNN],  — 2:05 PM
+ah thank you
+i think this was the one i was looking for
+Jonty — 2:06 PM
+nwnw
+ [WYNN], 
+siwach7 — 2:06 PM
+You doing publicity for this survey(scam)?
+Waa1k_FPS — 2:06 PM
+whats the current state of manual any breakthroughs ?
+siwach7 — 2:06 PM
+Speed = 27%
+Lax — 2:07 PM
+btw what was your PnL in R1 if i may ask?
+siwach7 — 2:07 PM
+Its a secret
+Lax — 2:08 PM
+so 181k basically
+khima [WYNN],  — 2:08 PM
+LMAO
+siwach7 — 2:08 PM
+😳
+Maybe or maybe not
+But speed is 27%
+JangYeongSil — 2:11 PM
+I'm not diabolical , just dumb 😭 😭 😭  I misunderstood deeply how the ranking system wroks but I think I was the first one here to figure out that over 85% speed is loss in all scenarios and say this openly here  which the graph you guys posted proves
+and that 0 speed is optimal for the best in worst case , not optimal for highest gross income
+siwach7 — 2:12 PM
+Well it was my first intuitive thought that above 60% is shit
+TunaInPoland — 2:29 PM
+Hey guys
+How much r y’all spending on speed
+F — 2:31 PM
+100
+TunaInPoland — 2:31 PM
+Wow that what HRT would do
+Reflex — 2:31 PM
+0
+Toufik — 2:31 PM
+67
+TunaInPoland — 2:33 PM
+Guarantee 0.1x
+siwach7 — 2:35 PM
+27%
+Reflex — 2:36 PM
+Yep
+Reflex — 2:37 PM
+Why tho 
+doesn't make sense tbh
+siwach7 — 2:37 PM
+After results it will
+Reflex — 2:37 PM
+either you're just fking with us or else you're just here to play with others so you can get a better play
+lmao
+siwach7 — 2:37 PM
+Going ~35 is too high
+You should put those in scale to get better results
+Code_Berserk — 2:39 PM
+Agreed
+ [POLY], 
+Joachim — 2:43 PM
+love this one
+Tribes — 2:44 PM
+What if its a bell curve with a peak around 40%
+Around 80% speed, profit is too low 
+siwach7 — 2:45 PM
+Its gonna peak around 27-28
+Tribes — 2:45 PM
+reason?
+siwach7 — 2:45 PM
+Tf you mean reason?
+Want me to tell you everything?
+Tribes — 2:46 PM
+Do you have high blood or something?
+
+
+
+Tf you mean reason?
+Want me to tell you everything?
+Tribes — 2:46 PM
+Do you have high blood or something?
+lol
+siwach7 — 2:46 PM
+Ah yes
+siwach7 — 2:47 PM
+Whats your reason huh?
+ [TTT], 
+Zain — 2:48 PM
+they'd lose 50k so they wouldnt
+siwach7 — 2:48 PM
+No and dont forget people in already -pnl
+Tribes — 2:48 PM
+My script iterates through simulations, each simulation has a bell curve centered at the last iteration's best pnl
+siwach7 — 2:49 PM
+No what kind of population you using?
+siwach7 — 2:49 PM
+Also claude?
+Tribes — 2:49 PM
+Population distribution? or are you asking me how many did I put
+lol
+siwach7 — 2:49 PM
+Dist
+Tribes — 2:49 PM
+I put spikes at 0 and 100, and i already said, its a bell curve centered at the last iteration's best pnl
+tested with different bell curve sizes
+siwach7 — 2:50 PM
+What about people with many teams and trollers they gonna mess it up
+Tribes — 2:50 PM
+0 and 100 man
+siwach7 — 2:50 PM
+Yeah they can choose in between too you know if they choose a very rare number wont that change things?
+Tribes — 2:51 PM
+Not really
+penfo. — 2:51 PM
+i can guarantee that i spoke to 15 of the top 100 teams, and we’re all putting 100 on speed bc it’s funny
+siwach7 — 2:51 PM
+👍
+Tribes — 2:51 PM
+None of it matters 😭 Its just for fun, but siwach is ruining it for me
+penfo. — 2:51 PM
+everything matters
+Tribes — 2:52 PM
+qualification phase
+siwach7 — 2:52 PM
+Tf you mean i am ruining it for you i myself am gonna gamble for fun
+penfo. — 2:52 PM
+i didn’t mean in terms of competition
+Tribes — 2:52 PM
+Because you talk to me like this
+Its not fun to talk to someone who talks like you do
+siwach7 — 2:52 PM
+Come on man
+penfo. — 2:52 PM
+r u guys brother sister
+Tribes — 2:53 PM
+Idk the guy, he has high bp or something
+penfo. — 2:53 PM
+seems like you know him
+siwach7 — 2:53 PM
+High bp? Wdym😭
+Lax — 3:03 PM
+blackpill i reckon
+JangYeongSil — 3:03 PM
+well that's the point when you have past 200k with algo from this round you can do this type of stuff ez just for fun
+it's optimal to do this so you screw others and they don't go forward
+logic_gate [RGNT],  — 3:05 PM
+A lot of ppl are 180k+
+and algo is guaranteed 50k+
+Mr. Nobody [HoNR],  — 3:05 PM
+Just take 24k
+And sleep
+Lax — 3:05 PM
+sleep>PnL
+6 days of sleep that is
+Mr. Nobody [HoNR],  — 3:06 PM
+No one really cares about r2 leaderboard. It gets reset anyway
+R1 is more competitive than r2.
+siwach7 — 3:06 PM
+Well you can really brag about it if you get #1 manual
+Mr. Nobody [HoNR],  — 3:07 PM
+Forgot about that. I need that for my LinkedIn
+Lax — 3:07 PM
+nobody irl gives like any fs at all unfortunately 🙁
+siwach7 — 3:07 PM
+Oh they will do
+
+
+
+
+
+
+Enrico Berto — 4:08 PM
+they would get 0.1 if they all had rank 1720
+thatarnav — 4:08 PM
+No you have to use 201 701 etc itself. you have to be consistent right acc to you if all the people who are at rank 1 get 0.9 and those at 0 get 0.1. in your example, you ranked all 76 at 1 but all 0s at 1720, but the 0s rank should be 721 right
+HLucas — 4:09 PM
+Where is 721 coming from?
+Nimbacosta — 4:09 PM
+all you guys arugement is valid i get it but just that the problem statement says people at the highest and lowest bid get 0.9 and 0.1
+Enrico Berto — 4:10 PM
+500+200+20+1
+it's the cumulated position
+xPress1 — 4:10 PM
+what is eyes in the ball puzzle hint
+thatarnav — 4:11 PM
+okay yeah it says everyone in between is scaled linearly
+sampling_wor — 4:14 PM
+Speed (s),Research (x),Scale (y)  Speed (s),Research (x),Scale (y)
+0,23.14,76.86 
+ 50,13.01,36.99
+1,22.95,76.05,51,12.80,36.20
+2,22.75,75.25,52,12.58,35.42
+3,22.56,74.44,53,12.36,34.64
+4,22.37,73.63,54,12.14,33.86
+5,22.17,72.83,55,11.92,33.08
+6,21.98,72.02,56,11.70,32.30
+7,21.78,71.22,57,11.48,31.52
+8,21.59,70.41,58,11.26,30.74
+9,21.39,69.61,59,11.04,29.96
+10,21.20,68.80,60,10.82,29.18
+11,21.00,68.00,61,10.59,28.41
+12,20.80,67.20,62,10.37,27.63
+13,20.61,66.39,63,10.14,26.86
+14,20.41,65.59,64,9.91,26.09
+15,20.21,64.79,65,9.69,25.31
+16,20.01,63.99,66,9.46,24.54
+17,19.81,63.19,67,9.23,23.77
+18,19.62,62.38,68,8.99,23.01
+19,19.42,61.58,69,8.76,22.24
+20,19.22,60.78,70,8.53,21.47
+21,19.02,59.98,71,8.29,20.71
+22,18.82,59.18,72,8.05,19.95
+23,18.62,58.38,73,7.81,19.19
+24,18.41,57.59,74,7.57,18.43
+25,18.21,56.79,75,7.33,17.67
+26,18.01,55.99,76,7.09,16.91
+27,17.81,55.19,77,6.84,16.16
+28,17.61,54.39,78,6.60,15.40
+29,17.40,53.60,79,6.35,14.65
+30,17.20,52.80,80,6.10,13.90
+31,16.99,52.01,81,5.84,13.16
+32,16.79,51.21,82,5.59,12.41
+33,16.58,50.42,83,5.33,11.67
+34,16.38,49.62,84,5.07,10.93
+35,16.17,48.83,85,4.80,10.20
+36,15.97,48.03,86,4.53,9.47
+37,15.76,47.24,87,4.26,8.74
+38,15.55,46.45,88,3.99,8.01
+39,15.34,45.66,89,3.71,7.29
+40,15.13,44.87,90,3.42,6.58
+41,14.92,44.08,91,3.13,5.87
+42,14.71,43.29,92,2.84,5.16
+43,14.50,42.50,93,2.54,4.46
+44,14.29,41.71,94,2.22,3.78
+45,14.08,40.92,95,1.90,3.10
+46,13.87,40.13,96,1.57,2.43
+47,13.65,39.35,97,1.22,1.78
+48,13.44,38.56,98,0.85,1.15
+49,13.23,37.77,99,0.45,0.55
+100,0.00,0.00
+
+if anyone chooses speed as s,it is better to maximize the pnl with the optimum research and scaling choice irrespective of the rank s gets acc to the choice of s .
+For folks who might not have time for manual after algo,if you are choosing speed s arbitrarily,at least optimize other two given s.
+
+EDIT: It does not give you an optimal research-scaling-speed tuple but optimal research-scaling for a given speed s,hence it is indepenent of distribution of chosen speeds. 
+Koen — 4:15 PM
+You have to fill in integers though
+Enrico Berto — 4:15 PM
+you're right
+sampling_wor — 4:16 PM
+ofc
+Lax — 4:16 PM
+That's for you to figure out
+sampling_wor — 4:17 PM
+if i write an integer,i am making a choice for them and hence influencing their choice.Let them make the choice and be solely responsible for say choosing 32 for 32.45 instead of 33. We shouldn't make that choice.
+thatarnav — 4:18 PM
+its not that deep ppl can just bruteforce
+sampling_wor — 4:25 PM
+it is optimal research and scaling once you made a choice for speed s though. open to be called out on wrongs though
+kartikya — 4:28 PM
+your research says to put s 33?
+sampling_wor — 4:28 PM
+it says no opinion on what choice of s one should go for
+abdevilliers — 4:28 PM
+so boss what should i put
+gimme numbers
+20 70 10?
+kartikya — 4:28 PM
+put 35
+just a suggestion
+abdevilliers — 4:29 PM
+50 13 37?
+Koen — 4:29 PM
+Just choose some you like
+kartikya — 4:29 PM
+huh??????
+kartikya — 4:29 PM
+helll nahhhhh
+50 13 is so bad
+abdevilliers — 4:29 PM
+why
+hmmm
+mamke — 4:29 PM
+0 0 100
+kartikya — 4:30 PM
+😑
+solavelle — 4:30 PM
+Guys put it in gemini not that deep
+abdevilliers — 4:30 PM
+so whats optimal here unc
+i cant read ur table
+mamke — 4:30 PM
+depends what others choose
+abdevilliers — 4:31 PM
+it is infact very deep
+abdevilliers — 4:31 PM
+i mean assuming some distribution
+Koen — 4:31 PM
+Choose a spead, and just bruteforce research + scale
+speed*
+kartikya — 4:31 PM
+research sclae ration would be 22:77
+no matter what spped you chose
+abdevilliers — 4:31 PM
+did yall see previous prosperity manual round, we had exact same problem,
+just copy that solution lmao
+mamke — 4:32 PM
+what
+kartikya — 4:32 PM
+i didnt know this
+kartikya — 4:32 PM
+what was it?
+abdevilliers — 4:35 PM
+https://docs.google.com/spreadsheets/d/16xO1L8NukksiQCiutmdsTHh51_HXxqulelJez653hjY/edit
+Google Docs
+round 3 manual
+Image
+so we had to put values into those three and we had some kind of pnl associated
+we even had a spreadsheet here to ask what people r choosing lol
+https://github.com/gabsens/IMC-Prosperity-2-Manual/blob/master/Round3.ipynb
+GitHub
+IMC-Prosperity-2-Manual/Round3.ipynb at master · gabsens/IMC-Prosp...
+Detailed write-ups for manual trading challenges in IMC Prosperity 2 - gabsens/IMC-Prosperity-2-Manual
+Detailed write-ups for manual trading challenges in IMC Prosperity 2 - gabsens/IMC-Prosperity-2-Manual
+sampling_wor — 4:37 PM
+Maybe,even if you consensus on a so-called 'optimal',we are dependent on the distribution and how everyone else behaves unless it's a safe speed 0 24k one is going for.
+abdevilliers — 4:37 PM
+yup
+Tushar — 4:42 PM
+Will the scale value be calculated upto 1 decimal place only?
+HAHAHAHAHAXDXDXD — 4:46 PM
+for stage 1 can someone explain how 0 pnl is possible
+Image
+sampling_wor — 4:48 PM
+Speed multiplier example 0.7247
+Squiggle — 4:48 PM
+Your orders weren’t filled
+HAHAHAHAHAXDXDXD — 4:48 PM
+ig but why
+Squiggle — 4:49 PM
+Because there ain’t enough seller volume to fill more than 86k buyer volume at 15
+Jan Ahmed — 4:49 PM
+order of fill is price then time
+there were buy orders with higher price
+sampling_wor — 4:49 PM
+admins have mentioned in website one can see upto one decimal maybe but the algorithm in the system can distinguish between two seperate multiplers with same one decimal representation afai can remember
+Enrico Berto — 4:53 PM
+why did you buy at clearing price?
+quantity was almost correct
+HAHAHAHAHAXDXDXD — 4:54 PM
+what was the optimal answer ?
+Enrico Berto — 4:57 PM
+buy 19999 @20
+Aloosh — 4:57 PM
+19999 @ 17 no?
+Enrico Berto — 4:57 PM
+and the other buy 9999 @30
+Enrico Berto — 4:58 PM
+yes it's the same, at least 17
+andefenk — 4:58 PM
+How do you guys allocate ur speed
+Mr. Nobody [HoNR],  — 4:58 PM
+Huy 19999 @ 100k
+Aloosh — 4:58 PM
+But if you put the ask at 20 you pay 20? Or am I mistaken?
+Do you only pay clearing price?
+Enrico Berto — 4:58 PM
+exactly
+andefenk — 4:58 PM
+Yep
+Enrico Berto — 4:59 PM
+in that case 16 with that precise quantity
+Aloosh — 4:59 PM
+Oh yes now I remember that is right
+Jan Ahmed — 4:59 PM
+you pay clearing price
+Aloosh — 4:59 PM
+since the total volume is 1 less at 17 or higher then at 16
+so it settles at 16
+AX2k — 4:59 PM
+ye
+Jan Ahmed — 4:59 PM
+ye
+GreatGamingGuy — 4:59 PM
+is the speed rank dependent on all players who registered (incl inactive players), or is the speed rank dependent on all players that submit something
+Aloosh — 4:59 PM
+and everyone willing to pay above 16 got it at 16 and the 16 bidder got 1 volume at 16
+sampling_wor — 5:00 PM
+the latter
+Aloosh — 5:00 PM
+Everyone submitting!
