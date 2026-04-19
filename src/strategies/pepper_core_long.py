@@ -142,6 +142,44 @@ class CoreLongParams:
     adaptive_mid_cap: int = 0
     adaptive_high_cap: int = 0
 
+    # ---- Round-2 kill-switches (zero-premium tail insurance) ----
+    # All four switches are no-ops at the defaults below so existing
+    # Round-1 configs pick up zero behaviour change. Each switch fires
+    # only on tail-event signals that the empirical PEPPER tape never
+    # produced across 6 observed days, but that would matter on a real
+    # regime break. A "fired" switch only pauses BUY-side execution;
+    # the strategy never force-flattens. See
+    # ``docs/round_2/pepper_killswitch_design.md``.
+    #
+    # Signal #1: rolling slope (consecutive negative snapshots).
+    # When ``kill_consecutive_neg_slope_n > 0``: count snapshots whose
+    # rolling-OLS slope (over ``kill_slope_window`` mids) is < 0; if
+    # the run length crosses the threshold, pause buys for
+    # ``kill_slope_pause_snaps`` snapshots.
+    kill_slope_window: int = 50
+    kill_consecutive_neg_slope_n: int = 0  # 0 disables
+    kill_slope_pause_snaps: int = 0
+    # Signal #2: residual-vs-drift threshold.
+    # When ``kill_residual_threshold > 0`` and ``residual <
+    # -kill_residual_threshold``, pause buys until residual >=
+    # ``-kill_residual_release`` (release < threshold so we don't
+    # flap).
+    kill_residual_threshold: float = 0.0  # 0 disables
+    kill_residual_release: float = 0.0
+    # Signal #3: single-snapshot Δmid spike.
+    # When ``kill_step_move_threshold > 0`` and the current mid drops
+    # by more than ``kill_step_move_threshold`` vs the previous
+    # observed mid, pause buys for ``kill_step_move_pause_snaps``
+    # snapshots.
+    kill_step_move_threshold: float = 0.0  # 0 disables
+    kill_step_move_pause_snaps: int = 0
+    # Signal #4: intraday MTM kill (sticky for the rest of the day).
+    # Approximated as ``position * (current_mid - day_open_mid)``;
+    # when this drops below ``-kill_intraday_pnl_threshold``, the
+    # strategy halts BOTH sides for the remainder of the day. Reset
+    # at the next day-rollover (detected via timestamp reset).
+    kill_intraday_pnl_threshold: float = 0.0  # 0 disables
+
     def __post_init__(self) -> None:
         if self.base_long < 0:
             raise ValueError(f"base_long must be >= 0 (got {self.base_long})")
@@ -273,6 +311,74 @@ class CoreLongParams:
                     f"(got high={self.adaptive_high_cap}, ceiling={self.ceiling})"
                 )
 
+        # ---- Round-2 kill-switch validation ----
+        if self.kill_slope_window < 0:
+            raise ValueError(
+                f"kill_slope_window must be >= 0 (got {self.kill_slope_window})"
+            )
+        if self.kill_consecutive_neg_slope_n < 0:
+            raise ValueError(
+                "kill_consecutive_neg_slope_n must be >= 0 "
+                f"(got {self.kill_consecutive_neg_slope_n})"
+            )
+        if self.kill_slope_pause_snaps < 0:
+            raise ValueError(
+                f"kill_slope_pause_snaps must be >= 0 (got {self.kill_slope_pause_snaps})"
+            )
+        slope_kill_enabled = self.kill_consecutive_neg_slope_n > 0
+        if slope_kill_enabled:
+            if self.kill_slope_window < 2:
+                raise ValueError(
+                    "kill_slope_window must be >= 2 when the consecutive-slope "
+                    f"kill switch is enabled (got {self.kill_slope_window})"
+                )
+            if self.kill_slope_pause_snaps == 0:
+                raise ValueError(
+                    "kill_slope_pause_snaps must be > 0 when the "
+                    "consecutive-slope kill switch is enabled"
+                )
+        if self.kill_residual_threshold < 0:
+            raise ValueError(
+                "kill_residual_threshold must be >= 0 "
+                f"(got {self.kill_residual_threshold})"
+            )
+        if self.kill_residual_release < 0:
+            raise ValueError(
+                "kill_residual_release must be >= 0 "
+                f"(got {self.kill_residual_release})"
+            )
+        if self.kill_residual_threshold > 0:
+            # Release must lie strictly INSIDE the trigger band so we
+            # don't flap: release < threshold (hysteresis), release
+            # can be 0 to mean "release as soon as residual returns
+            # to the drift line or above".
+            if self.kill_residual_release >= self.kill_residual_threshold:
+                raise ValueError(
+                    "kill_residual_release must be < kill_residual_threshold "
+                    f"(got threshold={self.kill_residual_threshold}, "
+                    f"release={self.kill_residual_release})"
+                )
+        if self.kill_step_move_threshold < 0:
+            raise ValueError(
+                "kill_step_move_threshold must be >= 0 "
+                f"(got {self.kill_step_move_threshold})"
+            )
+        if self.kill_step_move_pause_snaps < 0:
+            raise ValueError(
+                "kill_step_move_pause_snaps must be >= 0 "
+                f"(got {self.kill_step_move_pause_snaps})"
+            )
+        if self.kill_step_move_threshold > 0 and self.kill_step_move_pause_snaps == 0:
+            raise ValueError(
+                "kill_step_move_pause_snaps must be > 0 when "
+                "kill_step_move_threshold is enabled"
+            )
+        if self.kill_intraday_pnl_threshold < 0:
+            raise ValueError(
+                "kill_intraday_pnl_threshold must be >= 0 "
+                f"(got {self.kill_intraday_pnl_threshold})"
+            )
+
 
 def _ols_fit_recent_mids(
     history: list[float],
@@ -354,6 +460,170 @@ def _adaptive_long_cap(
     if slope >= mid_slope:
         return min(static_ceiling, mid_cap), "mid"
     return min(static_ceiling, low_cap), "low"
+
+
+# ---- Round-2 kill-switch state keys on ProductMemory ----
+# All kill-switch state lives under these well-known keys so a
+# strategy rewrite can clean them up without grepping. Counters are
+# integers; flags are 0/1 integers (ProductMemory.flags stores
+# booleans, but we keep counts on counters for symmetry). Values are
+# floats for mid references.
+_KS_SEEN_TS_HIGH = "kill_seen_ts_high"  # high-watermark timestamp
+_KS_CONSEC_NEG_SLOPE = "kill_consec_neg_slope"
+_KS_SLOPE_PAUSE_LEFT = "kill_slope_pause_left"
+_KS_RESIDUAL_ACTIVE = "kill_residual_active"  # 0/1 latch (hysteresis)
+_KS_STEP_PAUSE_LEFT = "kill_step_pause_left"
+_KS_INTRADAY_HALT = "kill_intraday_halt"  # 0/1, sticky per day
+_KSV_DAY_OPEN_MID = "kill_day_open_mid"
+_KSV_LAST_MID = "kill_last_mid"
+
+
+@dataclass(frozen=True)
+class KillSwitchDecision:
+    """Result of evaluating all four Round-2 kill switches.
+
+    ``buy_paused`` nullifies BUY-side intents for the current step.
+    ``all_paused`` nullifies BOTH sides for the current step and is
+    sticky for the day (intraday-PnL kill). ``reasons`` is a tuple of
+    short tags for diagnostic metadata (order of firing, deduped).
+    """
+
+    buy_paused: bool
+    all_paused: bool
+    reasons: tuple[str, ...]
+
+
+def _reset_kill_switch_day_state(memory_counters: dict[str, int], memory_values: dict[str, float]) -> None:
+    for key in (
+        _KS_CONSEC_NEG_SLOPE,
+        _KS_SLOPE_PAUSE_LEFT,
+        _KS_RESIDUAL_ACTIVE,
+        _KS_STEP_PAUSE_LEFT,
+        _KS_INTRADAY_HALT,
+    ):
+        memory_counters.pop(key, None)
+    for key in (_KSV_DAY_OPEN_MID, _KSV_LAST_MID):
+        memory_values.pop(key, None)
+
+
+def evaluate_kill_switches(
+    *,
+    params: CoreLongParams,
+    snapshot_timestamp: int,
+    current_mid: float | None,
+    position: int,
+    slope: float | None,
+    residual: float | None,
+    memory_counters: dict[str, int],
+    memory_values: dict[str, float],
+) -> KillSwitchDecision:
+    """Update kill-switch state and return the firing decision.
+
+    This helper is deliberately side-effectful on ``memory_counters``
+    / ``memory_values`` — the latches and countdowns MUST persist
+    across snapshots. It is pure otherwise (no I/O, no globals).
+    """
+    reasons: list[str] = []
+    buy_paused = False
+    all_paused = False
+
+    # --- Day-rollover reset ---
+    seen_high = memory_counters.get(_KS_SEEN_TS_HIGH)
+    if seen_high is not None and snapshot_timestamp < seen_high:
+        _reset_kill_switch_day_state(memory_counters, memory_values)
+    memory_counters[_KS_SEEN_TS_HIGH] = max(
+        int(snapshot_timestamp), int(seen_high) if seen_high is not None else 0
+    )
+
+    if current_mid is None:
+        # No observation this step → leave state alone, report no firing.
+        return KillSwitchDecision(False, False, tuple())
+
+    # --- Anchor the day's opening mid (first real observation per day) ---
+    if _KSV_DAY_OPEN_MID not in memory_values:
+        memory_values[_KSV_DAY_OPEN_MID] = float(current_mid)
+
+    # --- Signal #4: sticky intraday PnL halt ---
+    if memory_counters.get(_KS_INTRADAY_HALT, 0):
+        # Already halted for the day.
+        return KillSwitchDecision(False, True, ("intraday_pnl_halt",))
+    if params.kill_intraday_pnl_threshold > 0:
+        day_open = memory_values.get(_KSV_DAY_OPEN_MID)
+        if day_open is not None:
+            intraday_mtm = float(position) * (float(current_mid) - float(day_open))
+            if intraday_mtm <= -float(params.kill_intraday_pnl_threshold):
+                memory_counters[_KS_INTRADAY_HALT] = 1
+                return KillSwitchDecision(
+                    False, True, ("intraday_pnl_halt",)
+                )
+
+    # --- Signal #1: rolling-slope consecutive-negative counter ---
+    if params.kill_consecutive_neg_slope_n > 0:
+        pause_left = memory_counters.get(_KS_SLOPE_PAUSE_LEFT, 0)
+        if pause_left > 0:
+            buy_paused = True
+            reasons.append("slope_pause")
+            memory_counters[_KS_SLOPE_PAUSE_LEFT] = pause_left - 1
+        else:
+            consec = memory_counters.get(_KS_CONSEC_NEG_SLOPE, 0)
+            if slope is not None and slope < 0:
+                consec += 1
+            else:
+                consec = 0
+            if consec >= params.kill_consecutive_neg_slope_n:
+                # Firing snap is snap #1 of the pause window; remaining
+                # countdown is pause_snaps - 1 (clamped, so pause=1
+                # means "pause only this firing snap").
+                memory_counters[_KS_SLOPE_PAUSE_LEFT] = max(
+                    0, int(params.kill_slope_pause_snaps) - 1
+                )
+                memory_counters[_KS_CONSEC_NEG_SLOPE] = 0
+                buy_paused = True
+                reasons.append("slope_fire")
+            else:
+                memory_counters[_KS_CONSEC_NEG_SLOPE] = consec
+
+    # --- Signal #2: residual-vs-drift latch (hysteresis) ---
+    if params.kill_residual_threshold > 0 and residual is not None:
+        active = memory_counters.get(_KS_RESIDUAL_ACTIVE, 0)
+        if active:
+            # Released when residual climbs back above -release.
+            if residual >= -float(params.kill_residual_release):
+                memory_counters[_KS_RESIDUAL_ACTIVE] = 0
+            else:
+                buy_paused = True
+                reasons.append("residual_pause")
+        else:
+            if residual <= -float(params.kill_residual_threshold):
+                memory_counters[_KS_RESIDUAL_ACTIVE] = 1
+                buy_paused = True
+                reasons.append("residual_fire")
+
+    # --- Signal #3: single-step Δmid spike (countdown) ---
+    if params.kill_step_move_threshold > 0:
+        step_left = memory_counters.get(_KS_STEP_PAUSE_LEFT, 0)
+        last_mid = memory_values.get(_KSV_LAST_MID)
+        fired_this_snap = False
+        if last_mid is not None:
+            delta = float(current_mid) - float(last_mid)
+            if delta <= -float(params.kill_step_move_threshold):
+                # Firing snap is #1 of the pause window; remaining
+                # countdown is pause_snaps - 1 (clamped).
+                step_left = max(0, int(params.kill_step_move_pause_snaps) - 1)
+                reasons.append("step_move_fire")
+                buy_paused = True
+                fired_this_snap = True
+                memory_counters[_KS_STEP_PAUSE_LEFT] = step_left
+        if not fired_this_snap:
+            if step_left > 0:
+                buy_paused = True
+                reasons.append("step_pause")
+                memory_counters[_KS_STEP_PAUSE_LEFT] = step_left - 1
+
+    # Record current mid as the reference for next step's Δmid check.
+    memory_values[_KSV_LAST_MID] = float(current_mid)
+
+    return KillSwitchDecision(buy_paused=buy_paused, all_paused=all_paused, reasons=tuple(reasons))
 
 
 def compute_target_position(
@@ -510,6 +780,32 @@ class PepperCoreLongStrategy(BaseStrategy):
         if guard_active:
             raw_target = min(raw_target, params.guard_target)
 
+        # ---- Round-2 kill-switch evaluation ----
+        # Uses the guard_window OLS slope as the signal for the
+        # rolling-slope check when that window is available; falls back
+        # to a dedicated ``kill_slope_window`` fit otherwise so the
+        # kill switch can run without the guard_* machinery enabled.
+        kill_slope = guard_slope
+        if kill_slope is None and params.kill_consecutive_neg_slope_n > 0:
+            kill_fit = _ols_fit_recent_mids(
+                context.memory.recent_mids,
+                snapshot.mid,
+                window=params.kill_slope_window,
+            )
+            if kill_fit is not None:
+                kill_slope = kill_fit[0]
+
+        kill_decision = evaluate_kill_switches(
+            params=params,
+            snapshot_timestamp=snapshot.timestamp,
+            current_mid=snapshot.mid,
+            position=snapshot.position,
+            slope=kill_slope,
+            residual=residual,
+            memory_counters=context.memory.counters,
+            memory_values=context.memory.values,
+        )
+
         # Step-rate-limit the adjustment toward the target.
         raw_gap = raw_target - snapshot.position
         step_clipped_gap = max(-params.step, min(params.step, raw_gap))
@@ -624,6 +920,23 @@ class PepperCoreLongStrategy(BaseStrategy):
             ask_size = 0
             ask_price = None
 
+        # ---- Round-2 kill-switch gating ----
+        # Four kill switches can independently pause or halt trading.
+        # They NEVER force-flatten an existing position; they only
+        # suppress new BUY intents (or both sides for intraday-PnL).
+        # See ``evaluate_kill_switches`` for firing rules.
+        if kill_decision.all_paused:
+            buy_below = None
+            sell_above = None
+            bid_size = 0
+            ask_size = 0
+            bid_price = None
+            ask_price = None
+        elif kill_decision.buy_paused:
+            buy_below = None
+            bid_size = 0
+            bid_price = None
+
         mode: ExecutionMode = "hybrid"
         rationale = "pepper_core_long"
 
@@ -660,6 +973,9 @@ class PepperCoreLongStrategy(BaseStrategy):
             "adaptive_caps_enabled": params.adaptive_caps_enabled,
             "adaptive_band": adaptive_band,
             "adaptive_ceiling": adaptive_ceiling,
+            "kill_buy_paused": kill_decision.buy_paused,
+            "kill_all_paused": kill_decision.all_paused,
+            "kill_reasons": ",".join(kill_decision.reasons) if kill_decision.reasons else "",
         }
         return SignalIntent(
             product=product,
