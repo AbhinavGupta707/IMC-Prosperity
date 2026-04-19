@@ -331,6 +331,62 @@ def discord_poll_discounted_p4r2(troll_discount: float = 0.5) -> VPrior:
     return _normalize_pmf(raw)
 
 
+def active_submitters_only_blend(
+    coaster_share: float = 0.08,
+    maf_insurance_share: float = 0.18,
+    thirds_share: float = 0.18,
+    mid_share: float = 0.20,
+    half_share: float = 0.12,
+    high_share: float = 0.08,
+    extreme_share: float = 0.06,
+    uniform_share: float = 0.10,
+) -> VPrior:
+    """Prior over ACTIVE submitters only.
+
+    Per the Synthia admin clarification, teams that don't submit a
+    manual allocation are EXCLUDED from the speed rank pool. The
+    Discord poll's "17% at v=0" figure therefore over-states the true
+    rank-pool v=0 mass: most apparent coasters don't submit at all.
+    Among teams that DO submit, deliberate v=0 is rarer (~5-10%).
+
+    Default composition (sums to 1.0):
+      - coaster_share=0.08       deliberate v=0 (rare)
+      - maf_insurance_share=0.18  v=5..12 cluster (FOC + insurance)
+      - thirds_share=0.18        v=25..35 cluster (thirds + "27" meme)
+      - mid_share=0.20           v=36..45
+      - half_share=0.12          v=50 spike
+      - high_share=0.08          v=55..70
+      - extreme_share=0.06       v=85..100 residual (lower than Discord 21%)
+      - uniform_share=0.10       spread v=0..100
+    """
+    total = (
+        coaster_share + maf_insurance_share + thirds_share + mid_share
+        + half_share + high_share + extreme_share + uniform_share
+    )
+    if not math.isclose(total, 1.0, abs_tol=1e-6):
+        raise ValueError(f"shares must sum to 1.0, got {total}")
+
+    weights = [0.0] * (MAX_PCT + 1)
+    weights[0] = coaster_share
+    maf_range = list(range(5, 13))
+    tri_weights = [1, 2, 3, 4, 4, 3, 2, 1]
+    tri_sum = sum(tri_weights)
+    for v, w in zip(maf_range, tri_weights):
+        weights[v] += maf_insurance_share * w / tri_sum
+    for v, rel in [(25, 0.1), (27, 0.25), (30, 0.15), (33, 0.30), (35, 0.20)]:
+        weights[v] += thirds_share * rel
+    for v in range(36, 46):
+        weights[v] += mid_share / 10
+    weights[50] += half_share
+    for v in range(55, 71):
+        weights[v] += high_share / 16
+    for v in range(85, 101):
+        weights[v] += extreme_share / 16
+    for v in range(MAX_PCT + 1):
+        weights[v] += uniform_share / (MAX_PCT + 1)
+    return _normalize_pmf(weights)
+
+
 def discord_realistic_blend_p4r2(
     discord_engagement: float = 0.35,
     troll_discount: float = 0.4,

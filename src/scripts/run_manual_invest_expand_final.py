@@ -26,6 +26,7 @@ from src.manual_rounds.invest_expand_decision import (
 )
 from src.manual_rounds.invest_expand_priors import (
     VPrior,
+    active_submitters_only_blend,
     consensus_cluster,
     discord_poll_discounted_p4r2,
     discord_poll_raw_p4r2,
@@ -88,6 +89,31 @@ def final_prior_library() -> dict[str, VPrior]:
                 (0.15, uniform(0, 100)),
             ]
         ),
+        # Active-submitters-only family: corrects the Discord-poll
+        # conflation of R1 non-submitters with R2 deliberate-v=0 teams.
+        # Since non-submitters are excluded from the speed rank pool,
+        # the true v=0 mass is smaller than the poll suggests.
+        "active_submitters_base": active_submitters_only_blend(),
+        "active_submitters_mid_heavy": active_submitters_only_blend(
+            coaster_share=0.05,
+            maf_insurance_share=0.15,
+            thirds_share=0.22,
+            mid_share=0.25,
+            half_share=0.12,
+            high_share=0.08,
+            extreme_share=0.03,
+            uniform_share=0.10,
+        ),
+        "active_submitters_low_heavy": active_submitters_only_blend(
+            coaster_share=0.10,
+            maf_insurance_share=0.25,
+            thirds_share=0.22,
+            mid_share=0.15,
+            half_share=0.10,
+            high_share=0.05,
+            extreme_share=0.03,
+            uniform_share=0.10,
+        ),
         "all_thirds_schelling": naive_thirds(),
         "all_half_schelling": spike(50),
         "all_coast": naive_ignore_speed(),
@@ -117,20 +143,36 @@ def default_subjective_weights() -> dict[str, float]:
         than most-likely.
       - Uniform_flat is the "I know nothing" baseline: 5%.
     """
+    # v3 (post-critical-review):
+    # - Discord down-weighted to 25% cumulative (reference, not truth;
+    #   self-selected sample, spite/lying inflates tails, 17%-at-v=0
+    #   was conflated with R1-non-submitter stat).
+    # - Active-submitters-only family added at 40% (primary belief
+    #   about the rank pool after excluding non-submitters).
+    # - Other weights unchanged.
+    # weighted_meta_regret normalises internally; exact sum-to-1 optional.
     return {
-        "discord_poll_raw": 0.05,            # small: raw poll likely biased
-        "discord_poll_mild_discount": 0.10,  # small troll discount
-        "discord_poll_heavy_discount": 0.05,  # heavy discount, less plausible
-        "discord_blend_35pct_engage": 0.25,  # primary realistic guess
-        "discord_blend_50pct_engage": 0.10,
-        "discord_blend_20pct_engage": 0.10,
+        # Discord family: 25% (reference, not truth)
+        "discord_poll_raw": 0.02,
+        "discord_poll_mild_discount": 0.05,
+        "discord_poll_heavy_discount": 0.03,
+        "discord_blend_35pct_engage": 0.08,
+        "discord_blend_50pct_engage": 0.04,
+        "discord_blend_20pct_engage": 0.03,
+        # Active-submitters-only family: 40% (primary belief)
+        "active_submitters_base": 0.20,
+        "active_submitters_mid_heavy": 0.14,
+        "active_submitters_low_heavy": 0.06,
+        # Legacy pre-Discord ensemble: 10%
         "rjav1_blend_ensemble": 0.10,
-        "maf_cluster_v5_heavy": 0.05,
+        # Focal-cluster / MAF: 9%
+        "maf_cluster_v5_heavy": 0.04,
         "maf_cluster_v27_meme": 0.05,
+        # Edge / Schelling worst-cases: 11%
         "all_thirds_schelling": 0.03,
         "all_half_schelling": 0.02,
-        "all_coast": 0.05,
-        "uniform_flat": 0.05,
+        "all_coast": 0.03,
+        "uniform_flat": 0.03,
     }
 
 
