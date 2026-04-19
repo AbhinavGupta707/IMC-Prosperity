@@ -43,6 +43,12 @@ from src.strategies.base import BaseStrategy, StrategyContext
 
 _LOG = logging.getLogger(__name__)
 
+# Memory key used by the day-rollover detector to remember the last
+# snapshot.timestamp we saw for a product. A new snapshot whose
+# timestamp is *less than* this value indicates the simulator has
+# rolled over to a new day (timestamps reset to 0 on each new day).
+_LAST_SEEN_TIMESTAMP_KEY = "last_seen_timestamp"
+
 
 class Trader:
     def __init__(
@@ -128,6 +134,11 @@ class Trader:
                 continue
 
             memory = engine_state.for_product(product)
+            self._maybe_flush_for_day_rollover(
+                memory=memory,
+                snapshot=snapshot,
+                product_config=product_config,
+            )
             legal_orders = self._step_product(
                 product=product,
                 snapshot=snapshot,
@@ -138,6 +149,7 @@ class Trader:
             )
             results[product] = legal_orders
             self._update_memory(memory, snapshot, product_config.history_length)
+            memory.counters[_LAST_SEEN_TIMESTAMP_KEY] = int(snapshot.timestamp)
 
         trader_data = self.state_store.save(engine_state)
         conversions = 0
@@ -206,6 +218,38 @@ class Trader:
                 event["scan_flags"] = list(flow_report.flags)
         self.logger.record(event)
         return legal_orders
+
+    @staticmethod
+    def _maybe_flush_for_day_rollover(
+        *,
+        memory: ProductMemory,
+        snapshot: NormalizedSnapshot,
+        product_config: ProductConfig,
+    ) -> None:
+        """Detect a day boundary and flush stale rolling history.
+
+        IMC Prosperity restarts ``snapshot.timestamp`` at 0 on each new
+        simulated day. For products whose fair value depends on a
+        recent-mids fit (PEPPER's ``linear_drift``), retaining the
+        previous day's mids across the rollover mis-anchors the line
+        and produces large warm-up errors on the first ~30 ticks.
+
+        Detection rule: if the new ``snapshot.timestamp`` is strictly
+        less than the last one we saw for this product, the simulator
+        has rolled over. We then clear ``recent_mids`` and
+        ``recent_spreads`` so the estimator cold-starts cleanly.
+        ``counters``, ``flags`` and ``values`` are left untouched —
+        any strategy that needs day-scoped state owns its own reset.
+        """
+        if not product_config.flush_history_on_day_rollover:
+            return
+        last_seen = memory.counters.get(_LAST_SEEN_TIMESTAMP_KEY)
+        if last_seen is None:
+            return
+        if snapshot.timestamp >= last_seen:
+            return
+        memory.recent_mids.clear()
+        memory.recent_spreads.clear()
 
     @staticmethod
     def _update_memory(

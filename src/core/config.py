@@ -71,6 +71,15 @@ class ProductConfig:
     early_short_cap: int | None = None
     early_short_skew_mult: float = 1.0
     early_short_flatten: float | None = None
+    # Round-2 day-rollover handling: when True, the trader detects a
+    # timestamp reset (snapshot.timestamp < last seen) and flushes
+    # ``memory.recent_mids`` and ``memory.recent_spreads`` for this
+    # product before the strategy runs. Required for any product whose
+    # fair value depends on a fitted line that mis-anchors when stale
+    # cross-day mids leak in (PEPPER's ``linear_drift`` is the
+    # canonical case). Default False preserves Round-1 behaviour for
+    # every other product.
+    flush_history_on_day_rollover: bool = False
 
     def __post_init__(self) -> None:
         if self.strategy_name not in KNOWN_STRATEGY_NAMES:
