@@ -1,0 +1,18 @@
+{
+  "ash_final_position": 31,
+  "ash_pnl": 9847.0,
+  "ash_trades": 681,
+  "flush_pepper": false,
+  "label": "cold",
+  "pep_final_position": 80,
+  "pep_near_limit_steps": 29973,
+  "pep_pnl": 239528.0,
+  "pep_trades": 308,
+  "per_day_pep_pnl": {
+    "-1": 79341.0,
+    "0": 79959.0,
+    "1": 80228.0
+  },
+  "steps": 30000,
+  "total_pnl": 249375.0
+}
