@@ -694,3 +694,60 @@ def round1_alt_engine_config() -> EngineConfig:
             history_length=32,
         ),
     )
+
+
+def round2_v5micro_wide113_engine_config() -> EngineConfig:
+    """Round-2 promoted: v5_micro PEPPER + wide-w113 ASH ladder.
+
+    Identical to ``round1_combined_v5micro_l1_engine_config`` on the
+    PEPPER leg (the deterministic +80k/day annuity validated in batch
+    C). The ASH leg is the **batch-D1 sweep winner** — wider edges
+    with outer-heavy weights, which beat the R1 L1 ladder by +20%
+    (+1 938 XIRECs) on the R2 tape.
+
+    PEPPER leg: pepper_core_long with v5_micro CoreLongParams (open
+    seed=65, window=500, exec_style=taker, guard_window=32, etc.).
+    Kill switches DISABLED — batch D2 confirmed the strategy's own
+    guard machinery already covers tail protection on this stack.
+
+    ASH leg: ash_ladder with edges (3.0, 5.0, 8.0), size_mults
+    (1.0, 2.0, 3.0), weights (1, 1, 3), skew_coef=1.0, flatten=0.7.
+    See ``outputs/round_2/ash_sweep.md`` for the sweep evidence.
+
+    Both `strategy_name` values reference research-only strategies
+    that are not in the live STRATEGY_REGISTRY; the export bundler
+    inlines them and registers them at bundle tail. Calling this
+    factory directly outside the bundler will raise — the bundler
+    temporarily whitelists the names during construction.
+
+    `bid_value` defaults to 0; the export script's `--bid` flag
+    wraps the factory call with `with_bid_value(...)` to embed the
+    Round-2 MAF auction bid (recommended 2 300 per batch D3).
+    """
+    return _round1_engine_with(
+        ASH_COATED_OSMIUM=dict(
+            strategy_name="ash_ladder",
+            fair_value_method="weighted_mid",
+            fair_value_fallbacks=("wall_mid", "mid"),
+            maker_edge=2.5,  # outer ladder edge in wide config
+            taker_edge=0.5,
+            flatten_threshold=0.7,
+            flush_history_on_day_rollover=False,
+        ),
+        INTARIAN_PEPPER_ROOT=dict(
+            strategy_name="pepper_core_long",
+            fair_value_method="linear_drift",
+            fair_value_fallbacks=("depth_mid", "hybrid_wall_micro", "mid"),
+            taker_edge=2.0,
+            maker_edge=1.0,
+            quote_size=10,
+            max_aggressive_size=20,
+            inventory_skew=2.0,
+            flatten_threshold=0.7,
+            history_length=32,
+            # Day-rollover flush is a no-op on this stack (batch C
+            # showed open_seed_size hack already handles rollover) but
+            # we leave the flag enabled for hygiene — costs zero.
+            flush_history_on_day_rollover=True,
+        ),
+    )
