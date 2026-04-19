@@ -1037,7 +1037,7 @@ _LAST_SEEN_TIMESTAMP_KEY = 'last_seen_timestamp'
 class Trader:
 
     def __init__(self, config: EngineConfig | None=None, *, state_store: StateStore | None=None, reraise_exceptions: bool=False) -> None:
-        self.config = config or with_bid_value(round2_v5micro_wide113_engine_config(), 350)
+        self.config = config or with_bid_value(round2_v5micro_wide113_engine_config(), 500)
         self.state_store = state_store or StateStore(version=self.config.state_version, max_chars=self.config.max_trader_data_chars)
         self.market_data = MarketDataAdapter()
         self.fair_value_engine = FairValueEngine()
