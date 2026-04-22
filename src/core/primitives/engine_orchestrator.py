@@ -127,9 +127,17 @@ class EngineOrchestrator:
         *,
         risk: PortfolioRiskManager | None = None,
         crash_config: CrashTelemetryConfig | None = None,
+        signal_bus: SignalBus | None = None,
     ) -> None:
         self._engines: list[PersistableEngine] = list(engines or [])
-        self.signal_bus = SignalBus()
+        # Canonical wiring: every engine that wants its emits to reach
+        # other engines MUST share this bus. Construct the bus first,
+        # pass it to ``signal_bus`` here AND to each engine's ``bus=``
+        # constructor argument. If ``signal_bus`` is None, we create a
+        # fresh bus — callers who did not share one explicitly can reach
+        # it via ``orchestrator.signal_bus`` and pass it to subsequent
+        # components.
+        self.signal_bus = signal_bus or SignalBus()
         self.risk = risk or PortfolioRiskManager()
         self._crash_config = crash_config or CrashTelemetryConfig()
         self._telemetry = CrashTelemetryState()

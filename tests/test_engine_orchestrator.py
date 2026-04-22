@@ -135,6 +135,28 @@ def test_orchestrator_rejects_empty_engine_id():
         EngineOrchestrator(engines=[_FakeEngine(engine_id="")])
 
 
+@pytest.mark.unit
+def test_orchestrator_accepts_pre_built_signal_bus():
+    """Canonical wiring: a shared SignalBus is passed to both the
+    orchestrator and each engine's ``bus=`` constructor arg. This
+    test locks that contract in so signals emitted by one engine
+    reach another engine (and the per-tick clear() hits the right
+    instance).
+    """
+    shared = SignalBus()
+    orch = EngineOrchestrator(engines=[], signal_bus=shared)
+    assert orch.signal_bus is shared, (
+        "orchestrator must use the injected bus, not a fresh one"
+    )
+
+
+@pytest.mark.unit
+def test_orchestrator_creates_default_bus_when_none_provided():
+    """Legacy callers that did not pass a bus still get a usable one."""
+    orch = EngineOrchestrator(engines=[])
+    assert orch.signal_bus is not None
+
+
 # ============================================================= step
 
 

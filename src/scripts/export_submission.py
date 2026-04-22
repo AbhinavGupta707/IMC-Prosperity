@@ -66,27 +66,76 @@ LIVE_MODULE_ORDER: tuple[str, ...] = (
     "src/trader.py",
 )
 # NOTE: ``src/core/primitives/*`` and ``src/conversions/*`` are deliberately
-# NOT in the bundle. R2 Prosperity submissions don't use the orchestrator
-# path (Trader is constructed with orchestrator=None), so bundling those
-# modules would waste the 120KB bundle budget. R3+ submissions that enable
-# an orchestrator must extend LIVE_MODULE_ORDER (or ship a separate
-# R3 bundle) to include the additional modules.
+# NOT in the R2 bundle. R2 Prosperity submissions construct Trader with
+# orchestrator=None, so shipping those modules would waste the 120KB
+# bundle budget. R3+ submissions use ``R3_MODULE_ORDER`` below.
+
+# R3+ extension. Adds only the cross-product primitives the Trader +
+# Orchestrator CONTRACT needs. Engine-specific helpers (sst,
+# volume_robust_mid, hysteresis_sizer, predictive_estimator) and
+# research-only modules (signal_validation, sweep_selector) are
+# deliberately NOT in this default; opt them in per submission via
+# ``ExportOptions.extra_modules`` when the engines that consume them
+# are being shipped, to keep the core R3 bundle under 120 KB.
+#
+# Modules omitted on purpose:
+#   - fill_calibration.py    — offline backtest harness (imports src.backtest.*)
+#   - sst.py                 — consumed by engines, not by Trader directly
+#   - volume_robust_mid.py   — ditto
+#   - hysteresis_sizer.py    — ditto
+#   - predictive_estimator.py — fair-value extension, opt-in per product
+#   - signal_validation.py   — offline validation harness
+#   - sweep_selector.py      — offline sweep-evaluation harness
+R3_MODULE_ORDER: tuple[str, ...] = (
+    *LIVE_MODULE_ORDER[:-1],  # everything up to but NOT including trader.py
+    "src/core/primitives/__init__.py",
+    "src/core/primitives/crash_telemetry.py",
+    "src/core/primitives/portfolio_context.py",
+    "src/core/primitives/portfolio_risk.py",
+    "src/core/primitives/signal_bus.py",
+    "src/core/primitives/engine_orchestrator.py",
+    "src/conversions/__init__.py",
+    "src/conversions/layer.py",
+    "src/conversions/adapter.py",
+    "src/trader.py",
+)
 
 DATAMODEL_PATH: str = "src/datamodel.py"
 
 DEFAULT_OUTPUT: Path = REPO_ROOT / "outputs" / "submissions" / "trader_submission.py"
 
 DATAMODEL_MODES = ("platform", "inline")
+EXPORT_PROFILES = ("r2", "r3")
 
 _BANNER_RULE = "# " + "=" * 72
 
 
 @dataclass(frozen=True)
 class ExportOptions:
-    """User-facing knobs for the exporter."""
+    """User-facing knobs for the exporter.
+
+    ``profile`` selects the module-order manifest:
+
+    - ``"r2"`` (default): the R1/R2 live path — no orchestrator, no
+      primitives, no conversion plumbing. Produces a ~65 KB bundle
+      that stays well under the 120 KB hard cap.
+    - ``"r3"``: R1/R2 core PLUS cross-product primitives and the
+      conversion adapter. Use when the shipped Trader constructs an
+      ``EngineOrchestrator``. Expect ~100 KB; engines (options_mm,
+      basket_arb, stat_arb, counterparty_intel) are deliberately opt-in
+      per submission — add them via ``extra_modules``.
+    """
 
     datamodel_mode: str = "platform"
     output_path: Path = DEFAULT_OUTPUT
+    profile: str = "r2"
+    extra_modules: tuple[str, ...] = ()
+    """Extra ``src/...`` paths appended to the selected profile's order.
+
+    Use for per-round engine opt-in (e.g. add
+    ``("src/options/bsm.py", "src/engines/options_mm.py")`` when
+    shipping an options engine). Paths must exist under the repo root.
+    """
 
     def __post_init__(self) -> None:
         if self.datamodel_mode not in DATAMODEL_MODES:
@@ -94,6 +143,16 @@ class ExportOptions:
                 f"datamodel_mode must be one of {DATAMODEL_MODES!r} "
                 f"(got {self.datamodel_mode!r})"
             )
+        if self.profile not in EXPORT_PROFILES:
+            raise ValueError(
+                f"profile must be one of {EXPORT_PROFILES!r} (got {self.profile!r})"
+            )
+
+
+def _module_order_for(profile: str) -> tuple[str, ...]:
+    if profile == "r3":
+        return R3_MODULE_ORDER
+    return LIVE_MODULE_ORDER
 
 
 @dataclass
@@ -426,7 +485,18 @@ def build_submission_source(
     options = options or ExportOptions()
     root = root or REPO_ROOT
 
-    module_paths: list[str] = list(LIVE_MODULE_ORDER)
+    base_order = list(_module_order_for(options.profile))
+    # Append per-submission extra modules (engines, options math, etc).
+    # De-dupe while preserving order so calling with extras containing
+    # a path already in the profile is a no-op.
+    seen_in_base = set(base_order)
+    for extra in options.extra_modules:
+        if extra in seen_in_base:
+            continue
+        base_order.append(extra)
+        seen_in_base.add(extra)
+
+    module_paths: list[str] = list(base_order)
     if options.datamodel_mode == "inline":
         module_paths = [DATAMODEL_PATH, *module_paths]
 
@@ -434,7 +504,7 @@ def build_submission_source(
     # order list: forgetting to add a new live module. This raises
     # before any bundling work so the error message is the first
     # thing the caller sees.
-    verify_live_module_order(list(LIVE_MODULE_ORDER), root=root)
+    verify_live_module_order(base_order, root=root)
 
     stripped_modules: list[StrippedModule] = []
     all_hoisted: list[str] = []
