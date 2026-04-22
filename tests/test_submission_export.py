@@ -35,7 +35,9 @@ import pytest
 from src.scripts.export_submission import (
     DATAMODEL_PATH,
     DEFAULT_OUTPUT,
+    EXPORT_PROFILES,
     LIVE_MODULE_ORDER,
+    R3_MODULE_ORDER,
     ExportOptions,
     build_submission_source,
     strip_module,
@@ -564,3 +566,152 @@ def test_validator_platform_bundle_has_no_inline_warning() -> None:
     report = validate_source(bundle.source)
     warn_codes = {issue.code for issue in report.warnings}
     assert "inline_datamodel_dev_only" not in warn_codes
+
+
+# ============================================================ R3 profile
+
+
+@pytest.mark.unit
+def test_export_profiles_enumerate_expected_values() -> None:
+    assert set(EXPORT_PROFILES) == {"r2", "r3"}
+
+
+@pytest.mark.unit
+def test_r3_profile_is_superset_of_r2() -> None:
+    """Every R2 module must appear in R3 (R3 extends R2, doesn't replace)."""
+    r3_set = set(R3_MODULE_ORDER)
+    for mod in LIVE_MODULE_ORDER:
+        assert mod in r3_set, f"R3 bundle missing R2 module {mod!r}"
+
+
+@pytest.mark.unit
+def test_r3_profile_includes_orchestrator_primitives() -> None:
+    """Any orchestrator-enabled submission needs these 3 modules at minimum."""
+    required = {
+        "src/core/primitives/engine_orchestrator.py",
+        "src/core/primitives/portfolio_context.py",
+        "src/conversions/adapter.py",
+    }
+    missing = required - set(R3_MODULE_ORDER)
+    assert not missing, f"R3 profile missing required modules: {missing}"
+
+
+@pytest.mark.unit
+def test_r3_profile_places_trader_last() -> None:
+    """trader.py must be the last module so every dependency is defined
+    before Trader's bundled body references them."""
+    assert R3_MODULE_ORDER[-1] == "src/trader.py"
+
+
+@pytest.mark.unit
+def test_r3_bundle_has_no_residual_src_imports() -> None:
+    bundle = build_submission_source(
+        ExportOptions(datamodel_mode="platform", profile="r3"),
+    )
+    assert "from src." not in bundle.source, "R3 bundle leaked src import"
+    assert "import src." not in bundle.source, "R3 bundle leaked src import"
+    assert bundle.module_count == len(R3_MODULE_ORDER)
+
+
+@pytest.mark.unit
+def test_r3_bundle_is_deterministic() -> None:
+    a = build_submission_source(
+        ExportOptions(datamodel_mode="platform", profile="r3"),
+    ).source
+    b = build_submission_source(
+        ExportOptions(datamodel_mode="platform", profile="r3"),
+    ).source
+    assert a == b
+
+
+@pytest.mark.unit
+def test_r3_bundle_size_is_tracked() -> None:
+    """Track the core-R3 bundle size so growth is visible in diffs.
+
+    The R2 base bundle already sits at ~117 KB (near the self-imposed
+    120 KB soft cap and the Prosperity ~128 KB platform ceiling). The
+    R3 profile layers cross-product primitives on top — current size
+    is ~163 KB. This exceeds the platform cap and will require trimming
+    ``src/core/config.py`` (30 KB of R1/R2 product factories) before an
+    R3 submission can actually ship. This test does not fail on the
+    overage; it captures the floor + ceiling so the next regression
+    review surfaces any further growth.
+    """
+    bundle = build_submission_source(
+        ExportOptions(datamodel_mode="platform", profile="r3"),
+    )
+    # Floor: R3 must weigh more than bare R2 (otherwise the profile
+    # isn't actually pulling in its additional modules).
+    r2 = build_submission_source(
+        ExportOptions(datamodel_mode="platform", profile="r2"),
+    )
+    assert bundle.size_bytes > r2.size_bytes, (
+        "R3 bundle did not grow relative to R2 — profile not wired"
+    )
+    # Ceiling: alarm if we somehow balloon past 200 KB — at that point
+    # the trimming plan has been deferred too long.
+    assert bundle.size_bytes < 200 * 1024, (
+        f"R3 bundle has grown to {bundle.size_bytes}B; trim before shipping"
+    )
+
+
+@pytest.mark.unit
+def test_extra_modules_appended_to_profile() -> None:
+    """``extra_modules`` adds per-submission opt-in engines."""
+    bundle = build_submission_source(ExportOptions(
+        datamodel_mode="platform",
+        profile="r3",
+        extra_modules=("src/options/bsm.py",),
+    ))
+    assert bundle.module_count == len(R3_MODULE_ORDER) + 1
+    assert "# src/options/bsm.py" in bundle.source
+
+
+@pytest.mark.unit
+def test_extra_modules_dedupe_against_profile() -> None:
+    """Passing an extra already present in the profile is a no-op."""
+    # portfolio_context is already in R3_MODULE_ORDER.
+    bundle = build_submission_source(ExportOptions(
+        datamodel_mode="platform",
+        profile="r3",
+        extra_modules=("src/core/primitives/portfolio_context.py",),
+    ))
+    assert bundle.module_count == len(R3_MODULE_ORDER)
+
+
+@pytest.mark.unit
+def test_invalid_profile_raises() -> None:
+    with pytest.raises(ValueError, match="profile"):
+        ExportOptions(profile="r99")
+
+
+@pytest.mark.integration
+def test_dry_run_r3_bundle_executes_with_orchestrator(tmp_path: Path) -> None:
+    """R3 inline bundle boots and runs Trader.run(...) with an
+    EngineOrchestrator passed in. Proves the bundled primitives +
+    orchestrator + conversion adapter wire up end-to-end."""
+    bundle = build_submission_source(
+        ExportOptions(datamodel_mode="inline", profile="r3"),
+    )
+    path = tmp_path / "trader_submission_r3.py"
+    write_submission(bundle, path)
+
+    module_name = "_r3_smoke"
+    try:
+        module = _load_bundle_module(path, module_name)
+        assert hasattr(module, "Trader")
+        assert hasattr(module, "EngineOrchestrator")
+        assert hasattr(module, "build_portfolio_snapshot")
+        assert hasattr(module, "extract_remote_quotes")
+
+        # Build an empty orchestrator (engines are opt-in via extra_modules).
+        orch = module.EngineOrchestrator(engines=[])
+        trader = module.Trader(orchestrator=orch)
+        state = _empty_trading_state(module)
+        orders, conversions, trader_data = trader.run(state)
+
+        assert isinstance(orders, dict)
+        assert isinstance(conversions, int)
+        assert isinstance(trader_data, str)
+    finally:
+        sys.modules.pop(module_name, None)
