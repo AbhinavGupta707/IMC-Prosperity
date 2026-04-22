@@ -79,19 +79,26 @@ class StateStore:
 
         state = EngineState(version=self.version)
         raw_products = raw.get("products", {})
-        if not isinstance(raw_products, dict):
-            return state
+        if isinstance(raw_products, dict):
+            for product, payload in raw_products.items():
+                if not isinstance(product, str) or not isinstance(payload, dict):
+                    continue
+                state.products[product] = ProductMemory(
+                    recent_mids=self._coerce_float_list(payload.get("recent_mids")),
+                    recent_spreads=self._coerce_float_list(payload.get("recent_spreads")),
+                    counters=self._coerce_int_dict(payload.get("counters")),
+                    flags=self._coerce_bool_dict(payload.get("flags")),
+                    values=self._coerce_float_dict(payload.get("values")),
+                )
 
-        for product, payload in raw_products.items():
-            if not isinstance(product, str) or not isinstance(payload, dict):
-                continue
-            state.products[product] = ProductMemory(
-                recent_mids=self._coerce_float_list(payload.get("recent_mids")),
-                recent_spreads=self._coerce_float_list(payload.get("recent_spreads")),
-                counters=self._coerce_int_dict(payload.get("counters")),
-                flags=self._coerce_bool_dict(payload.get("flags")),
-                values=self._coerce_float_dict(payload.get("values")),
-            )
+        # R3+ engines: engine_id → opaque dict. We don't validate the
+        # shape — engines own their own deserialization via from_state().
+        raw_engines = raw.get("engines", {})
+        if isinstance(raw_engines, dict):
+            for engine_id, blob in raw_engines.items():
+                if not isinstance(engine_id, str) or not isinstance(blob, dict):
+                    continue
+                state.engines[engine_id] = blob
 
         return state
 
@@ -100,17 +107,23 @@ class StateStore:
     def save(self, state: EngineState) -> str:
         """Serialize ``state`` to a platform-safe string.
 
-        Strategy:
+        Budget-tiered strategy (each tier shrinks memory, never drops
+        engines state — engines own their own pruning via to_state()):
         1. Full encode with current contents.
-        2. If too big, encode a truncated version with the most recent
-           ``truncated_history_keep`` mids/spreads only.
-        3. If still too big, drop all product memory and return an
-           empty-products marker.
+        2. Truncate per-product mids/spreads to ``truncated_history_keep``.
+        3. Drop per-product memory entirely (engines-only).
+        4. Final fallback: empty payload with current version.
+
+        Rationale for preferring product-memory drop over engines drop:
+        engine state (Welford stats, smile fits, counterparty clusters)
+        is cold-start expensive. ProductMemory rolling windows rebuild
+        within ~100 ticks; losing engine state re-triggers 200+ tick
+        warmup on every basket/options/stat-arb engine.
 
         ``_encode`` uses ``allow_nan=False`` so NaN/Infinity leaking
-        into ``ProductMemory.values`` cannot produce spec-violating
-        JSON that Prosperity's parser would silently reject. If it
-        raises, we drop all memory rather than returning a bad blob.
+        into memory cannot produce spec-violating JSON that Prosperity's
+        parser would silently reject. If it raises, we drop all memory
+        rather than returning a bad blob.
         """
         try:
             payload = asdict(state)
@@ -120,7 +133,12 @@ class StateStore:
             if len(encoded) <= self.max_chars:
                 return encoded
 
-            compact: dict[str, Any] = {"version": self.version, "products": {}}
+            # Tier 2: truncate per-product rolling history.
+            compact: dict[str, Any] = {
+                "version": self.version,
+                "products": {},
+                "engines": dict(state.engines),
+            }
             for product, memory in state.products.items():
                 compact["products"][product] = {
                     "recent_mids": memory.recent_mids[-self.truncated_history_keep :],
@@ -132,16 +150,29 @@ class StateStore:
             encoded = self._encode(compact)
             if len(encoded) <= self.max_chars:
                 return encoded
+
+            # Tier 3: drop product memory, keep engines.
+            engines_only = {
+                "version": self.version,
+                "products": {},
+                "engines": dict(state.engines),
+            }
+            encoded = self._encode(engines_only)
+            if len(encoded) <= self.max_chars:
+                return encoded
         except ValueError:
             warnings.warn(
                 "StateStore.save refused to emit non-finite values "
-                "(NaN/Infinity) and dropped all product memory for this "
-                "iteration. Investigate which strategy wrote the bad value.",
+                "(NaN/Infinity) and dropped all memory for this iteration. "
+                "Investigate which strategy wrote the bad value.",
                 RuntimeWarning,
                 stacklevel=2,
             )
 
-        return self._encode({"version": self.version, "products": {}})
+        # Tier 4: empty payload.
+        return self._encode(
+            {"version": self.version, "products": {}, "engines": {}}
+        )
 
     # -------------------------------------------------------------- migrate
 

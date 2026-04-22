@@ -129,8 +129,18 @@ class ProductMemory:
 
 @dataclass
 class EngineState:
+    """Persistent state carried across ticks via ``traderData``.
+
+    - ``products``: legacy per-product rolling memory (unchanged).
+    - ``engines``: R3+ cross-product engine state keyed by engine_id.
+      Each engine owns its own JSON-serializable sub-dict. StateStore
+      round-trips the dict; engines are responsible for their own
+      serialization shape via ``to_state()`` / ``from_state()``.
+    """
+
     version: int = 1
     products: dict[Product, ProductMemory] = field(default_factory=dict)
+    engines: dict[str, dict] = field(default_factory=dict)
 
     def for_product(self, product: Product) -> ProductMemory:
         memory = self.products.get(product)
@@ -138,6 +148,18 @@ class EngineState:
             memory = ProductMemory()
             self.products[product] = memory
         return memory
+
+    def for_engine(self, engine_id: str) -> dict:
+        """Return the persisted state blob for an engine, or an empty dict."""
+        blob = self.engines.get(engine_id)
+        if blob is None:
+            blob = {}
+            self.engines[engine_id] = blob
+        return blob
+
+    def set_engine_state(self, engine_id: str, blob: dict) -> None:
+        """Overwrite the persisted state for an engine."""
+        self.engines[engine_id] = blob
 
 
 @dataclass(frozen=True)
