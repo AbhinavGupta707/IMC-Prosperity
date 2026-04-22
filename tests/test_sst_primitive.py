@@ -241,3 +241,93 @@ def test_sst_deterministic():
     )
     assert [(o.symbol, o.price, o.quantity) for o in d1.orders] == \
            [(o.symbol, o.price, o.quantity) for o in d2.orders]
+
+
+# ======================================================== quote-inside-wall
+
+
+@pytest.mark.unit
+def test_sst_inside_wall_pegs_quote_one_tick_inside_max_volume_level():
+    """With ``quote_inside_wall=True``, maker quotes sit one tick toward
+    mid from the largest-volume level on each side. F2 pattern.
+    """
+    # Wall bid at 9990 volume 50 (largest); best bid is 9998 volume 2.
+    # Wall ask at 10010 volume 50; best ask is 10002 volume 2.
+    snap = _book(
+        bids=[(9998, 2), (9990, 50), (9985, 5)],
+        asks=[(10002, 2), (10010, 50), (10015, 5)],
+    )
+    dec = take_clear_make(
+        product="TEST", fair_value=10000, snapshot=snap,
+        position=0, position_limit=80,
+        params=SSTParams(
+            quote_inside_wall=True,
+            wall_min_volume=10,
+            default_quote_size=20,
+            take_width=10.0,  # don't trigger take
+        ),
+    )
+    # Expected: bid at 9990 + 1 = 9991, ask at 10010 - 1 = 10009.
+    bids = [o for o in dec.orders if o.quantity > 0]
+    asks = [o for o in dec.orders if o.quantity < 0]
+    assert any(o.price == 9991 for o in bids), (
+        f"expected bid inside wall at 9991; got {[(o.price, o.quantity) for o in bids]}"
+    )
+    assert any(o.price == 10009 for o in asks), (
+        f"expected ask inside wall at 10009; got {[(o.price, o.quantity) for o in asks]}"
+    )
+
+
+@pytest.mark.unit
+def test_sst_inside_wall_falls_back_to_edge_when_no_wall():
+    """If no level meets ``wall_min_volume`` on a side, fall back to the
+    edge-from-fair maker pricing for that side.
+    """
+    # Every level volume below wall_min_volume=10.
+    snap = _book(bids=[(9990, 5), (9985, 3)], asks=[(10010, 5), (10015, 3)])
+    dec = take_clear_make(
+        product="TEST", fair_value=10000, snapshot=snap,
+        position=0, position_limit=80,
+        params=SSTParams(
+            quote_inside_wall=True,
+            wall_min_volume=10,
+            default_edge=2.0,
+            default_quote_size=20,
+            take_width=10.0,
+        ),
+    )
+    # Fall back to fair±edge: bid=9998, ask=10002.
+    bids = [o for o in dec.orders if o.quantity > 0]
+    asks = [o for o in dec.orders if o.quantity < 0]
+    assert any(o.price == 9998 for o in bids)
+    assert any(o.price == 10002 for o in asks)
+
+
+@pytest.mark.unit
+def test_sst_inside_wall_disabled_by_default():
+    """Default params preserve existing behaviour — no regression."""
+    params = SSTParams()
+    assert params.quote_inside_wall is False
+
+
+@pytest.mark.unit
+def test_sst_inside_wall_still_respects_do_not_cross_spread():
+    """Inside-wall must not post a bid at or above the opposing touch."""
+    # Best ask at 10005; wall bid at 10004 v 50 (pathological). The
+    # inside-wall candidate is 10005 which equals the opposing touch —
+    # engine must clamp to best_ask - 1 = 10004.
+    snap = _book(bids=[(10004, 50)], asks=[(10005, 20)])
+    dec = take_clear_make(
+        product="TEST", fair_value=10000, snapshot=snap,
+        position=0, position_limit=80,
+        params=SSTParams(
+            quote_inside_wall=True,
+            wall_min_volume=10,
+            default_quote_size=10,
+            take_width=50.0,  # no take
+        ),
+    )
+    bids = [o for o in dec.orders if o.quantity > 0]
+    # No bid may be at or above best ask (10005).
+    for o in bids:
+        assert o.price < 10005

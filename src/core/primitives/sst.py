@@ -85,6 +85,18 @@ class SSTParams:
     toxic_size_threshold: int = 2
     """Prints at or below this size count as toxic."""
 
+    # -------------------- Quote-inside-wall (Stanford / TimoDiehm pattern)
+    # When enabled, the Make phase places quotes one tick INSIDE the
+    # largest-volume level on each side, rather than at ``fair ± edge``
+    # or joining a visible wall. The wall absorbs toxic flow; we capture
+    # the remaining spread. F2 finding: this pattern consistently beat
+    # edge-from-fair maker pricing on stable R1/R2 products.
+    quote_inside_wall: bool = False
+    """If True, Make phase pegs quotes 1 tick inside the side's wall."""
+
+    wall_min_volume: int = 10
+    """Minimum volume for a level to qualify as a wall."""
+
     def __post_init__(self) -> None:
         for name, value in [
             ("take_width", self.take_width),
@@ -152,6 +164,28 @@ def _is_toxic(snapshot: NormalizedSnapshot, threshold: int) -> tuple[bool, bool]
         t.quantity <= threshold and t.price < mid for t in market_trades
     )
     return buy_toxic, sell_toxic
+
+
+def _pick_wall_level(
+    side_levels: tuple[BookLevel, ...],
+    min_volume: int,
+) -> BookLevel | None:
+    """Return the largest-volume level on a side whose volume >= min_volume.
+
+    Ties broken by closeness to the touch (first in ``side_levels``).
+    Returns ``None`` if no qualifying level exists. Used by the
+    quote-inside-wall pattern: the wall is the level we shelter behind.
+    """
+    if not side_levels:
+        return None
+    best: BookLevel | None = None
+    best_vol = -1
+    for level in side_levels:
+        if level.volume < min_volume:
+            continue
+        if level.volume > best_vol:
+            best, best_vol = level, level.volume
+    return best
 
 
 def _pick_join_level(
@@ -270,12 +304,22 @@ def take_clear_make(
     # Decide maker bid price.
     if buy_cap > 0 and not (flattening and position > 0):
         bid_price = int(math.floor(fair_value - params.default_edge))
-        join = _pick_join_level(
-            snapshot.bids, fair_value, params.disregard_edge, params.join_edge, "buy",
-        )
-        if join is not None:
-            # Join by placing at the same price (or inside if allowed).
-            bid_price = max(bid_price, join.price)
+        if params.quote_inside_wall:
+            # F2 inside-wall pattern: peg one tick closer to mid than the
+            # side's wall. The wall shelters us from toxic flow; we
+            # capture the remaining spread. Falls back to edge-from-fair
+            # if no wall meets wall_min_volume.
+            wall_bid = _pick_wall_level(snapshot.bids, params.wall_min_volume)
+            if wall_bid is not None:
+                bid_price = wall_bid.price + 1
+        else:
+            join = _pick_join_level(
+                snapshot.bids, fair_value, params.disregard_edge,
+                params.join_edge, "buy",
+            )
+            if join is not None:
+                # Join by placing at the same price (or inside if allowed).
+                bid_price = max(bid_price, join.price)
         # Widen if buy side is toxic.
         if buy_toxic:
             bid_price -= 1
@@ -294,11 +338,17 @@ def take_clear_make(
     # Decide maker ask price.
     if sell_cap > 0 and not (flattening and position < 0):
         ask_price = int(math.ceil(fair_value + params.default_edge))
-        join = _pick_join_level(
-            snapshot.asks, fair_value, params.disregard_edge, params.join_edge, "sell",
-        )
-        if join is not None:
-            ask_price = min(ask_price, join.price)
+        if params.quote_inside_wall:
+            wall_ask = _pick_wall_level(snapshot.asks, params.wall_min_volume)
+            if wall_ask is not None:
+                ask_price = wall_ask.price - 1
+        else:
+            join = _pick_join_level(
+                snapshot.asks, fair_value, params.disregard_edge,
+                params.join_edge, "sell",
+            )
+            if join is not None:
+                ask_price = min(ask_price, join.price)
         if sell_toxic:
             ask_price += 1
         if snapshot.best_bid is not None:
