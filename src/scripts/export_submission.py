@@ -48,6 +48,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 LIVE_MODULE_ORDER: tuple[str, ...] = (
     "src/core/utils.py",
     "src/core/types.py",
+    # Config is split: config_core.py holds the types (ProductConfig,
+    # EngineConfig, with_bid_value) and config.py adds the R1/R2 product
+    # factories. Core must precede the wrapper so re-exports resolve.
+    "src/core/config_core.py",
     "src/core/config.py",
     "src/core/logger.py",
     "src/core/market_data.py",
@@ -76,9 +80,11 @@ LIVE_MODULE_ORDER: tuple[str, ...] = (
 # research-only modules (signal_validation, sweep_selector) are
 # deliberately NOT in this default; opt them in per submission via
 # ``ExportOptions.extra_modules`` when the engines that consume them
-# are being shipped, to keep the core R3 bundle under 120 KB.
+# are being shipped, to keep the core R3 bundle under 128 KB.
 #
 # Modules omitted on purpose:
+#   - config.py              — R1/R2 product factories (factories
+#                              not used by an orchestrator-driven Trader)
 #   - fill_calibration.py    — offline backtest harness (imports src.backtest.*)
 #   - sst.py                 — consumed by engines, not by Trader directly
 #   - volume_robust_mid.py   — ditto
@@ -86,19 +92,40 @@ LIVE_MODULE_ORDER: tuple[str, ...] = (
 #   - predictive_estimator.py — fair-value extension, opt-in per product
 #   - signal_validation.py   — offline validation harness
 #   - sweep_selector.py      — offline sweep-evaluation harness
-R3_MODULE_ORDER: tuple[str, ...] = (
-    *LIVE_MODULE_ORDER[:-1],  # everything up to but NOT including trader.py
-    "src/core/primitives/__init__.py",
-    "src/core/primitives/crash_telemetry.py",
-    "src/core/primitives/portfolio_context.py",
-    "src/core/primitives/portfolio_risk.py",
-    "src/core/primitives/signal_bus.py",
-    "src/core/primitives/engine_orchestrator.py",
-    "src/conversions/__init__.py",
-    "src/conversions/layer.py",
-    "src/conversions/adapter.py",
-    "src/trader.py",
-)
+#
+# Only ``config_core.py`` (types) is carried. ``default_engine_config``
+# is imported lazily inside ``Trader.__init__`` only when no config is
+# supplied, which never happens for an R3 submission that builds its
+# own EngineConfig.
+def _r3_modules() -> tuple[str, ...]:
+    # Drop R1/R2-only modules that an orchestrator-driven Trader never
+    # loads: the product factories, the fair-value engine (lazy-loaded
+    # only when a product has a strategy_name), and the single-product
+    # strategies. This saves ~37 KB vs shipping the full R2 base.
+    drop = {
+        "src/core/config.py",
+        "src/core/fair_value.py",
+        "src/strategies/base.py",
+        "src/strategies/market_making.py",
+        "src/strategies/buy_and_hold.py",
+        "src/strategies/__init__.py",
+    }
+    base = tuple(m for m in LIVE_MODULE_ORDER[:-1] if m not in drop)
+    return base + (
+        "src/core/primitives/__init__.py",
+        "src/core/primitives/crash_telemetry.py",
+        "src/core/primitives/portfolio_context.py",
+        "src/core/primitives/portfolio_risk.py",
+        "src/core/primitives/signal_bus.py",
+        "src/core/primitives/engine_orchestrator.py",
+        "src/conversions/__init__.py",
+        "src/conversions/layer.py",
+        "src/conversions/adapter.py",
+        "src/trader.py",
+    )
+
+
+R3_MODULE_ORDER: tuple[str, ...] = _r3_modules()
 
 DATAMODEL_PATH: str = "src/datamodel.py"
 
@@ -235,6 +262,17 @@ def strip_module(path: str, source: str) -> StrippedModule:
                 datamodel_symbols.update(alias.name for alias in node.names)
                 return
             if module == "src" or module.startswith("src."):
+                removal.update(line_range)
+                return
+        elif isinstance(node, ast.Import):
+            # ``import src.core.config_core as _core`` — strip entirely,
+            # and also strip any non-src ``import X`` that was given a
+            # single alias? We only touch src.* names; non-src plain
+            # imports fall through to the hoist path.
+            if all(
+                alias.name == "src" or alias.name.startswith("src.")
+                for alias in node.names
+            ) and node.names:
                 removal.update(line_range)
                 return
         if not hoist:
@@ -386,21 +424,26 @@ def _collect_src_imports(source: str, *, path: str) -> set[str]:
     deps: set[str] = set()
 
     def _walk(node: ast.AST, stack: tuple[ast.AST, ...]) -> None:
+        modules_from_node: list[str] = []
         if isinstance(node, ast.ImportFrom):
             module = node.module or ""
             if module == "src" or module.startswith("src."):
-                # Runtime src imports only: skip function/method-body
-                # imports (lazy), skip TYPE_CHECKING blocks.
-                if _in_typecheck_block(stack):
-                    return
-                # Function-scope imports are lazy by design (R3+
-                # orchestrator plumbing loaded only when enabled).
-                if any(
-                    isinstance(anc, (ast.FunctionDef, ast.AsyncFunctionDef))
-                    for anc in stack
-                ):
-                    return
-                deps.add(module)
+                modules_from_node.append(module)
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.name == "src" or alias.name.startswith("src."):
+                    modules_from_node.append(alias.name)
+        if modules_from_node:
+            # Runtime src imports only: skip function/method-body
+            # imports (lazy), skip TYPE_CHECKING blocks.
+            if _in_typecheck_block(stack):
+                return
+            if any(
+                isinstance(anc, (ast.FunctionDef, ast.AsyncFunctionDef))
+                for anc in stack
+            ):
+                return
+            deps.update(modules_from_node)
             return
         for child in ast.iter_child_nodes(node):
             _walk(child, stack + (node,))

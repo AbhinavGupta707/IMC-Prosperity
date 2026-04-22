@@ -46,7 +46,11 @@ from src.scripts.round_1.export_round1_v2_clean import (
     _strip_docstrings,
 )
 
-_DEFAULT_FACTORY_CALL = "self.config = config or default_engine_config()"
+# Matches the call site in src/trader.py. When trader.py's init pattern
+# changes, update this constant. The patcher swaps the factory name
+# (not the ``config is None`` check) so each R1 variant's bundled
+# __init__ pulls its own preconfigured EngineConfig by default.
+_DEFAULT_FACTORY_CALL = "config = default_engine_config()"
 
 DEFAULT_OUT_DIR = REPO_ROOT / "outputs" / "submissions" / "round_1" / "limit_80"
 
@@ -134,7 +138,7 @@ def _patch_default_config_call(source: str, factory_name: str) -> str:
         raise RuntimeError(
             f"Could not find {_DEFAULT_FACTORY_CALL!r} in the bundled source."
         )
-    replacement = f"self.config = config or {factory_name}()"
+    replacement = f"config = {factory_name}()"
     return source.replace(_DEFAULT_FACTORY_CALL, replacement, 1)
 
 
@@ -230,15 +234,19 @@ def build_bundle(spec: AshDeepBundleSpec) -> tuple[str, EngineConfig]:
     # Temporarily whitelist a new strategy name during factory construction
     # so validation doesn't trip on the unknown name (bundle-tail wiring
     # re-extends KNOWN_STRATEGY_NAMES at runtime before any Trader builds).
-    original_known = _config.KNOWN_STRATEGY_NAMES
+    # ``extend_known_strategy_names`` keeps both ``config.py`` and
+    # ``config_core.py`` copies of the whitelist in sync since
+    # ``ProductConfig.__post_init__`` reads from config_core.
     if spec.inline is not None:
-        _config.KNOWN_STRATEGY_NAMES = tuple(
-            sorted(set(original_known) | {spec.inline.new_strategy_name})
+        original_known = _config.extend_known_strategy_names(
+            (spec.inline.new_strategy_name,)
         )
+    else:
+        original_known = _config.KNOWN_STRATEGY_NAMES
     try:
         config = spec.factory()
     finally:
-        _config.KNOWN_STRATEGY_NAMES = original_known
+        _config.restore_known_strategy_names(original_known)
 
     banner = _build_banner(spec, config, _git_commit())
     source = _insert_banner(source, banner)

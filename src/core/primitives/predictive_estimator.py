@@ -30,7 +30,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 
-from src.core.config import ProductConfig
+from src.core.config_core import ProductConfig
 from src.core.fair_value import Estimator
 from src.core.primitives.signal_bus import SignalBus
 from src.core.types import FairValueEstimate, NormalizedSnapshot, ProductMemory, Scalar

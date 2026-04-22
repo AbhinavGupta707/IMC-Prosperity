@@ -23,7 +23,7 @@ from src.scripts.export_submission import (
 )
 
 _DEFAULT_OUT_DIR = REPO_ROOT / "outputs" / "submissions" / "round_1" / "limit_80"
-_DEFAULT_FACTORY_CALL = "self.config = config or default_engine_config()"
+_DEFAULT_FACTORY_CALL = "config = default_engine_config()"
 _VARIANT = "ash_deep_f2c"
 _FACTORY_NAME = "round1_ash_deep_f2c_engine_config"
 _LABEL = "Round-1 Phase-F F2c — weighted_mid ASH + buy_hold PEPPER"
@@ -84,7 +84,7 @@ def _patch_default_config_call(source: str, factory_name: str) -> str:
         raise RuntimeError(
             f"Could not find {_DEFAULT_FACTORY_CALL!r} in the bundled source."
         )
-    replacement = f"self.config = config or {factory_name}()"
+    replacement = f"config = {factory_name}()"
     return source.replace(_DEFAULT_FACTORY_CALL, replacement, 1)
 
 

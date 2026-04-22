@@ -577,11 +577,43 @@ def test_export_profiles_enumerate_expected_values() -> None:
 
 
 @pytest.mark.unit
-def test_r3_profile_is_superset_of_r2() -> None:
-    """Every R2 module must appear in R3 (R3 extends R2, doesn't replace)."""
+def test_r3_profile_replaces_r1_r2_only_modules() -> None:
+    """R3 keeps the core R2 modules an orchestrator-driven Trader needs
+    and drops the R1/R2-only modules (config product factories,
+    FairValueEngine, per-product strategies). Locks in the size trim
+    so an accidental re-add surfaces in review."""
     r3_set = set(R3_MODULE_ORDER)
-    for mod in LIVE_MODULE_ORDER:
-        assert mod in r3_set, f"R3 bundle missing R2 module {mod!r}"
+    # Modules R3 must still carry (anything the Trader touches
+    # unconditionally or through orchestrator).
+    mandatory = {
+        "src/core/utils.py",
+        "src/core/types.py",
+        "src/core/config_core.py",
+        "src/core/market_data.py",
+        "src/core/state_store.py",
+        "src/core/execution.py",
+        "src/core/risk.py",
+        "src/core/residual.py",
+        "src/core/signals.py",
+        "src/signals/flow_analyzer.py",
+        "src/trader.py",
+    }
+    missing = mandatory - r3_set
+    assert not missing, f"R3 bundle missing mandatory R2 modules: {missing}"
+    # Modules R3 deliberately drops (ship with extra_modules per
+    # submission if a given R3 engine needs them).
+    dropped = {
+        "src/core/config.py",
+        "src/core/fair_value.py",
+        "src/strategies/base.py",
+        "src/strategies/market_making.py",
+        "src/strategies/buy_and_hold.py",
+        "src/strategies/__init__.py",
+    }
+    accidentally_kept = dropped & r3_set
+    assert not accidentally_kept, (
+        f"R3 bundle retained R1/R2-only modules: {accidentally_kept}"
+    )
 
 
 @pytest.mark.unit
@@ -706,7 +738,11 @@ def test_dry_run_r3_bundle_executes_with_orchestrator(tmp_path: Path) -> None:
 
         # Build an empty orchestrator (engines are opt-in via extra_modules).
         orch = module.EngineOrchestrator(engines=[])
-        trader = module.Trader(orchestrator=orch)
+        # R3 bundles drop the ``default_engine_config`` factory; an R3
+        # submission must supply its own EngineConfig. An empty one is
+        # fine for the dry run — we just want to prove the chain executes.
+        empty_config = module.EngineConfig(products={})
+        trader = module.Trader(config=empty_config, orchestrator=orch)
         state = _empty_trading_state(module)
         orders, conversions, trader_data = trader.run(state)
 

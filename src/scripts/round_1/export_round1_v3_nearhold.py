@@ -37,7 +37,7 @@ _PEPPER_CORE_LONG_PATH = "src/strategies/pepper_core_long.py"
 _DEFAULT_OUT_DIR = REPO_ROOT / "outputs" / "submissions" / "round_1" / "limit_80"
 _DEFAULT_OUT_NAME = "trader_round1_v3_nearhold.py"
 
-_DEFAULT_FACTORY_CALL = "self.config = config or default_engine_config()"
+_DEFAULT_FACTORY_CALL = "config = default_engine_config()"
 _V3_NEARHOLD_FACTORY_CALL = (
     "self.config = config or round1_v3_nearhold_engine_config()"
 )
@@ -396,7 +396,7 @@ def _build_v3_nearhold_source() -> str:
     try:
         config = round1_v3_nearhold_engine_config()
     finally:
-        _config.KNOWN_STRATEGY_NAMES = _original_known
+        _config.restore_known_strategy_names(_original_known)
     banner = _build_banner(config, _git_commit())
     lines = source.splitlines()
     insert_at = 0

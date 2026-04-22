@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from src.core.config import ProductConfig
+from src.core.config_core import ProductConfig
 from src.core.types import NormalizedSnapshot, SignalIntent
 from src.datamodel import Order
 

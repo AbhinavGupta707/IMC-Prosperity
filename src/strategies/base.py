@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from src.core.config import ProductConfig
+from src.core.config_core import ProductConfig
 from src.core.types import NormalizedSnapshot, ProductMemory, SignalIntent
 
 if TYPE_CHECKING:  # avoid runtime import cycle

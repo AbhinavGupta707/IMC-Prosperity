@@ -214,8 +214,11 @@ def test_export_round2_bundle_bid_wrapping_visible_in_source(tmp_path: Path) -> 
     out_2300 = export_variant_to_path(out_dir=tmp_path / "bid2300", bid_value=2_300)
     body_zero = out_zero.read_text()
     body_2300 = out_2300.read_text()
+    # After the config.py split + lazy-import refactor the factory call
+    # lives inside Trader.__init__'s ``if config is None:`` block as a
+    # bare ``config = {factory}()`` assignment.
     assert (
-        "self.config = config or round2_v5micro_wide113_engine_config()"
+        "config = round2_v5micro_wide113_engine_config()"
         in body_zero
     ), "bid=0 export should leave the factory call unwrapped"
     assert (

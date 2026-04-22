@@ -52,7 +52,7 @@ from src.scripts.export_submission import (
 
 _DEFAULT_OUT_DIR = REPO_ROOT / "outputs" / "submissions" / "round_1"
 
-_DEFAULT_FACTORY_CALL = "self.config = config or default_engine_config()"
+_DEFAULT_FACTORY_CALL = "config = default_engine_config()"
 
 _VARIANTS: dict[str, dict[str, object]] = {
     "baseline": {
@@ -195,7 +195,7 @@ def _patch_default_config_call(
     else:
         # Default path matches the Round-1 bundle shape exactly so the
         # already-shipped fingerprints remain reproducible.
-        replacement = f"self.config = config or {factory_name}()"
+        replacement = f"config = {factory_name}()"
     patched, count = _replace_once(source, _DEFAULT_FACTORY_CALL, replacement)
     if count != 1:
         raise RuntimeError(

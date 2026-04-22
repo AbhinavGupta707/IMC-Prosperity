@@ -47,7 +47,7 @@ from src.scripts.round_1.export_round1_v2_clean import (
     _strip_docstrings,
 )
 
-_DEFAULT_FACTORY_CALL = "self.config = config or default_engine_config()"
+_DEFAULT_FACTORY_CALL = "config = default_engine_config()"
 
 DEFAULT_OUT_DIR = REPO_ROOT / "outputs" / "submissions" / "round_1" / "limit_80"
 
@@ -159,7 +159,7 @@ def _patch_default_config_call(source: str, factory_name: str) -> str:
         raise RuntimeError(
             f"Could not find {_DEFAULT_FACTORY_CALL!r} in the bundled source."
         )
-    replacement = f"self.config = config or {factory_name}()"
+    replacement = f"config = {factory_name}()"
     return source.replace(_DEFAULT_FACTORY_CALL, replacement, 1)
 
 
@@ -379,17 +379,17 @@ def build_bundle(
     bundle = build_submission_source(options)
     source = _patch_default_config_call(bundle.source, spec.factory_name)
 
-    # Temporarily whitelist both new strategy names during factory build.
-    original_known = _config.KNOWN_STRATEGY_NAMES
-    new_names = {
+    # Temporarily whitelist both new strategy names during factory
+    # build. ``extend_known_strategy_names`` keeps config.py and
+    # config_core.py whitelists in sync.
+    original_known = _config.extend_known_strategy_names((
         spec.ash_inline.new_strategy_name,
         spec.pepper_inline.new_strategy_name,
-    }
-    _config.KNOWN_STRATEGY_NAMES = tuple(sorted(set(original_known) | new_names))
+    ))
     try:
         config = spec.factory()
     finally:
-        _config.KNOWN_STRATEGY_NAMES = original_known
+        _config.restore_known_strategy_names(original_known)
 
     banner = _build_banner(
         spec, config, _git_commit(), redact_params=redact_params

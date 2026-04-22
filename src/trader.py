@@ -26,9 +26,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from src.core.config import EngineConfig, ProductConfig, default_engine_config
+from src.core.config_core import EngineConfig, ProductConfig
 from src.core.execution import ExecutionEngine
-from src.core.fair_value import FairValueEngine
 from src.core.logger import DecisionLogger
 from src.core.market_data import MarketDataAdapter
 from src.core.residual import ResidualAllocator
@@ -39,17 +38,16 @@ from src.core.types import EngineState, NormalizedSnapshot, ProductMemory
 from src.core.utils import bounded_append
 from src.datamodel import Order, TradingState
 from src.signals.flow_analyzer import FlowAnalyzer
-from src.strategies import STRATEGY_REGISTRY
-from src.strategies.base import BaseStrategy, StrategyContext
 
-# The orchestrator + portfolio_context + conversions adapter are R3+
-# cross-product plumbing. R1/R2 Prosperity submissions don't bundle those
-# modules, so we import them lazily (inside _run_body when the orchestrator
-# is enabled) to keep the submission bundle small and to avoid ImportError
-# if the R2 bundle is stripped. Type annotations use TYPE_CHECKING so the
-# exporter strips them correctly.
+# Lazy-import gate. The following modules are heavy and only needed for
+# per-product strategy dispatch. An R3 submission whose every product is
+# owned by an orchestrator engine never touches them, and the R3
+# submission bundle drops them entirely. TYPE_CHECKING keeps the type
+# annotations below honest without pulling runtime imports.
 if TYPE_CHECKING:
+    from src.core.fair_value import FairValueEngine
     from src.core.primitives.engine_orchestrator import EngineOrchestrator
+    from src.strategies.base import BaseStrategy
 
 _LOG = logging.getLogger(__name__)
 
@@ -69,13 +67,25 @@ class Trader:
         reraise_exceptions: bool = False,
         orchestrator: "EngineOrchestrator | None" = None,
     ) -> None:
-        self.config = config or default_engine_config()
+        # Function-scope import: the bundler strips all src-package
+        # import lines from both module scope and function bodies, and
+        # the completeness check ignores function-scope src imports
+        # (see ``strip_module`` + ``_collect_src_imports`` in
+        # export_submission.py). At runtime the bundled flat namespace
+        # resolves ``default_engine_config`` to:
+        #   - R2 bundles: the multi-product factory in config.py.
+        #   - R3 bundles: the stub in config_core.py (config.py is
+        #     dropped from the bundle; the stub raises with a clear
+        #     message directing callers to supply their own EngineConfig).
+        if config is None:
+            from src.core.config import default_engine_config
+            config = default_engine_config()
+        self.config = config
         self.state_store = state_store or StateStore(
             version=self.config.state_version,
             max_chars=self.config.max_trader_data_chars,
         )
         self.market_data = MarketDataAdapter()
-        self.fair_value_engine = FairValueEngine()
         self.signal_engine = SignalEngine()
         self.execution_engine = ExecutionEngine()
         self.risk_manager = RiskManager()
@@ -87,12 +97,33 @@ class Trader:
         # runs pass None and behave exactly as before (no portfolio snapshot,
         # no engine dispatch, conversions fixed at 0).
         self.orchestrator = orchestrator
-        self.strategies: dict[str, BaseStrategy] = self._build_strategies()
+        # FairValueEngine + strategies are only instantiated when there
+        # is at least one product configured with a strategy_name. R3
+        # submissions that rely entirely on orchestrator-owned products
+        # leave ``products={}`` and skip the (heavy) fair_value + strategy
+        # machinery entirely — keeps the R3 bundle slim.
+        self.fair_value_engine: "FairValueEngine | None" = None
+        self.strategies: dict[str, "BaseStrategy"] = self._build_strategies()
 
     # ---------------------------------------------------------- setup
 
-    def _build_strategies(self) -> dict[str, BaseStrategy]:
+    def _build_strategies(self) -> dict[str, "BaseStrategy"]:
         strategies: dict[str, BaseStrategy] = {}
+        if not self.config.products:
+            # Pure-orchestrator submission: no per-product strategies,
+            # so skip the FairValueEngine / strategy-registry imports
+            # entirely. This is the hot path for R3 bundles that drop
+            # fair_value.py and strategies/* from the submission.
+            return strategies
+
+        # Lazy import: the fair_value + strategy subsystem is only
+        # needed when at least one product has a strategy_name. Moving
+        # these imports inside the function lets R3 bundles strip the
+        # ~24 KB of fair_value + strategy modules when they are unused.
+        from src.core.fair_value import FairValueEngine
+        from src.strategies import STRATEGY_REGISTRY
+
+        self.fair_value_engine = FairValueEngine()
         for product_config in self.config.products.values():
             name = product_config.strategy_name
             if name in strategies:
@@ -236,10 +267,14 @@ class Trader:
         snapshot: NormalizedSnapshot,
         memory: ProductMemory,
         product_config: ProductConfig,
-        strategy: BaseStrategy,
+        strategy: "BaseStrategy",
         timestamp: int,
         portfolio=None,
     ) -> list[Order]:
+        # Lazy import: R3 bundles that skip per-product dispatch never
+        # reach this code path and therefore never load strategies.base.
+        from src.strategies.base import StrategyContext
+
         # Observational flow scan — never alters strategy behaviour.
         flow_report = self.flow_analyzer.scan(snapshot, memory)
 

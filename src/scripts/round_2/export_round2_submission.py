@@ -122,9 +122,11 @@ def _spec(bid_value: int, *, killswitches: bool) -> PepperBundleSpec:
 def _wrap_factory_call_with_bid(source: str, factory_name: str, bid_value: int) -> str:
     """Post-process the bundle to wrap the factory call with `with_bid_value`.
 
-    The shared `build_bundle` helper produces a bundle with the line
-    ``self.config = config or {factory_name}()``. To embed a non-zero
-    MAF bid, we wrap that call as
+    After the config.py split + function-scope lazy import refactor,
+    the bundled Trader.__init__ body contains a single line:
+    ``config = {factory_name}()`` (the outer ``if config is None:``
+    block guarding it is preserved verbatim from trader.py). To embed
+    a non-zero MAF bid, we wrap that call as
     ``with_bid_value({factory_name}(), {bid})``. ``with_bid_value`` is
     already exported from `src.core.config` and bundled into the file.
     """
@@ -133,10 +135,10 @@ def _wrap_factory_call_with_bid(source: str, factory_name: str, bid_value: int) 
     if bid_value < 0:
         raise ValueError(f"bid_value must be >= 0 (got {bid_value})")
     pattern = (
-        rf"self\.config = config or {re.escape(factory_name)}\(\)"
+        rf"(\s+)config = {re.escape(factory_name)}\(\)"
     )
     replacement = (
-        f"self.config = config or with_bid_value({factory_name}(), {bid_value})"
+        rf"\1config = with_bid_value({factory_name}(), {bid_value})"
     )
     new_source, n = re.subn(pattern, replacement, source, count=1)
     if n != 1:

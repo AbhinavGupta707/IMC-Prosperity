@@ -24,7 +24,7 @@ from collections.abc import Mapping
 from types import MappingProxyType
 from typing import Protocol
 
-from src.core.config import ProductConfig
+from src.core.config_core import ProductConfig
 from src.core.types import FairValueEstimate, NormalizedSnapshot, ProductMemory, Scalar
 from src.core.utils import weighted_average
 

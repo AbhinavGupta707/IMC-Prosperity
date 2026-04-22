@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import math
 
-from src.core.config import ProductConfig
+from src.core.config_core import ProductConfig
 from src.core.types import (
     ExecutionMode,
     FairValueEstimate,

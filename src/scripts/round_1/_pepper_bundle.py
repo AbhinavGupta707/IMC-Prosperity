@@ -29,7 +29,7 @@ from src.scripts.validate_submission import validate_file
 from src.strategies.pepper_core_long import CoreLongParams
 
 _DEFAULT_OUT_DIR = REPO_ROOT / "outputs" / "submissions" / "round_1" / "limit_80"
-_DEFAULT_FACTORY_CALL = "self.config = config or default_engine_config()"
+_DEFAULT_FACTORY_CALL = "config = default_engine_config()"
 _PEPPER_MODULE_PATH = "src/strategies/pepper_core_long.py"
 
 _ASH_OVERRIDE = {
@@ -109,7 +109,7 @@ def _patch_default_config_call(source: str, factory_name: str) -> str:
         raise RuntimeError(
             f"Could not find {_DEFAULT_FACTORY_CALL!r} in the bundled source."
         )
-    replacement = f"self.config = config or {factory_name}()"
+    replacement = f"config = {factory_name}()"
     patched, count = _replace_once(source, _DEFAULT_FACTORY_CALL, replacement)
     if count != 1:
         raise RuntimeError(

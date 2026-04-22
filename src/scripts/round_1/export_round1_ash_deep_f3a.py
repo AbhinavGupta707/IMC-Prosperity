@@ -30,7 +30,7 @@ from src.scripts.export_submission import (
 _SHAPE_OVERRIDE_PATH = "src/strategies/ash_shape_override.py"
 _DEFAULT_OUT_DIR = REPO_ROOT / "outputs" / "submissions" / "round_1" / "limit_80"
 _DEFAULT_OUT_NAME = "trader_round1_ash_deep_f3a.py"
-_DEFAULT_FACTORY_CALL = "self.config = config or default_engine_config()"
+_DEFAULT_FACTORY_CALL = "config = default_engine_config()"
 _F3A_FACTORY_CALL = (
     "self.config = config or round1_ash_deep_f3a_engine_config()"
 )
@@ -162,14 +162,11 @@ def _build_f3a_source() -> str:
     source = _patch_default_config_call(bundle.source)
 
     # Temporarily whitelist the new strategy name for the factory call.
-    _original_known = _config.KNOWN_STRATEGY_NAMES
-    _config.KNOWN_STRATEGY_NAMES = tuple(
-        sorted(set(_original_known) | {_STRATEGY_NAME})
-    )
+    _original_known = _config.extend_known_strategy_names((_STRATEGY_NAME,))
     try:
         config = round1_ash_deep_f3a_engine_config()
     finally:
-        _config.KNOWN_STRATEGY_NAMES = _original_known
+        _config.restore_known_strategy_names(_original_known)
 
     banner = _build_banner(config, _git_commit())
     lines = source.splitlines()
