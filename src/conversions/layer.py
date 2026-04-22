@@ -35,6 +35,7 @@ that tracks inventory across ticks (for stockpile batching).
 from __future__ import annotations
 
 import math
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -206,12 +207,16 @@ class RegimeDetector:
     glut_percentile: float = 0.75
     """Above this → 'glut' regime (offload)."""
 
-    _history: list[float] = field(default_factory=list)
+    # Bounded deque: O(1) append + automatic eviction. Previously a plain
+    # list with ``pop(0)`` which is O(n) per observation — the per-tick
+    # cost was small but scaled quadratically with lookback_window.
+    _history: deque[float] = field(init=False)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "_history", deque(maxlen=self.lookback_window))
 
     def observe(self, value: float) -> None:
         self._history.append(value)
-        if len(self._history) > self.lookback_window:
-            self._history.pop(0)
 
     def regime(self, current_value: float) -> Literal["squeeze", "normal", "glut"]:
         if len(self._history) < 10:

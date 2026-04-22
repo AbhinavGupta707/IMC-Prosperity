@@ -100,12 +100,17 @@ class StatArbEngine:
         }
 
     def from_state(self, blob: dict) -> None:
+        from collections import deque as _deque
         try:
             history = blob.get("regime_history", [])
             if isinstance(history, list):
-                # Restore as a bounded list; trim to lookback window.
-                restored = [float(x) for x in history[-self.config.regime_lookback:]]
-                self._regime._history = restored
+                # Restore into the deque; maxlen will trim if the saved
+                # blob is longer than the current lookback window.
+                restored = _deque(
+                    (float(x) for x in history[-self.config.regime_lookback:]),
+                    maxlen=self.config.regime_lookback,
+                )
+                object.__setattr__(self._regime, "_history", restored)
         except (TypeError, ValueError):
             # Corrupted blob: fall back to fresh detector.
             self._regime = RegimeDetector(

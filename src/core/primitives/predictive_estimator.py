@@ -52,8 +52,13 @@ class PredictiveEstimatorConfig:
     max_adjustment: float = 5.0
     """Cap on |coefficient × signal| — safety against runaway signal."""
 
-    require_validated: bool = True
-    """If True, ignore the signal unless SignalBus marks it validated."""
+    # NOTE: previously exposed a ``require_validated`` toggle. It has been
+    # removed — PredictiveEstimator now UNCONDITIONALLY requires a signal
+    # with ``validated=True`` before adjusting prices (D9 principle: no
+    # unvalidated research signal may enter the fair-value path).
+    # Research-quality signals should still be published on the bus, but
+    # with ``validated=False``, and PredictiveEstimator will correctly
+    # ignore them.
 
 
 class PredictiveEstimator:
@@ -89,7 +94,7 @@ class PredictiveEstimator:
 
         signal = self._bus.get(
             self._config.signal_name,
-            trusted_only=self._config.require_validated,
+            trusted_only=True,
         )
         if signal is None:
             # Graceful degradation: return base unchanged.

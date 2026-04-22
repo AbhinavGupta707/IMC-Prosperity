@@ -30,13 +30,12 @@ complementary.
 
 from __future__ import annotations
 
-import math
 import random
 from dataclasses import dataclass, field
 from statistics import mean, stdev
 from typing import Literal
 
-RankScoreCurve = Literal["linear", "top3_only", "top10", "custom"]
+RankScoreCurve = Literal["linear", "top3_only"]
 
 
 @dataclass(frozen=True)
@@ -132,7 +131,6 @@ def select_winner(
     n_bootstrap: int = 2000,
     confidence: float = 0.95,
     objective: RankScoreCurve = "linear",
-    field_payoff_quantiles: list[float] | None = None,
 ) -> SelectionResult:
     """Pick a winner under significance + objective gates.
 
@@ -140,9 +138,9 @@ def select_winner(
     baseline's CI-upper. Ties are broken by plateau-width (variance
     across per-day means from the bootstrap) — lower variance wins.
 
-    ``objective`` controls the scoring function. For tournament
-    scoring set ``objective='top3_only'`` or pass ``field_payoff_quantiles``
-    (a list of quantile thresholds representing the leaderboard).
+    ``objective`` controls the scoring function. ``'linear'`` (default)
+    ranks by bootstrap mean; ``'top3_only'`` rewards lower-CI floors
+    with a penalty on bootstrap spread (tournament-style safety).
     """
     if not configs:
         raise ValueError("configs must be non-empty")
@@ -202,15 +200,10 @@ def select_winner(
         scored = [(c, _score_linear(c, cis[c.label])) for c in significance_gated]
     elif objective == "top3_only":
         scored = [(c, _score_top3(c, cis[c.label])) for c in significance_gated]
-    elif objective == "top10":
-        scored = [(c, _score_top10(c, cis[c.label])) for c in significance_gated]
-    else:  # custom
-        if field_payoff_quantiles is None:
-            raise ValueError("objective='custom' requires field_payoff_quantiles")
-        scored = [
-            (c, _score_by_quantiles(c, cis[c.label], field_payoff_quantiles))
-            for c in significance_gated
-        ]
+    else:
+        raise ValueError(
+            f"unknown objective {objective!r}; expected 'linear' or 'top3_only'"
+        )
 
     scored.sort(key=lambda x: -x[1])
     top_score = scored[0][1]
@@ -266,40 +259,6 @@ def _score_top3(config: SweepConfig, ci: BootstrapCI) -> float:
     """
     # Approximation: reward candidates whose lower CI is well above mean.
     return ci.lower - 0.5 * (ci.upper - ci.lower)
-
-
-def _score_top10(config: SweepConfig, ci: BootstrapCI) -> float:
-    """Top-10 payoff: reward upper-CI potential but penalize variance."""
-    return ci.mean + 0.3 * (ci.upper - ci.mean) - 0.7 * (ci.mean - ci.lower)
-
-
-def _score_by_quantiles(
-    config: SweepConfig,
-    ci: BootstrapCI,
-    quantiles: list[float],
-) -> float:
-    """Score by probability of clearing each quantile threshold.
-
-    ``quantiles`` is a sorted list of P&L values representing the
-    leaderboard thresholds we care about (e.g., [top-100, top-10, top-3]).
-    Score = weighted sum of P(P&L > threshold) across quantiles, with
-    higher quantiles getting higher weights.
-    """
-    if not quantiles:
-        return ci.mean
-    quantiles_sorted = sorted(quantiles)
-    weights = [1.0 * (2 ** i) for i in range(len(quantiles_sorted))]
-
-    # Rough P(X > q) using Normal approximation around the bootstrap CI.
-    # Half-CI ≈ 1.96 * SEM, so SEM ≈ (upper - lower) / (2 * 1.96).
-    sem = max(1e-6, (ci.upper - ci.lower) / (2 * 1.96))
-    score = 0.0
-    for q, w in zip(quantiles_sorted, weights):
-        z = (ci.mean - q) / sem
-        # Rough normal CDF approximation.
-        p_above = 0.5 * (1 + math.erf(z / math.sqrt(2)))
-        score += w * p_above
-    return score
 
 
 # ============================================================= reporting

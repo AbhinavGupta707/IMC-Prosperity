@@ -277,16 +277,20 @@ def test_predictive_estimator_ignores_unvalidated_by_default():
 
 
 @pytest.mark.unit
-def test_predictive_estimator_uses_unvalidated_when_opted_in():
+def test_predictive_estimator_always_requires_validated_signals():
+    """D9 enforcement: even a usable raw signal must be ignored if it
+    lacks ``validated=True``. Replaces a prior test that exercised the
+    (removed) ``require_validated=False`` escape hatch."""
     bus = SignalBus()
     bus.emit(SignalValue(name="raw", value=1.0, validated=False))
     est = PredictiveEstimator(
         base=MidEstimator(),
         config=PredictiveEstimatorConfig(
-            signal_name="raw", coefficient=2.0, require_validated=False,
+            signal_name="raw", coefficient=2.0,
         ),
         bus=bus,
     )
     result = est.estimate(_snap(), ProductMemory(), _cfg())
     assert result is not None
-    assert result.price == 102.0
+    # Unvalidated signal is ignored regardless; base mid preserved.
+    assert result.price == 100.0
