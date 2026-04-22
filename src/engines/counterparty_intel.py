@@ -54,6 +54,18 @@ class CounterpartyIntelConfig:
     forward_horizon_ticks: int = 500
     """Used for win-rate calculation: did the trade make money N ticks ahead?"""
 
+    # DO-NOT-BUILD compliance: F4 found Olivia-class informed bots only
+    # exist on VOLATILE products (SQUID_INK, CROISSANTS), never on stable
+    # R1/R2-class products (AMETHYSTS, PEARLS, RESIN, ASH). Fabricating
+    # "informed" tags on a stable product's retail noise produces false
+    # piggyback signals. Empty set ⇒ engine runs in observation-only mode.
+    eligible_products: frozenset[str] = frozenset()
+    """Products to actively classify. Trades on other products are ignored."""
+
+    # Pending-fills bound: capped at 1000 not 10000 to stay within the
+    # 50k-char traderData budget. ~6-tuple × 1000 ≈ 30k chars.
+    max_pending_fills: int = 1000
+
 
 @dataclass
 class CounterpartyState:
@@ -62,6 +74,11 @@ class CounterpartyState:
     cum_pnl: float = 0.0
     trade_count: int = 0
     wins: int = 0
+    resolved_trades: int = 0
+    """Trades whose forward-horizon window has been scored. Used as the
+    denominator for win_rate, NOT trade_count — under bounded _pending_fills
+    some trades get dropped before resolution, which would bias win_rate
+    downward if trade_count were used (H8 fix)."""
     recent_trades: deque = field(default_factory=lambda: deque(maxlen=100))
     # (tick, product, side: +1 buy / -1 sell, size, price, mid_at_trade)
     implied_position: dict[str, int] = field(default_factory=dict)
@@ -78,10 +95,16 @@ class CounterpartyIntelEngine:
 
     _states: dict[str, CounterpartyState] = field(default_factory=dict)
     _recent_mids: dict[str, deque] = field(default_factory=dict)
-    _pending_fills: deque = field(
-        default_factory=lambda: deque(maxlen=10000),
-    )
+    _pending_fills: deque = field(init=False)
     # Each pending fill: (cp_id, tick, product, side, size, price)
+
+    def __post_init__(self) -> None:
+        # Bound pending fills to stay within 50k traderData budget.
+        object.__setattr__(
+            self,
+            "_pending_fills",
+            deque(maxlen=self.config.max_pending_fills),
+        )
 
     def step(self, portfolio: PortfolioSnapshot, current_tick: int) -> None:
         """Process one tick. Emits signals to the bus as side effect."""
@@ -95,8 +118,16 @@ class CounterpartyIntelEngine:
                 self._recent_mids[product].append(float(snap.mid))
 
         # Process market trades. Each TradePrint may have buyer / seller IDs.
+        # DO-NOT-BUILD compliance: only classify trades on products the user
+        # has explicitly opted in to (volatile products where Olivia-class
+        # bots actually exist per F4).
         for product, snap in portfolio.snapshots.items():
             if snap.mid is None:
+                continue
+            if (
+                self.config.eligible_products
+                and product not in self.config.eligible_products
+            ):
                 continue
             for trade in snap.trades:
                 self._ingest_trade(
@@ -164,15 +195,19 @@ class CounterpartyIntelEngine:
                 self._record_fill(seller, current_tick, product, -1, trade.quantity, trade.price, mid)
 
     def _fingerprint_hash(self, product: str, trade, mid: float) -> str:
-        """Stable hash of (product, price-rounded, qty-bucket, aggressor).
+        """Stable hash of (product, qty-bucket).
 
-        Used pre-R5 when counterparty names aren't populated. Same bot
-        with the same behavior profile gets the same hash; different
-        bots produce different hashes.
+        Used pre-R5 when counterparty names aren't populated. CRITICAL fix:
+        previously included the aggressor side ("B" vs "S") which flipped
+        whenever the market mid crossed the trade price — splitting one
+        bot's fills across two IDs and preventing classification entirely.
+        Removed the aggressor from the hash (the side is still inferred
+        separately in _ingest_trade for P&L scoring). Stability > precision:
+        we'd rather group a bot's trades together under a single ID than
+        perfectly identify its aggression.
         """
-        aggressor = "B" if trade.price > mid else "S"
         qty_bucket = "S" if trade.quantity <= 5 else ("M" if trade.quantity <= 20 else "L")
-        key = f"{product}:{aggressor}:{qty_bucket}"
+        key = f"{product}:{qty_bucket}"
         return hashlib.md5(key.encode()).hexdigest()
 
     def _record_fill(
@@ -214,9 +249,13 @@ class CounterpartyIntelEngine:
             forward_mid = float(snap.mid)
             # Win if the trade was a buy and price went up, or a sell and price went down.
             pnl = (forward_mid - price) * side * qty
-            if pnl > 0:
-                state = self._states.get(cp_id)
-                if state:
+            state = self._states.get(cp_id)
+            if state is not None:
+                # Count the resolved trade (denominator for win_rate). H8 fix:
+                # dropped pending fills never reach this path, so resolved_trades
+                # tracks the actual scored population not the raw trade_count.
+                state.resolved_trades += 1
+                if pnl > 0:
                     state.wins += 1
         self._pending_fills = keep
 
@@ -235,7 +274,14 @@ class CounterpartyIntelEngine:
         """
         if state.trade_count == 0:
             return ("unknown", 0.0)
-        win_rate = state.wins / state.trade_count
+        # H8 fix: use resolved_trades as win_rate denominator. Using raw
+        # trade_count understates win_rate for counterparties whose fills
+        # were dropped from the bounded _pending_fills deque before scoring.
+        resolved_denom = max(state.resolved_trades, 1)
+        win_rate = state.wins / resolved_denom
+        # Only classify once enough trades have resolved (not just recorded).
+        if state.resolved_trades < self.config.min_trades_for_classification:
+            return ("unknown", 0.0)
         abs_pnl_per_trade = abs(state.cum_pnl) / state.trade_count
 
         # Informed signature.

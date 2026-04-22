@@ -281,15 +281,19 @@ class OptionsEngine:
         except ValueError:
             return None
         g = call_greeks(bsm)
-        gamma_s2 = g.gamma * spot * spot
         sigma = fair_iv
 
         half_spread = 0.5  # ticks; 1-wide spread assumption
         lam = half_spread
         gamma_risk = self.config.ww_risk_aversion
-        # WW band ≈ factor × (λ Γ² S² / γ σ²)^(1/3)
+        # Whalley-Wilmott no-trade band (Whalley & Wilmott 1997):
+        #   Δ_band ≈ factor × (λ · Γ² · S² / (γ · σ²))^(1/3)
+        # CRITICAL fix: previously computed gamma_s2 = Γ·S² then squared
+        # the whole thing ⇒ (Γ·S²)² = Γ²·S⁴, giving a band S² too wide.
+        # For S ≈ 10,000, that was ~1e8× wider ⇒ hedge never fired.
+        gamma_sq_s_sq = (g.gamma * g.gamma) * (spot * spot)
         band = self.config.ww_band_factor * (
-            (lam * gamma_s2 * gamma_s2 / (gamma_risk * sigma * sigma)) ** (1 / 3)
+            (lam * gamma_sq_s_sq / (gamma_risk * sigma * sigma)) ** (1 / 3)
         )
 
         if abs(aggregate_delta) < band:
@@ -312,15 +316,34 @@ class OptionsEngine:
         return None
 
     def _detect_jump(self, spot: float) -> bool:
-        """True if we should halt trading this tick (jump regime)."""
+        """True if we should halt trading this tick (jump regime).
+
+        Uses a true EWMA of |r_t| (Brown 1956) with halflife derived from
+        jump_window. Previous SMA implementation was misnamed; functionally
+        similar but docs/tests expected EWMA. Also: when cooldown expires,
+        re-anchor _last_underlying_mid to current spot so the huge jump
+        doesn't instantly re-trigger on the next tick.
+        """
         if self._in_kill_cooldown > 0:
             self._in_kill_cooldown -= 1
+            # H9 fix: re-anchor on cooldown expiry so post-jump spot becomes
+            # the new baseline, preventing immediate re-trigger.
+            if self._in_kill_cooldown == 0:
+                self._last_underlying_mid = spot
+                self._recent_abs_returns.clear()
             return True
         if self._last_underlying_mid is not None and self._last_underlying_mid > 0:
             r = abs(spot - self._last_underlying_mid) / self._last_underlying_mid
             self._recent_abs_returns.append(r)
             if len(self._recent_abs_returns) >= 50:
-                ewma_abs_r = sum(self._recent_abs_returns) / len(self._recent_abs_returns)
+                # True EWMA: weight = 1 - exp(ln(0.5)/halflife), halflife
+                # defaults to jump_window/2 for stable spin-up.
+                import math as _math
+                halflife = max(1.0, self.config.jump_window / 2.0)
+                alpha = 1.0 - _math.exp(_math.log(0.5) / halflife)
+                ewma_abs_r = self._recent_abs_returns[0]
+                for x in list(self._recent_abs_returns)[1:]:
+                    ewma_abs_r = alpha * x + (1.0 - alpha) * ewma_abs_r
                 if ewma_abs_r > 0 and r / ewma_abs_r > self.config.jump_threshold:
                     # Halt for 500 ticks.
                     self._in_kill_cooldown = 500

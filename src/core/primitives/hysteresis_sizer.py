@@ -79,9 +79,17 @@ def target_position(
     abs_z = abs(z)
     sign = 1 if z >= 0 else -1
 
-    # Kill zone — freeze but don't grow.
+    # Kill zone — freeze but don't grow in the signal's direction. CRITICAL fix:
+    # previously "freeze" meant `return current_position`, which kept WRONG-SIGN
+    # positions stuck (e.g., z=+4.1 with current=-20 returned -20, preventing
+    # the unwind needed before the regime break). Now: freeze at zero or same
+    # sign as signal; any opposite-sign position must at least move toward zero.
     if abs_z >= config.kill_z:
-        return current_position
+        if current_position * sign >= 0:
+            # Same sign as signal (or flat) — hold.
+            return current_position
+        # Wrong-sign position in kill zone — unwind toward zero.
+        return 0
 
     # Full-exit zone — flatten regardless of current position.
     if abs_z < config.exit_z:

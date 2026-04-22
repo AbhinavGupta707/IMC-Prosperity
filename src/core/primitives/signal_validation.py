@@ -228,7 +228,15 @@ def walk_forward_test(
             detail=f"IS IC {is_ic:+.4f} too small to measure degradation",
         )
     ratio = oos_ic / is_ic
-    passed = ratio >= min_oos_ic_ratio and (oos_ic / is_ic) > 0  # sign must agree
+    # CRITICAL fix: `oos_ic / is_ic > 0` is True when BOTH are negative — a
+    # signal that predicts the wrong direction both IS and OOS would pass.
+    # Require positive IC (signal predicts the CORRECT direction). Emitters
+    # are responsible for sign-flipping inverse signals before validation.
+    passed = (
+        is_ic > 0
+        and oos_ic > 0
+        and ratio >= min_oos_ic_ratio
+    )
     return ValidationResult(
         test_name="walk_forward",
         passed=passed,
