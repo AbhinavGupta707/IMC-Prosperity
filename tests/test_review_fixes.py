@@ -310,6 +310,57 @@ def test_bsm_greeks_signs_correct():
     assert g.theta < 0, f"call theta must be < 0; got {g.theta}"
 
 
+@pytest.mark.unit
+def test_bsm_call_price_monotone_in_spot():
+    """Property: call price is strictly increasing in spot (delta > 0)."""
+    spots = [90, 95, 100, 105, 110]
+    prices = [
+        call_price(BSMInputs(spot=s, strike=100, time_to_expiry=1.0, volatility=0.2))
+        for s in spots
+    ]
+    assert all(prices[i] < prices[i + 1] for i in range(len(prices) - 1)), (
+        f"call price must increase with spot; got {prices}"
+    )
+
+
+@pytest.mark.unit
+def test_bsm_call_price_decreasing_in_strike():
+    """Property: call price is strictly decreasing in strike."""
+    strikes = [80, 90, 100, 110, 120]
+    prices = [
+        call_price(BSMInputs(spot=100, strike=k, time_to_expiry=1.0, volatility=0.2))
+        for k in strikes
+    ]
+    assert all(prices[i] > prices[i + 1] for i in range(len(prices) - 1)), (
+        f"call price must decrease with strike; got {prices}"
+    )
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("sigma", [0.05, 0.1, 0.2, 0.3, 0.5])
+@pytest.mark.parametrize("moneyness_k", [80, 95, 100, 105, 120])
+def test_iv_solver_recovers_input_vol_within_tight_tolerance(
+    sigma: float, moneyness_k: int,
+) -> None:
+    """Roundtrip: BSM(σ) → price → implied_vol(price) ≈ σ with abs<1e-3.
+
+    Exercises ITM/ATM/OTM strikes across a realistic vol range. This
+    guards against IV solver regressions where the bracket ends up
+    numerically biased.
+    """
+    spot, T = 100.0, 1.0
+    price = call_price(BSMInputs(
+        spot=spot, strike=moneyness_k, time_to_expiry=T, volatility=sigma,
+    ))
+    iv = implied_vol(
+        market_price=price, spot=spot, strike=moneyness_k, time_to_expiry=T,
+    )
+    assert iv is not None, f"IV solver returned None for σ={sigma} K={moneyness_k}"
+    assert abs(iv - sigma) < 1e-3, (
+        f"IV roundtrip off: input σ={sigma}, recovered {iv} (K={moneyness_k})"
+    )
+
+
 # ========================================================== Welford tests (missing)
 
 

@@ -284,14 +284,19 @@ def test_regime_detector_returns_normal_on_cold_start():
 
 @pytest.mark.unit
 def test_fill_rate_probe_converges():
-    """After many trials, probe picks the offset with highest success rate."""
-    import random
+    """After many trials, probe picks the offset with highest success rate.
+
+    Uses a seeded Random instance so the test is deterministic — the
+    previous version used the module-level ``random`` which is seeded
+    only by Python's startup and would flake occasionally."""
+    import random as _random
+    rng = _random.Random(0x5EED)
     probe = FillRateProbe(min_offset=-2, max_offset=2, exploration_epsilon=0.0)
     # Simulate: offset +1 fills 80% of the time; others 20%.
     for _ in range(500):
         offset = probe.pick_offset()
-        filled = (offset == 1 and random.random() < 0.8) or (
-            offset != 1 and random.random() < 0.2
+        filled = (offset == 1 and rng.random() < 0.8) or (
+            offset != 1 and rng.random() < 0.2
         )
         probe.record(offset, filled=filled)
     # best_offset should be +1.

@@ -95,11 +95,28 @@ def test_kill_switch_ignores_errors_outside_window():
 
 @pytest.mark.unit
 def test_cooloff_ticks_down():
+    """Previously tautological: asserted only that cooloff reached 0 after
+    N ticks, which would pass even if ``tick_cooloff`` zeroed the counter
+    immediately. Now checks every intermediate decrement and the
+    ``is_halted()`` gate.
+    """
     state = CrashTelemetryState()
-    state.start_cooloff(10)
-    for _ in range(10):
+    state.start_cooloff(5)
+    assert state.cooloff_remaining == 5
+    assert state.is_halted() is True
+    # Walk down one tick at a time and observe each decrement.
+    expected_sequence = [4, 3, 2, 1, 0]
+    for expected in expected_sequence:
         state.tick_cooloff()
+        assert state.cooloff_remaining == expected, (
+            f"expected cooloff={expected}, got {state.cooloff_remaining}"
+        )
+    # Once at 0, halted gate should clear.
+    assert state.is_halted() is False
+    # Further ticks must not go negative.
+    state.tick_cooloff()
     assert state.cooloff_remaining == 0
+    assert state.is_halted() is False
 
 
 @pytest.mark.unit

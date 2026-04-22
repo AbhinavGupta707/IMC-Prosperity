@@ -96,38 +96,58 @@ def test_shuffle_test_fails_when_both_series_correlate_with_time():
     correlation BUT the raw IC is high — catches time-trend confounds.
     """
     n = 500
+    rng = random.Random(0xCAFE)
     features = [float(i) for i in range(n)]  # monotonic
-    returns = [float(i) + random.random() for i in range(n)]  # monotonic + noise
+    returns = [float(i) + rng.random() for i in range(n)]  # monotonic + seeded noise
     # Raw Pearson is high. After shuffle, should drop to ~0 — test passes.
-    r = shuffle_test(features, returns, n_shuffles=30, max_shuffled_ic=0.15)
+    r = shuffle_test(features, returns, n_shuffles=30, max_shuffled_ic=0.15, seed=1)
     assert r.passed  # shuffled IC is near zero — this is the intended behavior
 
 
 @pytest.mark.unit
 def test_strict_lag_test_detects_contemporaneous_correlation():
-    """Feature = return (same tick) ⇒ strict-lag IC = 0 (feature at t-k
-    can't predict return at t)."""
+    """Feature = return (same tick) ⇒ strict-lag IC ≈ 0 (feature at t-k
+    can't predict return at t). Previously the assertion was an
+    ``or``-guarded disjunction that could pass under either branch;
+    this version checks each invariant separately.
+    """
+    rng = random.Random(2026)
     n = 500
-    returns = [random.gauss(0, 1) for _ in range(n)]
+    returns = [rng.gauss(0, 1) for _ in range(n)]
     features = returns.copy()  # perfect contemporaneous correlation
     r = strict_lag_test(features, returns, lag_k=10, min_ic=0.03)
-    # Strict lag should drop correlation dramatically.
-    assert not r.passed or (r.ic is not None and abs(r.ic) < 0.15)
+    # With random noise + a lag of 10, the lagged IC must fall near zero
+    # AND the test must reject the signal.
+    assert not r.passed, f"strict-lag must reject lag-shifted noise; ic={r.ic}"
+    assert r.ic is not None and abs(r.ic) < 0.15, (
+        f"lagged-IC on random noise must be near zero; got {r.ic}"
+    )
 
 
 @pytest.mark.unit
-def test_strict_lag_test_passes_for_true_leading_signal():
-    """Feature at t-5 deterministically predicts return at t ⇒ pass."""
-    n = 500
+def test_strict_lag_test_rejects_signal_at_wrong_lag():
+    """Feature at t-5 predicts return at t. Tested at lag_k=10, the
+    alignment is off by 5 and reduces to noise.
+
+    Previously the assertion was ``not r.passed or small_ic`` which can
+    pass under either branch; split into two deterministic checks.
+    """
+    n = 2000  # large sample so tail correlations collapse.
     rng = random.Random(1)
     base = [rng.gauss(0, 1) for _ in range(n)]
-    features = [0.0] * 5 + base[:-5]  # feature at t = base at t-5
-    returns = base.copy()  # return at t = base at t
-    # So feature at t-5 == base at t-10 and return at t = base at t.
-    # IC should be near zero — test checks lag_k=10 not 5.
-    r = strict_lag_test(features, returns, lag_k=5, min_ic=0.05)
-    # features[t-5] == base[t-10], returns[t] == base[t] — no correlation.
-    assert not r.passed or (r.ic is not None and abs(r.ic) < 0.1)
+    features = [0.0] * 5 + base[:-5]  # feature[t] = base[t-5]
+    returns = base.copy()             # returns[t]  = base[t]
+
+    # At lag_k=50 the alignment becomes feature[t-50]=base[t-55] vs
+    # returns[t]=base[t] — uncorrelated — so the test must reject. The
+    # min_ic=0.10 threshold is well above any spurious finite-sample IC.
+    wrong_lag = strict_lag_test(features, returns, lag_k=50, min_ic=0.10)
+    assert not wrong_lag.passed, (
+        f"strict-lag at wrong lag must fail; ic={wrong_lag.ic}"
+    )
+    assert wrong_lag.ic is not None and abs(wrong_lag.ic) < 0.10, (
+        f"wrong-lag IC on random base must be near zero; got {wrong_lag.ic}"
+    )
 
 
 @pytest.mark.unit
