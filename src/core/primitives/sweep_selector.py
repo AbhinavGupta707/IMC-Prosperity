@@ -216,7 +216,12 @@ def select_winner(
     top_score = scored[0][1]
 
     # Tie-breaking: any candidate within 1% of top score is "tied".
-    tied = [c for c, s in scored if s >= top_score * 0.99]
+    # CRITICAL fix: use absolute distance, not `score >= top * 0.99`. For
+    # negative top_score, `top * 0.99` is numerically LARGER (less negative),
+    # so the comparison becomes `s >= larger_value` — an empty set — and
+    # `tied[0]` crashes with IndexError on any sweep where strategies lose.
+    tolerance = max(abs(top_score) * 0.01, 1e-9)
+    tied = [c for c, s in scored if abs(s - top_score) <= tolerance]
 
     if len(tied) == 1:
         winner = tied[0]

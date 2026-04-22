@@ -130,48 +130,70 @@ class StatArbEngine:
         if edge <= 0 and regime != "squeeze":
             return [], conv_qty, self._build_tags()
 
+        # CRITICAL fix: under subsidy tariffs (import_tariff < 0) BOTH directions
+        # can have positive break-even edges simultaneously. Emitting both SELL
+        # and BUY orders on the same product in the same tick is contradictory.
+        # Pick the ONE direction with the larger per-unit edge.
         orders: list[Order] = []
-        # Sell-local direction: local_bid > sell_be ⇒ sell locally at bid.
-        if local_bid is not None:
-            sell_be = sell_local_break_even(self.config.conversion_spec, remote)
-            if local_bid > sell_be:
-                batch = target_batch_size(
-                    spec=self.config.conversion_spec,
-                    config=self.config.stockpile_config,
-                    arb_edge_per_unit=local_bid - sell_be,
-                    current_inventory=pos,
-                )
-                if batch > 0 and snap.best_bid is not None:
-                    size = min(batch, snap.best_bid.volume)
-                    if size > 0:
-                        orders.append(Order(
-                            self.config.local_product,
-                            snap.best_bid.price,
-                            -size,
-                        ))
+        sell_edge = 0.0
+        buy_edge = 0.0
+        sell_be = sell_local_break_even(self.config.conversion_spec, remote)
+        buy_be = buy_local_break_even(self.config.conversion_spec, remote)
+        if local_bid is not None and local_bid > sell_be:
+            sell_edge = local_bid - sell_be
+        if local_ask is not None and local_ask < buy_be:
+            buy_edge = buy_be - local_ask
 
-        # Buy-local direction.
-        if local_ask is not None:
-            buy_be = buy_local_break_even(self.config.conversion_spec, remote)
-            if local_ask < buy_be:
-                batch = target_batch_size(
-                    spec=self.config.conversion_spec,
-                    config=self.config.stockpile_config,
-                    arb_edge_per_unit=buy_be - local_ask,
-                    current_inventory=pos,
-                )
-                if batch > 0 and snap.best_ask is not None:
-                    size = min(batch, snap.best_ask.volume)
-                    if size > 0:
-                        orders.append(Order(
-                            self.config.local_product,
-                            snap.best_ask.price,
-                            size,
-                        ))
+        chosen_direction: str | None = None
+        if sell_edge > buy_edge and sell_edge > 0:
+            chosen_direction = "sell"
+        elif buy_edge > 0:
+            chosen_direction = "buy"
+
+        if chosen_direction == "sell" and snap.best_bid is not None and local_bid is not None:
+            batch = target_batch_size(
+                spec=self.config.conversion_spec,
+                config=self.config.stockpile_config,
+                arb_edge_per_unit=sell_edge,
+                current_inventory=pos,
+            )
+            if batch > 0:
+                size = min(batch, snap.best_bid.volume)
+                if size > 0:
+                    orders.append(Order(
+                        self.config.local_product,
+                        snap.best_bid.price,
+                        -size,
+                    ))
+        elif chosen_direction == "buy" and snap.best_ask is not None and local_ask is not None:
+            batch = target_batch_size(
+                spec=self.config.conversion_spec,
+                config=self.config.stockpile_config,
+                arb_edge_per_unit=buy_edge,
+                current_inventory=pos,
+            )
+            if batch > 0:
+                size = min(batch, snap.best_ask.volume)
+                if size > 0:
+                    orders.append(Order(
+                        self.config.local_product,
+                        snap.best_ask.price,
+                        size,
+                    ))
 
         # Squeeze-regime overlay: accumulate long up to max_squeeze_inventory.
-        if regime == "squeeze" and pos < self.config.max_squeeze_inventory:
-            if snap.best_ask is not None:
+        # Only fires when no arb direction was chosen (prevents contradictory
+        # SELL-then-BUY on the same tick when arb + squeeze disagree).
+        if (
+            chosen_direction != "sell"
+            and regime == "squeeze"
+            and pos < self.config.max_squeeze_inventory
+            and snap.best_ask is not None
+        ):
+            # Additionally: if we already emitted a buy order, skip this overlay
+            # to avoid doubling on the same side.
+            already_buying = any(o.quantity > 0 for o in orders)
+            if not already_buying:
                 extra = min(
                     self.config.max_squeeze_inventory - pos,
                     snap.best_ask.volume,

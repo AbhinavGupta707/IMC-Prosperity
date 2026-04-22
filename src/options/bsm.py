@@ -185,6 +185,15 @@ def implied_vol(
     f_lo = f(lo)
     f_hi = f(hi)
 
+    # Exact-bracket endpoints: if f(lo) or f(hi) is already within tolerance,
+    # return that value directly. CRITICAL fix: `f_lo * f_mid < 0` becomes
+    # vacuously false when f_lo == 0, causing the solver to converge on `hi`
+    # for deep-ITM options where call_price(sigma=lo) already matches market.
+    if abs(f_lo) < tol:
+        return lo
+    if abs(f_hi) < tol:
+        return hi
+
     # Monotonic in sigma; need sign change to bracket root.
     if f_lo * f_hi > 0:
         # Root is outside [lo, hi]. Try widening hi up to 10 once.
