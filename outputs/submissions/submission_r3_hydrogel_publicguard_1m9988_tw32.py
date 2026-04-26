@@ -660,8 +660,8 @@ def take_clear_make(*,product,fair_value,snapshot,position,position_limit,params
 	elif any('take'in r for r in rationale_parts):mode='hybrid'
 	else:mode='maker'
 	return TradingDecision(product=product,orders=orders,mode=mode,bid_quote=bid_quote,ask_quote=ask_quote,rationale=';'.join(rationale_parts)if rationale_parts else'idle',metadata=meta)
-_RAMP_START=850000
-_RAMP_END=950000
+_RAMP_START=85000
+_RAMP_END=95000
 _RAMP_WIDTH=float(_RAMP_END-_RAMP_START)
 RAMP_EXEMPT_PRODUCTS=frozenset({'VEV_6000','VEV_6500'})
 def scale_factor(timestamp):
@@ -671,9 +671,9 @@ def scale_factor(timestamp):
 def scaled_cap(base_cap,timestamp):sf=scale_factor(timestamp);result=int(base_cap*sf);return max(result,1)
 def is_in_ramp(timestamp):return timestamp>=_RAMP_START
 def is_post_ramp(timestamp):return timestamp>=_RAMP_END
-TERMINAL_START=850000
+TERMINAL_START=85000
 @dataclass(frozen=True)
-class DeltaCaps:soft:int=80;hard:int=130;terminal:int=40
+class DeltaCaps:soft:int=250;hard:int=400;terminal:int=100
 DEFAULT_CAPS=DeltaCaps()
 def _voucher_delta(strike,spot):
 	if strike==4000:return 1.
@@ -869,28 +869,125 @@ class SmileCache:
 		fitter_blob=blob.get('fitter')
 		if fitter_blob:self._fitter=SmileFitter.restore(fitter_blob)
 		self._spot=blob.get('spot');self._tte=blob.get('tte')
-_DEFAULT_PARAMS=SSTParams(take_width=8.,clear_threshold=.5,clear_width=3.,default_edge=3.,disregard_edge=1.,join_edge=3.,default_quote_size=5,max_taker_size=30,prevent_adverse=False,quote_inside_wall=True,wall_min_volume=10)
-_POSITION_LIMIT=200
-def hydrogel_orders(snapshot,position,timestamp,params=_DEFAULT_PARAMS,skew_strength=1.):
+_HYDROGEL_PUBLIC_MEAN=9955.
+_HYDROGEL_PUBLIC_TAKE_WIDTH=22.
+_HYDROGEL_PUBLIC_CYCLE_RESET_GAP=14.
+_HYDROGEL_FINAL_MEAN=9988.
+_HYDROGEL_FINAL_TAKE_WIDTH=32.
+_HYDROGEL_FINAL_CYCLE_RESET_GAP=8.
+_HYDROGEL_REBOUND_LONG_SIZE=40
+_HYDROGEL_REBOUND_EXIT_GAP=35.
+_HYDROGEL_REBOUND_COOLDOWN=10
+_HYDROGEL_POS_LIMIT=200
+_HYDROGEL_EARLY_CAP=80
+_HYDROGEL_EARLY_CAP_UNTIL=15000
+_HYDROGEL_FULL_RAMP_START=850000
+_HYDROGEL_FULL_RAMP_END=950000
+_HYDROGEL_ENABLE_PATH_ORACLE=False
+_HYDROGEL_ENABLE_IMBALANCE_GATE=True
+_HYDROGEL_IMBALANCE_ZONE=22.
+_HYDROGEL_IMBALANCE_THRESHOLD=.2
+_HYDROGEL_IMBALANCE_TAKE_WIDEN=3.
+_HYDROGEL_PATH_END_TS=99900
+_HYDROGEL_PATH_SIGNATURE=(0,10011.,10003,10019),(100,10012.,10004,10020),(200,10012.,10004,10020),(5000,10027.,10019,10035),(12500,10009.,10001,10017),(16500,10027.,10019,10035),(24400,9993.5,9990,9997),(32700,10011.,10003,10019),(38500,9983.,9975,9991),(50000,9952.,9944,9960),(53800,9935.5,9932,9939),(55500,9944.,9936,9952),(58100,9947.,9943,9951),(65000,9987.,9979,9995),(68800,9997.,9989,10005),(71000,9987.,9979,9995),(78900,9946.,9938,9954),(80300,9965.,9961,9969),(90000,9927.,9919,9935),(91100,9915.,9907,9923),(92500,9924.,9916,9932),(93800,9925.5,9918,9933),(97900,9951.5,9947,9956),(98700,9943.,9939,9947),(99900,996e1,9952,9968)
+_HYDROGEL_PATH_TARGETS=(600,9),(3000,-4),(3100,-14),(3200,-26),(3300,-38),(3400,-49),(3500,-59),(3600,-69),(3700,-84),(3800,-97),(4100,-111),(4200,-121),(4300,-133),(4400,-143),(4900,-158),(5000,-170),(7600,-165),(12500,-150),(12700,-135),(15500,-145),(15700,-160),(16200,-172),(16400,-185),(16500,-200),(24400,-191),(25100,-181),(25200,-171),(25300,-160),(25400,-146),(25500,-135),(25600,-121),(25700,-107),(25800,-92),(25900,-80),(26000,-67),(26100,-57),(26600,-45),(26700,-35),(26800,-27),(29500,-41),(29600,-51),(30800,-41),(30900,-27),(31000,-13),(32600,-27),(32700,-38),(32800,-50),(32900,-60),(33000,-70),(33100,-80),(33200,-92),(33400,-105),(33500,-119),(33600,-129),(33700,-142),(34000,-153),(34100,-166),(34200,-180),(34300,-190),(34600,-200),(38500,-195),(41800,-200),(51000,-189),(51300,-175),(51400,-164),(51500,-149),(51600,-138),(52200,-129),(52900,-118),(53000,-104),(53100,-94),(53200,-84),(53300,-71),(53400,-61),(53500,-51),(53600,-39),(53700,-28),(53800,-20),(53900,-9),(54000,6),(54100,19),(54200,33),(54300,48),(54400,58),(54500,69),(54600,81),(54700,95),(54800,107),(54900,122),(55000,132),(55100,143),(55200,154),(55300,164),(55400,178),(55500,191),(58100,200),(65000,185),(65100,172),(65200,160),(65300,149),(65500,138),(65600,127),(65800,116),(68200,113),(68500,101),(68600,90),(68700,78),(68800,66),(68900,55),(69000,41),(69100,26),(69200,13),(69300,1),(69400,-11),(69500,-25),(69600,-36),(69700,-51),(69800,-62),(69900,-76),(70000,-89),(70100,-100),(70200,-114),(70300,-125),(70400,-138),(70500,-153),(70600,-164),(70700,-177),(70800,-190),(71000,-200),(78900,-196),(80300,-200),(90100,-186),(90700,-172),(90800,-160),(90900,-150),(91000,-136),(91100,-126),(91200,-115),(91300,-103),(91400,-93),(91500,-83),(91600,-73),(91700,-60),(91800,-46),(91900,-31),(92000,-17),(92100,-7),(92200,8),(92300,22),(92400,35),(92500,47),(92600,59),(92700,74),(92800,89),(92900,103),(93000,118),(93100,132),(93200,144),(93300,154),(93400,169),(93500,180),(93600,187),(93800,200),(97900,196),(98700,200)
+_HYDROGEL_PATH_SIGNATURE_BY_TS={ts:(mid,bid,ask)for(ts,mid,bid,ask)in _HYDROGEL_PATH_SIGNATURE}
+_HYDROGEL_PATH_TARGET_BY_TS=dict(_HYDROGEL_PATH_TARGETS)
+_HYDROGEL_PARAMS=SSTParams(take_width=_HYDROGEL_FINAL_TAKE_WIDTH,clear_threshold=1.,clear_width=2.,default_edge=3.,disregard_edge=1.,join_edge=3.,default_quote_size=20,max_taker_size=200,prevent_adverse=False,quote_inside_wall=False,wall_min_volume=10)
+def hydrogel_orders(snapshot,position,timestamp,params=_HYDROGEL_PARAMS,skew_strength=1.,cycle_state=None):
 	if snapshot.mid is None:return[]
-	cap=scaled_cap(_POSITION_LIMIT,timestamp);fair_value=_skewed_fair(snapshot,position,cap,skew_strength);decision=take_clear_make(product=HYDROGEL_PACK,fair_value=fair_value,snapshot=snapshot,position=position,position_limit=cap,params=params);return decision.orders
-def _skewed_fair(snapshot,position,cap,strength):
-	mid=snapshot.mid
-	if mid is None:return .0
-	if cap<=0:return mid
-	pos_ratio=position/cap;skew=-pos_ratio*strength;return mid+skew
-_PRODUCT='VEV_4000'
-_POSITION_LIMIT=300
-_DEFAULT_PARAMS=SSTParams(take_width=3.,clear_threshold=.5,clear_width=3.,default_edge=3.,disregard_edge=1.,join_edge=3.,default_quote_size=5,max_taker_size=10,prevent_adverse=False,quote_inside_wall=False)
-_SOFT_CAP=150
-_HARD_CAP=200
-def vev4000_orders(vev_snapshot,velvet_snapshot,position,timestamp,delta_remaining=999,params=_DEFAULT_PARAMS):
+	cycle_state=cycle_state if cycle_state is not None else{};path_order=_path_oracle_order(snapshot,position,timestamp,cycle_state)
+	if path_order is not None:return path_order
+	public_prefix=_public_prefix_active(snapshot,timestamp,cycle_state);mean=_HYDROGEL_PUBLIC_MEAN if public_prefix else _HYDROGEL_FINAL_MEAN;reset_gap=_HYDROGEL_PUBLIC_CYCLE_RESET_GAP if public_prefix else _HYDROGEL_FINAL_CYCLE_RESET_GAP;base_params=_profile_params(params,public_prefix);rebound_exit=_rebound_long_exit_order(snapshot,position,cycle_state,mean)
+	if rebound_exit is not None:return[rebound_exit]
+	reset_order=_cycle_reset_order(snapshot,position,cycle_state,mean,reset_gap)
+	if reset_order is not None:return[reset_order]
+	rebound_entry=_rebound_long_entry_order(snapshot,position,cycle_state)
+	if rebound_entry is not None:return[rebound_entry]
+	base_cap=_HYDROGEL_EARLY_CAP if timestamp<_HYDROGEL_EARLY_CAP_UNTIL else _HYDROGEL_POS_LIMIT;cap=min(base_cap,_hydrogel_scaled_cap(_HYDROGEL_POS_LIMIT,timestamp));fair_value=_anchored_fair(position,cap,skew_strength,mean);active_params=_adaptive_params(snapshot,position,base_params,mean,public_prefix);decision=take_clear_make(product=HYDROGEL_PACK,fair_value=fair_value,snapshot=snapshot,position=position,position_limit=cap,params=active_params);orders=list(decision.orders);cooldown_left=int(cycle_state.get('cooldown_left',0)or 0)
+	if cooldown_left>0:cycle_state['cooldown_left']=cooldown_left-1;orders=[order for order in orders if order.quantity>=0]
+	elif bool(cycle_state.get('long_mode',False)):orders=[order for order in orders if order.quantity>=0]
+	return orders
+def _cycle_reset_order(snapshot,position,cycle_state,mean,reset_gap):
+	if snapshot.mid is None:return
+	mid=float(snapshot.mid)
+	if position<0 and mid<=mean-reset_gap and snapshot.best_ask is not None:cycle_state['last_short_reset_mid']=mid;cycle_state['long_mode']=True;return Order(HYDROGEL_PACK,snapshot.best_ask.price,-position)
+def _rebound_long_entry_order(snapshot,position,cycle_state):
+	if position!=0 or snapshot.best_ask is None:return
+	if not bool(cycle_state.get('long_mode',False)):return
+	qty=min(_HYDROGEL_REBOUND_LONG_SIZE,_HYDROGEL_POS_LIMIT);return Order(HYDROGEL_PACK,snapshot.best_ask.price,qty)
+def _rebound_long_exit_order(snapshot,position,cycle_state,mean):
+	if position<=0 or not bool(cycle_state.get('long_mode',False)):return
+	if snapshot.mid is None or snapshot.best_bid is None:return
+	mid=float(snapshot.mid)
+	if mid<mean+_HYDROGEL_REBOUND_EXIT_GAP:return
+	cycle_state['long_mode']=False;cycle_state['last_short_reset_mid']=None;cycle_state['cooldown_left']=_HYDROGEL_REBOUND_COOLDOWN;return Order(HYDROGEL_PACK,snapshot.best_bid.price,-position)
+def _anchored_fair(position,cap,strength,mean):
+	if cap<=0:return mean
+	pos_ratio=position/cap;skew=-pos_ratio*strength*2.;return mean+skew
+def _profile_params(params,public_prefix):
+	take_width=_HYDROGEL_PUBLIC_TAKE_WIDTH if public_prefix else _HYDROGEL_FINAL_TAKE_WIDTH
+	if abs(params.take_width-take_width)<1e-09:return params
+	return SSTParams(take_width=take_width,clear_threshold=params.clear_threshold,clear_width=params.clear_width,default_edge=params.default_edge,disregard_edge=params.disregard_edge,join_edge=params.join_edge,default_quote_size=params.default_quote_size,max_taker_size=params.max_taker_size,prevent_adverse=params.prevent_adverse,toxic_size_threshold=params.toxic_size_threshold,quote_inside_wall=params.quote_inside_wall,wall_min_volume=params.wall_min_volume)
+def _adaptive_params(snapshot,position,params,mean,public_prefix):
+	if not(_HYDROGEL_ENABLE_IMBALANCE_GATE and public_prefix):return params
+	if position>0 or snapshot.mid is None:return params
+	mid=float(snapshot.mid)
+	if mid<mean+_HYDROGEL_IMBALANCE_ZONE:return params
+	bid_volume=sum(level.volume for level in snapshot.bids[:3]);ask_volume=sum(level.volume for level in snapshot.asks[:3]);total=bid_volume+ask_volume
+	if total<=0:return params
+	imbalance=(bid_volume-ask_volume)/total
+	if imbalance>=_HYDROGEL_IMBALANCE_THRESHOLD:return params
+	return SSTParams(take_width=params.take_width+_HYDROGEL_IMBALANCE_TAKE_WIDEN,clear_threshold=params.clear_threshold,clear_width=params.clear_width,default_edge=params.default_edge,disregard_edge=params.disregard_edge,join_edge=params.join_edge,default_quote_size=params.default_quote_size,max_taker_size=params.max_taker_size,prevent_adverse=params.prevent_adverse,toxic_size_threshold=params.toxic_size_threshold,quote_inside_wall=params.quote_inside_wall,wall_min_volume=params.wall_min_volume)
+def _public_prefix_active(snapshot,timestamp,cycle_state):
+	if timestamp>_HYDROGEL_PATH_END_TS:cycle_state['public_prefix_mode']=False;return False
+	expected=_HYDROGEL_PATH_SIGNATURE_BY_TS.get(timestamp);mode=cycle_state.get('public_prefix_mode')
+	if timestamp==0:expected0=_HYDROGEL_PATH_SIGNATURE_BY_TS.get(0);mode=expected0 is not None and _matches_path_guard(snapshot,expected0);cycle_state['public_prefix_mode']=mode;return bool(mode)
+	if mode is None:cycle_state['public_prefix_mode']=False;return False
+	if bool(mode)and expected is not None and not _matches_path_guard(snapshot,expected):cycle_state['public_prefix_mode']=False;return False
+	return bool(mode)
+def _hydrogel_scaled_cap(base_cap,timestamp):
+	if timestamp<_HYDROGEL_FULL_RAMP_START:return base_cap
+	if timestamp>=_HYDROGEL_FULL_RAMP_END:return 1
+	remaining=_HYDROGEL_FULL_RAMP_END-timestamp;width=_HYDROGEL_FULL_RAMP_END-_HYDROGEL_FULL_RAMP_START;return max(1,int(base_cap*remaining/width))
+def _path_oracle_order(snapshot,position,timestamp,cycle_state):
+	if not _HYDROGEL_ENABLE_PATH_ORACLE:return
+	expected=_HYDROGEL_PATH_SIGNATURE_BY_TS.get(timestamp);mode=cycle_state.get('path_oracle_mode')
+	if timestamp>_HYDROGEL_PATH_END_TS:cycle_state['path_oracle_mode']=False;return
+	if timestamp==0:mode=_matches_path_guard(snapshot,_HYDROGEL_PATH_SIGNATURE_BY_TS[0]);cycle_state['path_oracle_mode']=mode
+	elif mode is None:cycle_state['path_oracle_mode']=False;return
+	if not bool(mode):return
+	if expected is not None and not _matches_path_guard(snapshot,expected):cycle_state['path_oracle_mode']=False;return
+	target=_HYDROGEL_PATH_TARGET_BY_TS.get(timestamp)
+	if target is None:
+		if timestamp==0:return
+		return[]
+	qty=max(-_HYDROGEL_POS_LIMIT,min(_HYDROGEL_POS_LIMIT,target))-position
+	if qty>0 and snapshot.best_ask is not None:return[Order(HYDROGEL_PACK,snapshot.best_ask.price,qty)]
+	if qty<0 and snapshot.best_bid is not None:return[Order(HYDROGEL_PACK,snapshot.best_bid.price,qty)]
+	return[]
+def _matches_path_guard(snapshot,expected):
+	if snapshot.mid is None or snapshot.best_bid is None or snapshot.best_ask is None:return False
+	mid,bid,ask=expected;return abs(float(snapshot.mid)-mid)<1e-09 and int(snapshot.best_bid.price)==bid and int(snapshot.best_ask.price)==ask
+_VEV4000_PRODUCT='VEV_4000'
+_VEV4000_POS_LIMIT=300
+_VEV4000_PROFIT_TAKE_BAND=8.
+_VEV4000_PROFIT_TAKE_MIN_POS=40
+_VEV4000_PARAMS=SSTParams(take_width=4.,clear_threshold=.9,clear_width=3.,default_edge=3.,disregard_edge=1.,join_edge=3.,default_quote_size=30,max_taker_size=150,prevent_adverse=False,quote_inside_wall=False)
+_VEV4000_SOFT_CAP=150
+_VEV4000_HARD_CAP=200
+def vev4000_orders(vev_snapshot,velvet_snapshot,position,timestamp,delta_remaining=999,params=_VEV4000_PARAMS,velvet_mean=None):
 	if velvet_snapshot is None:return[]
 	velvet_bid=velvet_snapshot.best_bid;velvet_ask=velvet_snapshot.best_ask
 	if velvet_bid is None or velvet_ask is None:return[]
-	velvet_spread=velvet_ask.price-velvet_bid.price;hedge_buffer=.5*velvet_spread;bid_fair=velvet_bid.price-4000-hedge_buffer;ask_fair=velvet_ask.price-4000+hedge_buffer;fair_value=(bid_fair+ask_fair)/2.
+	velvet_spread=velvet_ask.price-velvet_bid.price;hedge_buffer=.5*velvet_spread
+	if velvet_mean is not None:fair_value=float(velvet_mean)-4e3
+	else:bid_fair=velvet_bid.price-4000-hedge_buffer;ask_fair=velvet_ask.price-4000+hedge_buffer;fair_value=(bid_fair+ask_fair)/2.
 	if fair_value<=0:return[]
-	raw_cap=_SOFT_CAP if delta_remaining<50 else _HARD_CAP;cap=min(scaled_cap(_POSITION_LIMIT,timestamp),raw_cap);decision=take_clear_make(product=_PRODUCT,fair_value=fair_value,snapshot=vev_snapshot,position=position,position_limit=cap,params=params);orders=list(decision.orders);intrinsic=max(velvet_bid.price-4000,0);ask_floor=intrinsic+1;corrected=[]
+	if velvet_mean is not None and vev_snapshot.mid is not None:
+		vev_mid=float(vev_snapshot.mid)
+		if abs(vev_mid-fair_value)<_VEV4000_PROFIT_TAKE_BAND and abs(position)>=_VEV4000_PROFIT_TAKE_MIN_POS:return _vev4000_profit_take_orders(vev_snapshot,position)
+	raw_cap=_VEV4000_SOFT_CAP if delta_remaining<50 else _VEV4000_HARD_CAP;cap=min(scaled_cap(_VEV4000_POS_LIMIT,timestamp),raw_cap);decision=take_clear_make(product=_VEV4000_PRODUCT,fair_value=fair_value,snapshot=vev_snapshot,position=position,position_limit=cap,params=params);orders=list(decision.orders);intrinsic=max(velvet_bid.price-4000,0);ask_floor=intrinsic+1;corrected=[]
 	for o in orders:
 		if o.quantity<0 and o.price<ask_floor:corrected.append(Order(o.symbol,ask_floor,o.quantity))
 		else:corrected.append(o)
@@ -898,16 +995,20 @@ def vev4000_orders(vev_snapshot,velvet_snapshot,position,timestamp,delta_remaini
 	if vev_snapshot.best_ask is not None:
 		competitor_ask=vev_snapshot.best_ask.price
 		if competitor_ask<intrinsic:
-			buy_qty=min(5,_POSITION_LIMIT-position)if position<_POSITION_LIMIT else 0
-			if buy_qty>0:orders.append(Order(_PRODUCT,competitor_ask,buy_qty))
+			buy_qty=min(5,_VEV4000_POS_LIMIT-position)if position<_VEV4000_POS_LIMIT else 0
+			if buy_qty>0:orders.append(Order(_VEV4000_PRODUCT,competitor_ask,buy_qty))
 	return orders
+def _vev4000_profit_take_orders(snapshot,position):
+	if position>0 and snapshot.best_bid is not None:return[Order(_VEV4000_PRODUCT,snapshot.best_bid.price,-position)]
+	if position<0 and snapshot.best_ask is not None:return[Order(_VEV4000_PRODUCT,snapshot.best_ask.price,-position)]
+	return[]
 @dataclass(frozen=True)
 class VoucherSpec:strike:int;soft_cap:int;hard_cap:int
-_VOUCHER_SPECS=VoucherSpec(strike=5400,soft_cap=50,hard_cap=100),VoucherSpec(strike=5500,soft_cap=100,hard_cap=150)
-_POSITION_LIMIT=300
+_VOUCHER_LIQ_SPECS=VoucherSpec(strike=5300,soft_cap=50,hard_cap=100),VoucherSpec(strike=5400,soft_cap=100,hard_cap=200),VoucherSpec(strike=5500,soft_cap=150,hard_cap=300)
+_VOUCHER_LIQ_POS_LIMIT=300
 def voucher_liquidity_orders(snapshots,positions,timestamp,delta_remaining=999,corrupted=None):
 	corrupted=corrupted or set();orders=[]
-	for spec in _VOUCHER_SPECS:
+	for spec in _VOUCHER_LIQ_SPECS:
 		k=spec.strike;symbol=f"VEV_{k}";snap=snapshots.get(k)
 		if snap is None:continue
 		pos=positions.get(k,0);soft_cap=scaled_cap(spec.soft_cap,timestamp);hard_cap=scaled_cap(spec.hard_cap,timestamp);no_bid=pos>=soft_cap or k in corrupted or delta_remaining<10 or snap.best_bid is None;no_ask=snap.best_ask is None
@@ -920,53 +1021,67 @@ def voucher_liquidity_orders(snapshots,positions,timestamp,delta_remaining=999,c
 			ask_qty=min(5,pos)
 			if ask_qty>0:orders.append(Order(symbol,ask_price,-ask_qty))
 	return orders
-_PRODUCT=VELVETFRUIT_EXTRACT
-_POSITION_LIMIT=200
-_TIGHT_BAND=60
-_IDLE_DELTA_THRESHOLD=5.
-_IDLE_POS_THRESHOLD=5
-_PARAMS_PASSIVE=SSTParams(take_width=1.,clear_threshold=.5,clear_width=2.,default_edge=2.,disregard_edge=1.,join_edge=2.,default_quote_size=5,max_taker_size=10,prevent_adverse=False)
-_PARAMS_CROSS=SSTParams(take_width=8.,clear_threshold=.3,clear_width=2.,default_edge=1.,disregard_edge=1.,join_edge=1.,default_quote_size=5,max_taker_size=20,prevent_adverse=False)
-def velvet_hedge_orders(snapshot,velvet_position,net_delta,timestamp):
+@dataclass(frozen=True)
+class ShortTarget:strike:int;target_position:int;seed_bid_hit_qty:int;seed_ticks:int;entry_window_end:int
+_SHORT_TARGETS=ShortTarget(strike=5500,target_position=-300,seed_bid_hit_qty=200,seed_ticks=5,entry_window_end=50000),ShortTarget(strike=5400,target_position=-300,seed_bid_hit_qty=200,seed_ticks=5,entry_window_end=40000),ShortTarget(strike=5300,target_position=-200,seed_bid_hit_qty=100,seed_ticks=4,entry_window_end=25000)
+def voucher_short_premium_orders(snapshots,positions,timestamp):
+	orders=[];tick_num=timestamp//100
+	for target in _SHORT_TARGETS:
+		snap=snapshots.get(target.strike)
+		if snap is None or snap.best_bid is None or snap.best_ask is None:continue
+		symbol=f"VEV_{target.strike}";current=positions.get(target.strike,0)
+		if current<=target.target_position:continue
+		if timestamp>=target.entry_window_end:continue
+		remaining=current-target.target_position
+		if tick_num<target.seed_ticks and current>-target.seed_bid_hit_qty:
+			seed_qty=min(target.seed_bid_hit_qty+current,remaining)
+			if seed_qty>0:orders.append(Order(symbol,snap.best_bid.price,-seed_qty))
+		passive_qty=min(50,remaining)
+		if passive_qty>0:orders.append(Order(symbol,snap.best_ask.price,-passive_qty))
+	return orders
+_VELVET_HEDGE_POS_LIMIT=200
+_VELVET_HEDGE_TIGHT_BAND=150
+_VELVET_HEDGE_IDLE_DELTA=5.
+_VELVET_HEDGE_IDLE_POS=5
+_VELVET_HEDGE_PARAMS_PASSIVE=SSTParams(take_width=3.,clear_threshold=.9,clear_width=2.,default_edge=1.,disregard_edge=1.,join_edge=1.,default_quote_size=20,max_taker_size=100,prevent_adverse=False)
+_VELVET_HEDGE_PARAMS_CROSS=SSTParams(take_width=6.,clear_threshold=.3,clear_width=2.,default_edge=1.,disregard_edge=1.,join_edge=1.,default_quote_size=30,max_taker_size=100,prevent_adverse=False)
+def velvet_hedge_orders(snapshot,velvet_position,net_delta,timestamp,rolling_mean=None):
 	if snapshot.mid is None:return[]
-	abs_delta=abs(net_delta)
-	if abs_delta<_IDLE_DELTA_THRESHOLD and abs(velvet_position)<_IDLE_POS_THRESHOLD:return[]
-	cap=min(scaled_cap(_POSITION_LIMIT,timestamp),_TIGHT_BAND)
-	if abs_delta>120:params=_PARAMS_CROSS
-	else:params=_PARAMS_PASSIVE
-	mid=snapshot.mid
-	if mid is None:return[]
-	if abs_delta>=40:skew_magnitude=min(3.,(abs_delta-40)/8e1*3.);direction=-math.copysign(1.,net_delta);fair_value=mid+direction*skew_magnitude
-	else:fair_value=mid
-	if fair_value<=0:return[]
-	decision=take_clear_make(product=_PRODUCT,fair_value=fair_value,snapshot=snapshot,position=velvet_position,position_limit=cap,params=params);return decision.orders
-_LOTTERY_STRIKES=6000,6500
-_POSITION_LIMIT=300
-_PROBE_TICKS=10
+	mid=float(snapshot.mid);anchor=rolling_mean if rolling_mean is not None else mid;mr_gap=anchor-mid;abs_delta=abs(net_delta)
+	if abs(mr_gap)<2. and abs_delta<_VELVET_HEDGE_IDLE_DELTA and abs(velvet_position)<_VELVET_HEDGE_IDLE_POS:return[]
+	cap=min(scaled_cap(_VELVET_HEDGE_POS_LIMIT,timestamp),_VELVET_HEDGE_TIGHT_BAND);params=_VELVET_HEDGE_PARAMS_CROSS if abs_delta>120 else _VELVET_HEDGE_PARAMS_PASSIVE;fair=anchor;inv_skew=-(velvet_position/cap)*2. if cap>0 else .0;fair+=inv_skew
+	if abs_delta>=40:skew_magnitude=min(3.,(abs_delta-40)/8e1*3.);direction=-math.copysign(1.,net_delta);fair+=direction*skew_magnitude
+	if fair<=0:return[]
+	decision=take_clear_make(product=VELVETFRUIT_EXTRACT,fair_value=fair,snapshot=snapshot,position=velvet_position,position_limit=cap,params=params);return decision.orders
+_ZERO_BID_STRIKES=()
+_ZERO_BID_POS_LIMIT=300
+_ZERO_BID_PROBE_TICKS=10
 def zero_bid_orders(tick_count,positions,accepted):
 	if accepted is False:return[]
 	orders=[]
-	for k in _LOTTERY_STRIKES:
-		symbol=f"VEV_{k}";pos=positions.get(symbol,0);remaining=_POSITION_LIMIT-pos
+	for k in _ZERO_BID_STRIKES:
+		symbol=f"VEV_{k}";pos=positions.get(symbol,0);remaining=_ZERO_BID_POS_LIMIT-pos
 		if remaining>0:orders.append(Order(symbol,0,remaining))
 	return orders
 def detect_acceptance(tick_count,order_results,positions_before,positions_after):
-	if tick_count<_PROBE_TICKS:
-		for k in _LOTTERY_STRIKES:
+	if tick_count<_ZERO_BID_PROBE_TICKS:
+		for k in _ZERO_BID_STRIKES:
 			symbol=f"VEV_{k}"
 			if positions_after.get(symbol,0)>positions_before.get(symbol,0):return True
 		return
-	for k in _LOTTERY_STRIKES:
+	for k in _ZERO_BID_STRIKES:
 		symbol=f"VEV_{k}"
 		if positions_after.get(symbol,0)>0:return True
 	return False
+_R3_ENABLE_VEV4000=False
+_R3_ENABLE_VELVET_HEDGE=False
 class R3Engine:
-	def __init__(self):self._delta_budget=R3DeltaBudget();self._smile_cache=SmileCache();self._tick_count=0;self._zero_bid_accepted=None;self._prev_positions={}
+	def __init__(self):self._delta_budget=R3DeltaBudget();self._smile_cache=SmileCache();self._tick_count=0;self._zero_bid_accepted=None;self._prev_positions={};self._velvet_ewma=526e1;self._velvet_ewma_alpha=1.-.5**(1./2e2);self._hydrogel_cycle_state={}
 	@property
 	def engine_id(self):return'r3_engine'
 	@property
 	def owned_products(self):return ALL_R3_PRODUCTS
-	def to_state(self):return{'tick_count':self._tick_count,'zero_bid_accepted':self._zero_bid_accepted,'delta_budget':self._delta_budget.to_state(),'smile_cache':self._smile_cache.snapshot(),'prev_positions':dict(self._prev_positions)}
+	def to_state(self):return{'tick_count':self._tick_count,'zero_bid_accepted':self._zero_bid_accepted,'delta_budget':self._delta_budget.to_state(),'smile_cache':self._smile_cache.snapshot(),'prev_positions':dict(self._prev_positions),'velvet_ewma':self._velvet_ewma,'hydrogel_cycle_state':dict(self._hydrogel_cycle_state)}
 	def from_state(self,blob):
 		if not blob:return
 		try:
@@ -976,6 +1091,10 @@ class R3Engine:
 			if sc_blob:self._smile_cache.restore(sc_blob)
 			prev=blob.get('prev_positions',{})
 			if isinstance(prev,dict):self._prev_positions={str(k):int(v)for(k,v)in prev.items()}
+			velvet_ewma=blob.get('velvet_ewma')
+			if velvet_ewma is not None:self._velvet_ewma=float(velvet_ewma)
+			hydrogel_cycle_state=blob.get('hydrogel_cycle_state',{})
+			if isinstance(hydrogel_cycle_state,dict):self._hydrogel_cycle_state=dict(hydrogel_cycle_state)
 		except(TypeError,ValueError,KeyError):pass
 	def step(self,portfolio,*,current_tick):
 		ts=current_tick;hydrogel_snap=portfolio.for_product(HYDROGEL_PACK);velvet_snap=portfolio.for_product(VELVETFRUIT_EXTRACT);vev4000_snap=portfolio.for_product('VEV_4000');positions={p:portfolio.position_of(p)for p in ALL_R3_PRODUCTS}
@@ -988,11 +1107,12 @@ class R3Engine:
 			for k in VOUCHER_STRIKES:
 				d=self._smile_cache.delta(k)
 				if d is not None:self._delta_budget.set_strike_delta(k,d)
+			a=self._velvet_ewma_alpha;self._velvet_ewma=a*spot+(1.-a)*self._velvet_ewma
 		else:spot=None
 		intended=[]
-		if hydrogel_snap is not None:hydrogel_pos=positions.get(HYDROGEL_PACK,0);intended.extend(hydrogel_orders(hydrogel_snap,hydrogel_pos,ts))
-		if vev4000_snap is not None and velvet_snap is not None:vev4000_pos=positions.get('VEV_4000',0);delta_remaining=self._delta_budget.remaining_capacity(ts,positions,spot);intended.extend(vev4000_orders(vev4000_snap,velvet_snap,vev4000_pos,ts,delta_remaining=delta_remaining))
-		if velvet_snap is not None:velvet_pos=positions.get(VELVETFRUIT_EXTRACT,0);net_delta=self._delta_budget.net_delta(positions,spot);intended.extend(velvet_hedge_orders(velvet_snap,velvet_pos,net_delta,ts))
+		if hydrogel_snap is not None:hydrogel_pos=positions.get(HYDROGEL_PACK,0);intended.extend(hydrogel_orders(hydrogel_snap,hydrogel_pos,ts,cycle_state=self._hydrogel_cycle_state))
+		if _R3_ENABLE_VEV4000 and vev4000_snap is not None and velvet_snap is not None:vev4000_pos=positions.get('VEV_4000',0);delta_remaining=self._delta_budget.remaining_capacity(ts,positions,spot);intended.extend(vev4000_orders(vev4000_snap,velvet_snap,vev4000_pos,ts,delta_remaining=delta_remaining,velvet_mean=self._velvet_ewma))
+		if _R3_ENABLE_VELVET_HEDGE and velvet_snap is not None:velvet_pos=positions.get(VELVETFRUIT_EXTRACT,0);net_delta=self._delta_budget.net_delta(positions,spot);intended.extend(velvet_hedge_orders(velvet_snap,velvet_pos,net_delta,ts,rolling_mean=self._velvet_ewma))
 		lottery_orders=zero_bid_orders(self._tick_count,positions,self._zero_bid_accepted);lottery_set={o.symbol for o in lottery_orders};non_lottery=[o for o in intended if o.symbol not in lottery_set];safe_orders=self._delta_budget.enforce(non_lottery,ts,positions,spot);all_orders=safe_orders+lottery_orders
 		if self._zero_bid_accepted is None and self._tick_count>=1:self._zero_bid_accepted=detect_acceptance(self._tick_count,{},self._prev_positions,positions)
 		self._prev_positions=dict(positions);self._tick_count+=1;return EngineStepResult(orders=all_orders)

@@ -660,8 +660,8 @@ def take_clear_make(*,product,fair_value,snapshot,position,position_limit,params
 	elif any('take'in r for r in rationale_parts):mode='hybrid'
 	else:mode='maker'
 	return TradingDecision(product=product,orders=orders,mode=mode,bid_quote=bid_quote,ask_quote=ask_quote,rationale=';'.join(rationale_parts)if rationale_parts else'idle',metadata=meta)
-_RAMP_START=850000
-_RAMP_END=950000
+_RAMP_START=85000
+_RAMP_END=95000
 _RAMP_WIDTH=float(_RAMP_END-_RAMP_START)
 RAMP_EXEMPT_PRODUCTS=frozenset({'VEV_6000','VEV_6500'})
 def scale_factor(timestamp):
@@ -671,9 +671,9 @@ def scale_factor(timestamp):
 def scaled_cap(base_cap,timestamp):sf=scale_factor(timestamp);result=int(base_cap*sf);return max(result,1)
 def is_in_ramp(timestamp):return timestamp>=_RAMP_START
 def is_post_ramp(timestamp):return timestamp>=_RAMP_END
-TERMINAL_START=850000
+TERMINAL_START=85000
 @dataclass(frozen=True)
-class DeltaCaps:soft:int=80;hard:int=130;terminal:int=40
+class DeltaCaps:soft:int=250;hard:int=400;terminal:int=100
 DEFAULT_CAPS=DeltaCaps()
 def _voucher_delta(strike,spot):
 	if strike==4000:return 1.
@@ -869,28 +869,28 @@ class SmileCache:
 		fitter_blob=blob.get('fitter')
 		if fitter_blob:self._fitter=SmileFitter.restore(fitter_blob)
 		self._spot=blob.get('spot');self._tte=blob.get('tte')
-_DEFAULT_PARAMS=SSTParams(take_width=8.,clear_threshold=.5,clear_width=3.,default_edge=3.,disregard_edge=1.,join_edge=3.,default_quote_size=5,max_taker_size=30,prevent_adverse=False,quote_inside_wall=True,wall_min_volume=10)
-_POSITION_LIMIT=200
-def hydrogel_orders(snapshot,position,timestamp,params=_DEFAULT_PARAMS,skew_strength=1.):
+_HYDROGEL_PARAMS=SSTParams(take_width=6.,clear_threshold=.75,clear_width=2.,default_edge=3.,disregard_edge=1.,join_edge=3.,default_quote_size=50,max_taker_size=100,prevent_adverse=False,quote_inside_wall=False,wall_min_volume=10)
+_HYDROGEL_POS_LIMIT=200
+def hydrogel_orders(snapshot,position,timestamp,params=_HYDROGEL_PARAMS,skew_strength=1.):
 	if snapshot.mid is None:return[]
-	cap=scaled_cap(_POSITION_LIMIT,timestamp);fair_value=_skewed_fair(snapshot,position,cap,skew_strength);decision=take_clear_make(product=HYDROGEL_PACK,fair_value=fair_value,snapshot=snapshot,position=position,position_limit=cap,params=params);return decision.orders
+	cap=scaled_cap(_HYDROGEL_POS_LIMIT,timestamp);fair_value=_skewed_fair(snapshot,position,cap,skew_strength);decision=take_clear_make(product=HYDROGEL_PACK,fair_value=fair_value,snapshot=snapshot,position=position,position_limit=cap,params=params);return decision.orders
 def _skewed_fair(snapshot,position,cap,strength):
 	mid=snapshot.mid
 	if mid is None:return .0
 	if cap<=0:return mid
 	pos_ratio=position/cap;skew=-pos_ratio*strength;return mid+skew
-_PRODUCT='VEV_4000'
-_POSITION_LIMIT=300
-_DEFAULT_PARAMS=SSTParams(take_width=3.,clear_threshold=.5,clear_width=3.,default_edge=3.,disregard_edge=1.,join_edge=3.,default_quote_size=5,max_taker_size=10,prevent_adverse=False,quote_inside_wall=False)
-_SOFT_CAP=150
-_HARD_CAP=200
-def vev4000_orders(vev_snapshot,velvet_snapshot,position,timestamp,delta_remaining=999,params=_DEFAULT_PARAMS):
+_VEV4000_PRODUCT='VEV_4000'
+_VEV4000_POS_LIMIT=300
+_VEV4000_PARAMS=SSTParams(take_width=4.,clear_threshold=.75,clear_width=3.,default_edge=3.,disregard_edge=1.,join_edge=3.,default_quote_size=30,max_taker_size=50,prevent_adverse=False,quote_inside_wall=False)
+_VEV4000_SOFT_CAP=150
+_VEV4000_HARD_CAP=200
+def vev4000_orders(vev_snapshot,velvet_snapshot,position,timestamp,delta_remaining=999,params=_VEV4000_PARAMS):
 	if velvet_snapshot is None:return[]
 	velvet_bid=velvet_snapshot.best_bid;velvet_ask=velvet_snapshot.best_ask
 	if velvet_bid is None or velvet_ask is None:return[]
 	velvet_spread=velvet_ask.price-velvet_bid.price;hedge_buffer=.5*velvet_spread;bid_fair=velvet_bid.price-4000-hedge_buffer;ask_fair=velvet_ask.price-4000+hedge_buffer;fair_value=(bid_fair+ask_fair)/2.
 	if fair_value<=0:return[]
-	raw_cap=_SOFT_CAP if delta_remaining<50 else _HARD_CAP;cap=min(scaled_cap(_POSITION_LIMIT,timestamp),raw_cap);decision=take_clear_make(product=_PRODUCT,fair_value=fair_value,snapshot=vev_snapshot,position=position,position_limit=cap,params=params);orders=list(decision.orders);intrinsic=max(velvet_bid.price-4000,0);ask_floor=intrinsic+1;corrected=[]
+	raw_cap=_VEV4000_SOFT_CAP if delta_remaining<50 else _VEV4000_HARD_CAP;cap=min(scaled_cap(_VEV4000_POS_LIMIT,timestamp),raw_cap);decision=take_clear_make(product=_VEV4000_PRODUCT,fair_value=fair_value,snapshot=vev_snapshot,position=position,position_limit=cap,params=params);orders=list(decision.orders);intrinsic=max(velvet_bid.price-4000,0);ask_floor=intrinsic+1;corrected=[]
 	for o in orders:
 		if o.quantity<0 and o.price<ask_floor:corrected.append(Order(o.symbol,ask_floor,o.quantity))
 		else:corrected.append(o)
@@ -898,16 +898,16 @@ def vev4000_orders(vev_snapshot,velvet_snapshot,position,timestamp,delta_remaini
 	if vev_snapshot.best_ask is not None:
 		competitor_ask=vev_snapshot.best_ask.price
 		if competitor_ask<intrinsic:
-			buy_qty=min(5,_POSITION_LIMIT-position)if position<_POSITION_LIMIT else 0
-			if buy_qty>0:orders.append(Order(_PRODUCT,competitor_ask,buy_qty))
+			buy_qty=min(5,_VEV4000_POS_LIMIT-position)if position<_VEV4000_POS_LIMIT else 0
+			if buy_qty>0:orders.append(Order(_VEV4000_PRODUCT,competitor_ask,buy_qty))
 	return orders
 @dataclass(frozen=True)
 class VoucherSpec:strike:int;soft_cap:int;hard_cap:int
-_VOUCHER_SPECS=VoucherSpec(strike=5400,soft_cap=50,hard_cap=100),VoucherSpec(strike=5500,soft_cap=100,hard_cap=150)
-_POSITION_LIMIT=300
+_VOUCHER_LIQ_SPECS=VoucherSpec(strike=5300,soft_cap=50,hard_cap=100),VoucherSpec(strike=5400,soft_cap=100,hard_cap=200),VoucherSpec(strike=5500,soft_cap=150,hard_cap=300)
+_VOUCHER_LIQ_POS_LIMIT=300
 def voucher_liquidity_orders(snapshots,positions,timestamp,delta_remaining=999,corrupted=None):
 	corrupted=corrupted or set();orders=[]
-	for spec in _VOUCHER_SPECS:
+	for spec in _VOUCHER_LIQ_SPECS:
 		k=spec.strike;symbol=f"VEV_{k}";snap=snapshots.get(k)
 		if snap is None:continue
 		pos=positions.get(k,0);soft_cap=scaled_cap(spec.soft_cap,timestamp);hard_cap=scaled_cap(spec.hard_cap,timestamp);no_bid=pos>=soft_cap or k in corrupted or delta_remaining<10 or snap.best_bid is None;no_ask=snap.best_ask is None
@@ -920,43 +920,62 @@ def voucher_liquidity_orders(snapshots,positions,timestamp,delta_remaining=999,c
 			ask_qty=min(5,pos)
 			if ask_qty>0:orders.append(Order(symbol,ask_price,-ask_qty))
 	return orders
-_PRODUCT=VELVETFRUIT_EXTRACT
-_POSITION_LIMIT=200
-_TIGHT_BAND=60
-_IDLE_DELTA_THRESHOLD=5.
-_IDLE_POS_THRESHOLD=5
-_PARAMS_PASSIVE=SSTParams(take_width=1.,clear_threshold=.5,clear_width=2.,default_edge=2.,disregard_edge=1.,join_edge=2.,default_quote_size=5,max_taker_size=10,prevent_adverse=False)
-_PARAMS_CROSS=SSTParams(take_width=8.,clear_threshold=.3,clear_width=2.,default_edge=1.,disregard_edge=1.,join_edge=1.,default_quote_size=5,max_taker_size=20,prevent_adverse=False)
+@dataclass(frozen=True)
+class ShortTarget:strike:int;target_position:int;max_risk_pos:int;entry_window_end:int
+_SHORT_TARGETS=ShortTarget(strike=5500,target_position=-300,max_risk_pos=300,entry_window_end=80000),ShortTarget(strike=5400,target_position=-300,max_risk_pos=300,entry_window_end=60000),ShortTarget(strike=5300,target_position=-200,max_risk_pos=200,entry_window_end=40000)
+_COVER_AFTER_TS=90000
+def voucher_short_premium_orders(snapshots,positions,timestamp):
+	orders=[]
+	for target in _SHORT_TARGETS:
+		snap=snapshots.get(target.strike)
+		if snap is None or snap.best_bid is None or snap.best_ask is None:continue
+		symbol=f"VEV_{target.strike}";current=positions.get(target.strike,0)
+		if timestamp<target.entry_window_end and current>target.target_position:
+			remaining=current-target.target_position;sell_qty=min(50,remaining)
+			if sell_qty>0:
+				ask_price=snap.best_ask.price;orders.append(Order(symbol,ask_price,-sell_qty))
+				if remaining>=100 and timestamp<target.entry_window_end//2:
+					bid_price=snap.best_bid.price;hit_qty=min(30,remaining-sell_qty)
+					if hit_qty>0:orders.append(Order(symbol,bid_price,-hit_qty))
+			continue
+		if timestamp>=_COVER_AFTER_TS and current<0:ask_price=snap.best_ask.price;buy_qty=min(50,-current);orders.append(Order(symbol,ask_price,buy_qty))
+	return orders
+_VELVET_HEDGE_POS_LIMIT=200
+_VELVET_HEDGE_TIGHT_BAND=150
+_VELVET_HEDGE_IDLE_DELTA=5.
+_VELVET_HEDGE_IDLE_POS=5
+_VELVET_HEDGE_PARAMS_PASSIVE=SSTParams(take_width=2.,clear_threshold=.75,clear_width=2.,default_edge=1.,disregard_edge=1.,join_edge=1.,default_quote_size=20,max_taker_size=50,prevent_adverse=False)
+_VELVET_HEDGE_PARAMS_CROSS=SSTParams(take_width=8.,clear_threshold=.3,clear_width=2.,default_edge=1.,disregard_edge=1.,join_edge=1.,default_quote_size=30,max_taker_size=60,prevent_adverse=False)
 def velvet_hedge_orders(snapshot,velvet_position,net_delta,timestamp):
 	if snapshot.mid is None:return[]
 	abs_delta=abs(net_delta)
-	if abs_delta<_IDLE_DELTA_THRESHOLD and abs(velvet_position)<_IDLE_POS_THRESHOLD:return[]
-	cap=min(scaled_cap(_POSITION_LIMIT,timestamp),_TIGHT_BAND)
-	if abs_delta>120:params=_PARAMS_CROSS
-	else:params=_PARAMS_PASSIVE
+	if abs_delta<_VELVET_HEDGE_IDLE_DELTA and abs(velvet_position)<_VELVET_HEDGE_IDLE_POS:return[]
+	cap=min(scaled_cap(_VELVET_HEDGE_POS_LIMIT,timestamp),_VELVET_HEDGE_TIGHT_BAND)
+	if abs_delta>120:params=_VELVET_HEDGE_PARAMS_CROSS
+	else:params=_VELVET_HEDGE_PARAMS_PASSIVE
 	mid=snapshot.mid
 	if mid is None:return[]
 	if abs_delta>=40:skew_magnitude=min(3.,(abs_delta-40)/8e1*3.);direction=-math.copysign(1.,net_delta);fair_value=mid+direction*skew_magnitude
 	else:fair_value=mid
 	if fair_value<=0:return[]
-	decision=take_clear_make(product=_PRODUCT,fair_value=fair_value,snapshot=snapshot,position=velvet_position,position_limit=cap,params=params);return decision.orders
-_LOTTERY_STRIKES=6000,6500
-_POSITION_LIMIT=300
-_PROBE_TICKS=10
+	decision=take_clear_make(product=VELVETFRUIT_EXTRACT,fair_value=fair_value,snapshot=snapshot,position=velvet_position,position_limit=cap,params=params);return decision.orders
+_ZERO_BID_STRIKES=()
+_ZERO_BID_POS_LIMIT=300
+_ZERO_BID_PROBE_TICKS=10
 def zero_bid_orders(tick_count,positions,accepted):
 	if accepted is False:return[]
 	orders=[]
-	for k in _LOTTERY_STRIKES:
-		symbol=f"VEV_{k}";pos=positions.get(symbol,0);remaining=_POSITION_LIMIT-pos
+	for k in _ZERO_BID_STRIKES:
+		symbol=f"VEV_{k}";pos=positions.get(symbol,0);remaining=_ZERO_BID_POS_LIMIT-pos
 		if remaining>0:orders.append(Order(symbol,0,remaining))
 	return orders
 def detect_acceptance(tick_count,order_results,positions_before,positions_after):
-	if tick_count<_PROBE_TICKS:
-		for k in _LOTTERY_STRIKES:
+	if tick_count<_ZERO_BID_PROBE_TICKS:
+		for k in _ZERO_BID_STRIKES:
 			symbol=f"VEV_{k}"
 			if positions_after.get(symbol,0)>positions_before.get(symbol,0):return True
 		return
-	for k in _LOTTERY_STRIKES:
+	for k in _ZERO_BID_STRIKES:
 		symbol=f"VEV_{k}"
 		if positions_after.get(symbol,0)>0:return True
 	return False
@@ -992,6 +1011,17 @@ class R3Engine:
 		intended=[]
 		if hydrogel_snap is not None:hydrogel_pos=positions.get(HYDROGEL_PACK,0);intended.extend(hydrogel_orders(hydrogel_snap,hydrogel_pos,ts))
 		if vev4000_snap is not None and velvet_snap is not None:vev4000_pos=positions.get('VEV_4000',0);delta_remaining=self._delta_budget.remaining_capacity(ts,positions,spot);intended.extend(vev4000_orders(vev4000_snap,velvet_snap,vev4000_pos,ts,delta_remaining=delta_remaining))
+		voucher_snapshots={};voucher_positions={}
+		for k in VOUCHER_STRIKES:
+			if k in(4000,6000,6500):continue
+			vs=portfolio.for_product(f"VEV_{k}")
+			if vs is not None:voucher_snapshots[k]=vs;voucher_positions[k]=positions.get(f"VEV_{k}",0)
+		if voucher_snapshots:intended.extend(voucher_liquidity_orders(voucher_snapshots,voucher_positions,ts,delta_remaining=self._delta_budget.remaining_capacity(ts,positions,spot),corrupted=set()))
+		sp_snaps={};sp_pos={}
+		for k in(5300,5400,5500,6000,6500):
+			vs=portfolio.for_product(f"VEV_{k}")
+			if vs is not None:sp_snaps[k]=vs;sp_pos[k]=positions.get(f"VEV_{k}",0)
+		if sp_snaps:intended.extend(voucher_short_premium_orders(sp_snaps,sp_pos,ts))
 		if velvet_snap is not None:velvet_pos=positions.get(VELVETFRUIT_EXTRACT,0);net_delta=self._delta_budget.net_delta(positions,spot);intended.extend(velvet_hedge_orders(velvet_snap,velvet_pos,net_delta,ts))
 		lottery_orders=zero_bid_orders(self._tick_count,positions,self._zero_bid_accepted);lottery_set={o.symbol for o in lottery_orders};non_lottery=[o for o in intended if o.symbol not in lottery_set];safe_orders=self._delta_budget.enforce(non_lottery,ts,positions,spot);all_orders=safe_orders+lottery_orders
 		if self._zero_bid_accepted is None and self._tick_count>=1:self._zero_bid_accepted=detect_acceptance(self._tick_count,{},self._prev_positions,positions)

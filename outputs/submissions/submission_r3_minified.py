@@ -923,15 +923,11 @@ def voucher_liquidity_orders(snapshots,positions,timestamp,delta_remaining=999,c
 _PRODUCT=VELVETFRUIT_EXTRACT
 _POSITION_LIMIT=200
 _TIGHT_BAND=60
-_IDLE_DELTA_THRESHOLD=5.
-_IDLE_POS_THRESHOLD=5
 _PARAMS_PASSIVE=SSTParams(take_width=1.,clear_threshold=.5,clear_width=2.,default_edge=2.,disregard_edge=1.,join_edge=2.,default_quote_size=5,max_taker_size=10,prevent_adverse=False)
 _PARAMS_CROSS=SSTParams(take_width=8.,clear_threshold=.3,clear_width=2.,default_edge=1.,disregard_edge=1.,join_edge=1.,default_quote_size=5,max_taker_size=20,prevent_adverse=False)
 def velvet_hedge_orders(snapshot,velvet_position,net_delta,timestamp):
 	if snapshot.mid is None:return[]
-	abs_delta=abs(net_delta)
-	if abs_delta<_IDLE_DELTA_THRESHOLD and abs(velvet_position)<_IDLE_POS_THRESHOLD:return[]
-	cap=min(scaled_cap(_POSITION_LIMIT,timestamp),_TIGHT_BAND)
+	cap=min(scaled_cap(_POSITION_LIMIT,timestamp),_TIGHT_BAND);abs_delta=abs(net_delta)
 	if abs_delta>120:params=_PARAMS_CROSS
 	else:params=_PARAMS_PASSIVE
 	mid=snapshot.mid
