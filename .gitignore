@@ -13,3 +13,8 @@ __pycache__/
 venv/
 
 notebooks/.ipynb_checkpoints/
+
+# Large generated research/simulator artifacts. Keep these locally and document
+# them in docs/round_3/ARTIFACT_INVENTORY.md instead of committing hundreds of
+# MB of replay outputs into git history.
+outputs/round_3/**

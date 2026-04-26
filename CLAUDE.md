@@ -52,6 +52,52 @@ In trading strategy evaluation, prioritize:
 Do not over-weight pure forecast-style metrics like MAE when trading
 outcomes disagree.
 
+## Algorithmic research memory from Round 3
+
+Full postmortem:
+`docs/round_3/ROUND_3_ALGO_POSTMORTEM_AND_PLAYBOOK.md`.
+
+### A0 — Classify payoff geometry before strategy class
+
+Before tuning any new product, identify its payoff geometry:
+delta-one, option/convexity, basket/spread, conversion/settlement,
+auction/rank, hidden bot/liquidity, or inventory liquidation. Then build
+the research state variables and PnL attribution around that geometry.
+Do not let a profitable crude strategy crowd out the correct
+asset-native family.
+
+### A1 — Options require Greek-aware research
+
+For option products, price thresholds are not enough. The first serious
+research object should track spot, strike, TTE, IV, realized volatility,
+delta, gamma, vega, theta, hedge cost, smile residuals, and settlement
+mark behavior. Evaluate option sleeves by delta-hedged and
+Greek-attributed PnL, not only raw product PnL.
+
+### A2 — A weak prototype does not falsify a high-ceiling family
+
+Round 3 computed Black-Scholes/IV/smile diagnostics but did not ship a
+true Black-Scholes plus gamma-scalping strategy. Naive rolling-IV and
+smile sweeps were incomplete evidence, not proof that volatility/gamma
+alpha was weak. For future rounds, implement the minimum correct version
+of each high-ceiling family before rejecting it.
+
+### A3 — Hardcode structure, not path
+
+IMC clarified that hardcoding inferred bot behavior or parameters from
+public data is valid work. Hardcode fitted structural rules, quote-bot
+behavior, IV curve parameters, regime thresholds, and hedge ratios when
+justified. Do not hardcode future prices, exact timestamp position maps,
+external/non-public data, or platform-bug behavior.
+
+### A4 — Official uploads are calibration experiments
+
+Use official simulator submissions to isolate hypotheses, not only to
+maximize that upload's PnL. For each high-ceiling family, upload small
+diagnostics that test the alpha mechanism directly: long-gamma,
+short-gamma, delta-neutral smile residuals, synthetic hedge behavior,
+stale quote capture, and terminal-settlement exposure.
+
 ## Manual-round strategy lessons (from P4-R2 "Invest & Expand" post-mortem)
 
 **Context** (revised after full field-CDF reconstruction from 6 screenshots):

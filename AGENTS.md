@@ -51,3 +51,39 @@ In trading strategy evaluation, prioritize:
 
 Do not over-weight pure forecast-style metrics like MAE when trading
 outcomes disagree.
+
+## Algorithmic research memory from Round 3
+
+Full postmortem:
+`docs/round_3/ROUND_3_ALGO_POSTMORTEM_AND_PLAYBOOK.md`.
+
+### Asset geometry first
+
+Before tuning any new product, classify its payoff geometry: delta-one,
+option/convexity, basket/spread, conversion/settlement, auction/rank,
+hidden bot/liquidity, or inventory liquidation. Build state variables,
+oracles, and PnL attribution around that geometry before optimizing
+parameters.
+
+### Options need Greek-aware attribution
+
+For option products, evaluate spot, strike, TTE, IV, realized volatility,
+delta, gamma, vega, theta, hedge cost, smile residuals, and settlement
+mark behavior. Raw voucher price thresholds are not enough. Do not
+reject volatility/gamma alpha from a naive rolling-IV or smile prototype
+unless the prototype implements proper delta hedging and Greek PnL
+decomposition.
+
+### Hardcode structure, not path
+
+Hardcoding inferred bot behavior, IV curve parameters, hedge ratios, and
+regime thresholds from public data is valid research. Do not hardcode
+future prices, exact timestamp position maps, external/non-public data,
+or platform-bug behavior.
+
+### Official uploads are calibration experiments
+
+Use official simulator uploads to isolate mechanisms: long-gamma,
+short-gamma, delta-neutral smile residuals, synthetic hedge behavior,
+stale quote capture, and terminal-settlement exposure. Do not treat
+every upload only as a leaderboard-maximization attempt.
