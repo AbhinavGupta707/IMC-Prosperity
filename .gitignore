@@ -43,3 +43,6 @@ external/
 .vscode/
 .idea/
 *.swp
+
+# Local Claude Code state (settings + scheduled task locks).
+.claude/
