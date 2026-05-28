@@ -1,10 +1,10 @@
-# IMC Prosperity 2025 — Algorithmic Trading Engine
+# IMC Prosperity 4 — Quantitative Algorithmic Trading Engine
 
-> **Top 0.7% globally.** Engine, backtesting harness, and methodology
-> behind the submission.
+> **Top 0.7% of 19,000+ teams globally.** Engine, backtesting harness,
+> and methodology behind the submission.
 
-This repository is the reusable engine I built and hardened over the
-10-week 2025 IMC Prosperity competition. The same `core/` and `backtest/`
+This repository is the reusable engine that was built and hardened over
+the 10-week IMC Prosperity 4 competition. The same `core/` and `backtest/`
 modules drove every round — inventory-aware MM, options pricing with BSM
 + smile, cointegrated-basket arbitrage, conversion, and rank-auction
 games — across a 50-product universe.
