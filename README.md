@@ -1,150 +1,185 @@
-# IMC Prosperity Engine
+# IMC Prosperity 2025 — Algorithmic Trading Engine
 
-Reusable trading engine and research harness for IMC Prosperity.
+> **Top 0.7% globally.** Engine, backtesting harness, and methodology
+> behind the submission.
 
-## Philosophy
+This repository is the reusable engine I built and hardened over the
+10-week 2025 IMC Prosperity competition. The same `core/` and `backtest/`
+modules drove every round — inventory-aware MM, options pricing with BSM
++ smile, cointegrated-basket arbitrage, conversion, and rank-auction
+games — across a 50-product universe.
 
-This repository is built around a simple idea:
+The final-round algorithm source is intentionally withheld. Everything
+that makes the engine reusable — the module split, the backtesting
+harness, the cross-day robustness pipeline, the manual-round solver
+toolkit, and the methodology docs — is public.
 
-- keep the live trading path thin
-- keep the offline research path rich
-- encode market logic through explicit modules
-- optimize only after correctness and interpretability exist
+---
 
-The architectural principles are defined in [ARCHITECTURE_DOCTRINE.md](ARCHITECTURE_DOCTRINE.md).
+## What's interesting about it
 
-## Current Scope
+**One harness, five qualitatively different games.** `core/` is
+round-agnostic — `fair_value`, `signals`, `risk`, `execution`,
+`state_store`, and `market_data` are written once and reused. Each round
+adds an `engine/` orchestrator and a `strategies/round_N/` directory of
+frozen historical research; nothing in `core/` or `backtest/` ever
+changes per round.
 
-The repository currently contains:
+**Cross-day robustness gate baked into the sweep harness.** Every
+parameter promotion runs through `src/backtest/parameter_sweep.py` +
+`plateau.py`, which intersect plateau bands across every historical day
+slice and require all-day-positive PnL before promotion. The methodology
+is codified in
+[`docs/phase_6_robustness_note.md`](docs/phase_6_robustness_note.md).
 
-- the architecture doctrine
-- tutorial research and planning notes under `docs/tutorial/`
-- a reusable project skeleton for the live bot and offline harness
-- public replay CSVs under `data/raw/` for tutorial and available rounds
-- a **manual-round toolkit** (`src/manual_rounds/`) with solvers for
-  the five recurring manual-round families (graph, bid, crowding,
-  hybrid, portfolio) and round-day CLI runners
-- public historical-data analysis and reusable research scripts for
-  IMC Prosperity rounds
+**Review pack as a first-class artifact.** `run_review` produces a
+self-contained directory per backtest — metric aggregates with markouts
+and entry-edge, per-trade records, step-indexed PnL series, chart PNGs,
+provenance manifest, and a human review template. Format and reading
+order are in
+[`docs/phase_4_review_discipline_note.md`](docs/phase_4_review_discipline_note.md).
 
-Final live-round submission bundles and official result artifacts are
-withheld while the competition is in progress. Public placeholders live under
-[`submissions/`](submissions/), and curated Round 5 notes live under
-[`docs/round_5_public/`](docs/round_5_public/).
+**BSM + smile primitives for the options book.** `src/options/bsm.py`
+and `smile.py` are the Greek-aware pricing layer used to construct
+delta-hedged and Greek-attributed PnL on the options sleeves.
 
-This is the foundation for building:
+**Manual-round solver framework.** `src/manual_rounds/` is a standalone
+toolkit with solvers for the five recurring closed-form families
+(graph-path, sealed-bid, game-theoretic crowding, average-bid hybrid,
+news portfolio), each with regret tables, value-of-information analysis,
+and standardised artifact output.
 
-1. a production-safe `Trader.run()` engine
-2. a replay and review system for tutorial and round data
-3. round-specific strategy modules on top of shared core services
-4. a parallel manual-round workstream for the closed-form puzzles each
-   round ships alongside the algo challenge
+---
 
-## Repository Layout
+## Architecture at a glance
 
-```text
-data/
-  raw/
-    tutorial_round_1/
-    round_1/
-    round_2/
-    round_3/
-    round_4/
-    round_5/
-
-docs/
-  tutorial/
-  manual_round_playbook.md
-  manual_round_agent_brief.md
-
-notebooks/
-
-src/
-  datamodel.py
-  trader.py
-  core/
-  strategies/
-  backtest/
-  manual_rounds/       # solvers + priors + artifact writer
-  scripts/             # CLI runners (algo + manual)
-
-tests/
+```
+                            ┌──────────────────────────┐
+                            │ datamodel.py · trader.py │  ← IMC entry point
+                            └──────────┬───────────────┘
+                                       │
+              ┌────────────────────────┼────────────────────────┐
+              ▼                        ▼                        ▼
+       ┌─────────────┐         ┌──────────────┐         ┌──────────────┐
+       │   core/     │         │   engines/   │         │ strategies/  │
+       │             │         │              │         │              │
+       │ fair_value  │         │ basket_arb   │         │ round_1/     │
+       │ signals     │  ←uses→ │ stat_arb     │  ←runs→ │ round_3/     │
+       │ risk        │         │ options_mm   │         │   hydrogel   │
+       │ execution   │         │ r3_engine    │         │   velvet     │
+       │ state_store │         │ counterparty │         │   vev_4000   │
+       │ market_data │         │   _intel     │         │   voucher_*  │
+       └──────┬──────┘         └──────────────┘         └──────────────┘
+              │                        ▲
+              ▼                        │
+       ┌─────────────┐         ┌──────────────┐         ┌──────────────┐
+       │  options/   │         │  backtest/   │         │ manual_      │
+       │             │         │              │         │  rounds/     │
+       │ bsm         │         │ replay_engine│         │              │
+       │ smile       │         │ simulator    │         │ graph/bid/   │
+       │ (Greeks)    │         │ fill_model   │         │ crowding/    │
+       └─────────────┘         │ parameter_   │         │ hybrid/      │
+                               │   sweep      │         │ portfolio    │
+                               │ plateau      │         │ + priors     │
+                               │ drilldown    │         │ + artifacts  │
+                               │ metrics      │         └──────────────┘
+                               └──────────────┘
 ```
 
-## Development Workflow
+- **`core/`** is round-agnostic — same code served every round.
+- **`engines/`** holds round-specific orchestrators that compose
+  strategies into runnable bundles.
+- **`strategies/round_N/`** is frozen historical research — preserved,
+  not modified.
+- **`backtest/`** is the replay + sweep + plateau + drilldown harness.
+- **`options/`** holds BSM + smile primitives.
+- **`manual_rounds/`** is the standalone closed-form solver toolkit.
 
-Recommended loop:
+---
 
-1. build or refine one core module
-2. validate with unit tests
-3. replay tutorial data offline
-4. inspect logs and review artifacts
-5. only then tune strategy parameters
+## Repository tour
 
-## Quick Start
+| Path | What's there |
+|---|---|
+| [`src/core/`](src/core/) | `fair_value`, `signals`, `risk`, `execution`, `config`, `state_store`, `market_data`, `logger` |
+| [`src/engines/`](src/engines/) | Round orchestrators: `basket_arb`, `stat_arb`, `options_mm`, `r3_engine`, `r3_velvet_options_engine`, `counterparty_intel` |
+| [`src/strategies/round_3/`](src/strategies/round_3/) | R3 strategies: hydrogel MR, velvet hedge, velvet options rolling IV, VEV_4000 MM, voucher liquidity / short premium / zero-bid lottery |
+| [`src/options/`](src/options/) | BSM pricer + smile primitives |
+| [`src/backtest/`](src/backtest/) | Replay engine, simulator, fill model, parameter sweep, plateau intersection, drilldown, charts, metrics, reporting |
+| [`src/manual_rounds/`](src/manual_rounds/) | Solvers for graph / bid / crowding / hybrid / portfolio families; CLI runners with standardised artifact output |
+| [`src/scripts/`](src/scripts/) | Per-round runners + diagnostics + calibration |
+| [`tests/`](tests/) | Pytest suite (unit + integration) |
+| [`docs/`](docs/) | Engine docs: architecture, phase methodology notes, runbooks |
+| [`data/raw/`](data/raw/) | Tutorial + Round 1–5 public replay CSVs |
+| [`ARCHITECTURE_DOCTRINE.md`](ARCHITECTURE_DOCTRINE.md) | Design principles |
 
-Create a virtual environment, install dependencies, and run the smoke checks:
+---
+
+## Quick start
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
-PYTHONPATH=. pytest
+
+# Smoke checks
+PYTHONPATH=. pytest -q
 PYTHONPATH=. python -m src.scripts.validate_submission
+
+# Replay + review on tutorial data
 PYTHONPATH=. python -m src.scripts.run_backtest
-PYTHONPATH=. python -m src.scripts.compare_fair_values
-PYTHONPATH=. python -m src.scripts.run_parameter_sweep
+PYTHONPATH=. python -m src.scripts.run_review --label baseline
+
+# Parameter sweeps with cross-day plateau intersection
 PYTHONPATH=. python -m src.scripts.run_phase6_emeralds_sweep --label phase6_emeralds
 PYTHONPATH=. python -m src.scripts.run_phase6_tomatoes_sweep --label phase6_tomatoes
-PYTHONPATH=. python -m src.scripts.run_review --label smoke
 ```
 
-`run_review` writes an enriched Phase 4a review pack under
-`outputs/review_packs/<run_id>/` containing metric aggregates with
-markouts and entry-edge, per-trade records, step-indexed series,
-chart PNGs, a provenance manifest, and a human review template.
-See [`docs/phase_4_review_discipline_note.md`](docs/phase_4_review_discipline_note.md)
-for how to read each artifact.
+`run_review` writes a complete review pack to `outputs/review_packs/<id>/`
+— see
+[`docs/phase_4_review_discipline_note.md`](docs/phase_4_review_discipline_note.md).
 
-`run_phase6_emeralds_sweep` and `run_phase6_tomatoes_sweep` are the
-Phase 6 cross-day robustness entry points. Each runs its sweep grid
-on `day_-2`, `day_-1`, and the combined tape, intersects the plateau
-bands across all three slices, applies the four sweep-level checks
-of the six-part Phase 6 promotion gate, and writes a per-sub-sweep
-`plateau_intersection.{json,txt}` (plus, for TOMATOES, a top-level
-`product_comparison.{json,txt}`) under
-`outputs/sweeps/<run_id>_phase6_<product>/`. See
-[`docs/phase_6_robustness_note.md`](docs/phase_6_robustness_note.md)
-for the methodology, the per-product verdicts, and the cross-day
-validation read on the Phase 5 EWMA narrow peak.
+`run_phase6_*_sweep` runs each sweep grid on every historical day,
+intersects the plateau bands across slices, and writes
+`plateau_intersection.{json,txt}` plus a product comparison —
+methodology in
+[`docs/phase_6_robustness_note.md`](docs/phase_6_robustness_note.md).
 
-## Manual rounds
-
-Each Prosperity round ships a closed-form manual puzzle alongside the
-algo challenge. `src/manual_rounds/` contains solvers for the five
-recurring families (graph/path, sealed bid, game-theoretic crowding,
-average-bid hybrid, news portfolio) plus CLI runners that accept a JSON
-input and emit a standardized artifact pack under
-`outputs/manual_rounds/<run_id>/` — `answer.json`,
-`top_alternatives.json`, `assumptions.json`, `sensitivity.json`, and a
-rendered `submission_note.md`. See
-[`docs/manual_round_playbook.md`](docs/manual_round_playbook.md) for the
-operator guide (round → family → runner) and
-[`src/manual_rounds/README.md`](src/manual_rounds/README.md) for worked
-examples from every public round.
+---
 
 ## Documentation
 
-See [`docs/README.md`](docs/README.md) for a full index and reading
-order. Start with:
+Engine docs only. Per-round research narrative is intentionally not
+published.
 
-- [ARCHITECTURE_DOCTRINE.md](ARCHITECTURE_DOCTRINE.md) — design principles
-- [docs/architecture.md](docs/architecture.md) — system architecture (modules, data flow, types)
-- [docs/adding_a_product.md](docs/adding_a_product.md) — how to onboard a new product
-- [docs/new_round_checklist.md](docs/new_round_checklist.md) — what to do when a new round drops
+- [`ARCHITECTURE_DOCTRINE.md`](ARCHITECTURE_DOCTRINE.md) — design principles
+- [`docs/architecture.md`](docs/architecture.md) — modules, data flow, types
+- [`docs/adding_a_product.md`](docs/adding_a_product.md) — decision tree for onboarding a new product
+- [`docs/new_round_checklist.md`](docs/new_round_checklist.md) — what to do when a new round drops
+- [`docs/manual_round_playbook.md`](docs/manual_round_playbook.md) — operator guide for the manual-round solvers
+- [`docs/phase_3_fair_value_note.md`](docs/phase_3_fair_value_note.md) — fair-value inference methodology
+- [`docs/phase_4_review_discipline_note.md`](docs/phase_4_review_discipline_note.md) — review pack format and reading order
+- [`docs/phase_6_robustness_note.md`](docs/phase_6_robustness_note.md) — sweep + plateau intersection methodology
+- [`docs/phase_9_submission_checklist.md`](docs/phase_9_submission_checklist.md) — submission packaging and validation
+- [`docs/market_making_literature_pass.md`](docs/market_making_literature_pass.md) — literature review
+- [`docs/ash_implementation_quickstart.md`](docs/ash_implementation_quickstart.md) — engine quickstart for a delta-one product
+- [`docs/calibration_runbook.md`](docs/calibration_runbook.md) — calibration runbook
 
-## Other Important Files
+---
 
-- [Tutorial implementation plan](docs/tutorial/implementation_plan.md)
-- [Tutorial manual strategy plan](docs/tutorial/manual_strategy_plan.md)
-- [Tutorial deep research report](docs/tutorial/deep_research_report.md)
+## Tech stack & methodology references
+
+Python 3.12 · `pytest` · `numpy` · `pandas` · standard library only for
+the production submission path.
+
+Methodology references: Avellaneda-Stoikov 2008 (MM with inventory
+penalty), Stoikov 2018 (microprice), Engle-Granger 1987 (cointegration),
+Vidyamurthy 2004 (pairs trading), Cartea-Jaimungal-Penalva 2015 Ch. 9
+(OU-based MR), Lo-MacKinlay 1988 (variance ratio).
+
+---
+
+## Status
+
+Competition concluded. Final-round algorithm source remains private;
+everything else in this repository is public reference material for the
+engine and its methodology.

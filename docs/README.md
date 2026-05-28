@@ -1,38 +1,44 @@
 # Documentation Index
 
-Reading order for someone new to the codebase.
+Engine and methodology docs. Per-round research narrative
+(postmortems, version iterations, handovers) is intentionally not
+published.
 
 ## Start here
 
-1. **[ARCHITECTURE_DOCTRINE.md](../ARCHITECTURE_DOCTRINE.md)** — Design
+1. **[ARCHITECTURE_DOCTRINE.md](../ARCHITECTURE_DOCTRINE.md)** — design
    principles: why the system is shaped this way.
-2. **[architecture.md](architecture.md)** — System architecture: what
-   modules exist, how data flows, key types.
-3. **[adding_a_product.md](adding_a_product.md)** — How to onboard a
-   new product (decision tree + step-by-step).
-4. **[new_round_checklist.md](new_round_checklist.md)** — What to do
+2. **[architecture.md](architecture.md)** — system architecture: modules,
+   data flow, key types.
+3. **[adding_a_product.md](adding_a_product.md)** — decision tree for
+   onboarding a new product.
+4. **[new_round_checklist.md](new_round_checklist.md)** — what to do
    when a new round drops (algo + manual).
 
-## Phase notes (deep dives)
+## Phase methodology notes
 
-- [phase_3_fair_value_note.md](phase_3_fair_value_note.md) — Fair value
+The phase notes document specific engine subsystems and the decision
+discipline applied to them.
+
+- [phase_3_fair_value_note.md](phase_3_fair_value_note.md) — fair-value
   inference methodology and estimator comparison.
-- [phase_4_review_discipline_note.md](phase_4_review_discipline_note.md) —
-  Backtest review protocol and review pack format.
-- [phase_5_tomatoes_baseline_note.md](phase_5_tomatoes_baseline_note.md) —
-  TOMATOES baseline config and tuning rationale.
-- [phase_6_robustness_note.md](phase_6_robustness_note.md) — Parameter
-  sweep methodology and cross-day validation.
+- [phase_4_review_discipline_note.md](phase_4_review_discipline_note.md)
+  — backtest review pack format and reading order.
+- [phase_6_robustness_note.md](phase_6_robustness_note.md) — parameter
+  sweep methodology and cross-day plateau intersection.
 - [phase_9_submission_checklist.md](phase_9_submission_checklist.md) —
-  Submission packaging, export, and validation.
+  submission packaging, export, and validation.
 
-## Other
+## Runbooks and quickstarts
 
-- [manual_round_playbook.md](manual_round_playbook.md) — Manual round
-  operator guide (round family classification and solver workflow).
-- [manual_round_agent_brief.md](manual_round_agent_brief.md) — Agent
-  brief for manual round automation.
-- [eda_tutorial_round_1.md](eda_tutorial_round_1.md) — Tutorial data
-  exploration notes.
-- [tomatoes_depth_mid_tuning_note.md](tomatoes_depth_mid_tuning_note.md) —
-  TOMATOES depth-mid tuning analysis.
+- [ash_implementation_quickstart.md](ash_implementation_quickstart.md) —
+  engine quickstart for a delta-one product.
+- [calibration_runbook.md](calibration_runbook.md) — calibration
+  runbook.
+- [manual_round_playbook.md](manual_round_playbook.md) — operator guide
+  for the manual-round solver toolkit.
+
+## Reference
+
+- [market_making_literature_pass.md](market_making_literature_pass.md) —
+  market-making literature review.

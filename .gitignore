@@ -16,7 +16,6 @@ notebooks/.ipynb_checkpoints/
 
 # Large generated research/simulator artifacts. Keep locally; do not commit
 # replay outputs, official-result logs, generated submissions, or sim zips.
-# Curate public charts/writeups into docs/ instead of dumping raw outputs/.
 outputs/
 
 # Round 4 simulator artifacts (zips + extracted JSON/log/py per upload).
@@ -35,9 +34,6 @@ external/
 *.html
 *.pdf
 
-# Local planning notes that are not curated public documentation.
-Optimisation_Plan_*.md
-
 # Editor / IDE
 .vscode/
 .idea/
@@ -46,38 +42,39 @@ Optimisation_Plan_*.md
 # Local Claude Code state (settings + scheduled task locks).
 .claude/
 
-# Local agent/session/handoff files. These are workspace instructions and
-# working-memory notes, not public project documentation.
+# Local agent/session/handoff files.
 AGENTS.md
 CLAUDE.md
 **/HANDOFF*.md
 **/*HANDOFF*.md
 **/SESSION*.md
 **/*SESSION*.md
-docs/round_5/sessions/
-docs/round_5/MASTER_INTEGRATION_LOG.md
-docs/round_5/*.md
-!docs/round_5/ROUND_4_LESSONS_FOR_ROUND_5.md
-!docs/round_5/ROUND_5_SETUP.md
-manual r5 analysis/
-docs/manual_round_2/external_inputs/
-docs/round_1/official_results_analysis.md
-docs/round_1/upload_plan.md
-docs/round_3/CALIBRATION_RESULT.md
-docs/round_3/MANUAL_SUBMISSION.md
-docs/round_4/*OFFICIAL*.md
-docs/round_4/*READOUT*.md
-docs/round_4/*UPLOAD*.md
-docs/round_4/DISCORD*.md
 
-# Live/final-round private artifacts. Public raw CSVs can live under
-# data/raw/round_5/; keep strategies, tests, outputs, and result artifacts local.
-outputs/round_5/
+# Local R5 algorithm source and result artifacts (kept private).
 src/scripts/round_5/
 tests/test_r5_*.py
+manual r5 analysis/
 
-# Submission/result artifacts should be curated into top-level submissions/
-# before publication, not dumped from generated outputs/.
-outputs/submissions/
-outputs/calibration/
-r4 Sim Results/
+# Personal-use research narrative excluded from the public repo:
+# postmortems, handovers, session notes, summaries, per-round threads,
+# planning docs, version iteration logs, official-upload readouts.
+# Engine/mechanism docs live in docs/ (architecture, phase notes, runbooks,
+# adding_a_product, manual_round_playbook, etc.); per-round narrative does
+# not.
+Optimisation_Plan_*.md
+round1_implementation_plan.md
+docs/RESULTS.md
+docs/MARKET_MAKING_INDEX.md
+docs/RESEARCH_SUMMARY.md
+docs/eda_tutorial_round_1.md
+docs/tomatoes_depth_mid_tuning_note.md
+docs/manual_round_agent_brief.md
+docs/phase_5_tomatoes_baseline_note.md
+docs/tutorial/
+docs/round_1/
+docs/round_3/
+docs/round_4/
+docs/round_5/
+docs/round_5_public/
+docs/manual_round_2/
+docs/manual_round_3/
